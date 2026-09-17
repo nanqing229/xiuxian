@@ -1438,6 +1438,25 @@
     </div>
   </div>
 
+  <!-- 模态框：宗门令谕 · 调兵遣将与赐宝犒赏大典 -->
+  <div class="modal-overlay" id="modalDispatchDecree">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <div class="modal-title" style="color:var(--gold-light);">👑 议事大殿 · 调兵遣将与赐宝大典</div>
+        <button class="btn" style="padding:0.2rem 0.5rem;" onclick="closeModal('modalDispatchDecree')">✕</button>
+      </div>
+      <div class="modal-body" id="dispatchDecreeBody">
+        <!-- 动态渲染令谕详情、选派赏赐物品下拉框、效果预览 -->
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+        <button class="btn" onclick="closeModal('modalDispatchDecree')">取消</button>
+        <button class="btn btn-gold" id="btnConfirmDispatch" style="font-weight:700; padding:0.45rem 1.2rem;" onclick="confirmDispatchWithBestow()">
+          👑 掷下金箭 · 携宝出征
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- 模态框：本地存档备份与导入 -->
   <div class="modal-overlay" id="modalSaveLoad">
     <div class="modal-content">
@@ -1642,6 +1661,7 @@
       herb_wanshou: { id: "herb_wanshou", name: "万寿火灵芝", type: "herb", tier: "yuanying", quality: "orange", desc: "生机极为澎湃，服之延年益寿，炼制【四品万寿延元丹】核心。", price: 180, silver: 0 },
       herb_ying: { id: "herb_ying", name: "九窍凝婴草", type: "herb", tier: "yuanying", quality: "orange", desc: "孕育纯正婴灵之气，炼制【五品九转结婴丹】不可替代！", price: 500, silver: 0 },
       herb_soul_wood: { id: "herb_soul_wood", name: "万年养魂木", type: "herb", tier: "huashen", quality: "gold", desc: "通灵神木，万年不腐，安抚紫府神魂，炼制【六品化神定阳丹】核心。", price: 1200, silver: 0 },
+      branch_spirit: { id: "branch_spirit", name: "九幽通天灵枝", type: "herb", tier: "jindan", quality: "purple", desc: "上古通天神木脱落之通灵灵枝，聚拢周天生机，可用于法宝炼制与重赏出征门生！", price: 150, silver: 0 },
       herb_tianhua: { id: "herb_tianhua", name: "太虚造化果", type: "herb", tier: "lianxu", quality: "red", desc: "七阶神异道果，内蕴虚空道韵，炼制【七品太虚涅槃丹】与高阶突破神药！", price: 3000, silver: 0 },
       herb_xiancao: { id: "herb_xiancao", name: "九转涅槃仙草", type: "herb", tier: "heti", quality: "red", desc: "八阶仙草，蕴含涅槃法则，炼制【八品两仪合体丹】与【绝品九霄辟雷神丹】！", price: 8000, silver: 0 },
       herb_daoguo: { id: "herb_daoguo", name: "混沌鸿蒙道果", type: "herb", tier: "xian", quality: "gold", desc: "九阶绝品神物，天地初开时之造化灵种，炼制【鸿蒙造化真仙丹】飞升至宝！", price: 20000, silver: 0 },
@@ -2657,6 +2677,7 @@
         ITEMS_DB.herb_spirit,
         ITEMS_DB.herb_zhuji,
         ITEMS_DB.herb_longevity,
+        ITEMS_DB.branch_spirit,
         ITEMS_DB.sword_fire,
         ITEMS_DB.sword_seven,
         ITEMS_DB.armor_gold,
@@ -2672,6 +2693,7 @@
         ITEMS_DB.herb_longevity,
         ITEMS_DB.herb_jiangchen,
         ITEMS_DB.herb_wanshou,
+        ITEMS_DB.branch_spirit,
         ITEMS_DB.sword_seven,
         ITEMS_DB.sword_lingbao,
         ITEMS_DB.armor_tianyu,
@@ -4294,6 +4316,13 @@
                     </div>
                   </div>
 
+                  ${dec.bestowedItem ? `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(212,160,23,0.1); border:1px solid rgba(212,160,23,0.25); border-radius:4px; padding:0.2rem 0.5rem; margin-bottom:0.35rem; font-size:0.71rem; flex-wrap:wrap; gap:0.3rem;">
+                      <span>🎁 <b>长老厚赐</b>：<span class="${dec.bestowedItem.quality}">【${dec.bestowedItem.name}】</span></span>
+                      <span style="color:var(--jade-green); font-size:0.68rem;">✨ ${dec.bestowedItem.shortBonus || dec.bestowedItem.bonusDesc}</span>
+                    </div>
+                  ` : ''}
+
                   <!-- 进度条 -->
                   <div style="width:100%; height:6px; background:#1a2332; border-radius:3px; overflow:hidden; margin-bottom:0.45rem;">
                     <div style="width:${progressPct}%; height:100%; background:${isDone ? 'var(--jade-green)' : 'linear-gradient(90deg, #3498db, #d4a017)'}; transition: width 0.3s;"></div>
@@ -4371,9 +4400,17 @@
                   <div style="font-size:0.73rem; color:var(--text-muted); margin:0.25rem 0;">${dec.desc}</div>
                   <div style="font-size:0.71rem; color:var(--jade-green);">消耗：${dec.costContrib} 功勋、${dec.costStones} 灵石 | 战果预估：${dec.rewardDesc}</div>
                 </div>
-                <button class="${btnClass}" ${btnDisabled ? 'disabled' : ''} style="font-size:0.75rem; padding:0.35rem 0.65rem;" onclick="issueSectDecree('${dec.key}')">
-                  ${btnText}
-                </button>
+                ${btnDisabled 
+                  ? `<button class="${btnClass}" disabled style="font-size:0.75rem; padding:0.35rem 0.65rem;">${btnText}</button>`
+                  : `
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.25rem;">
+                      <button class="${btnClass}" style="font-size:0.75rem; padding:0.35rem 0.65rem;" onclick="openDispatchModal('${dec.key}')">
+                        ${btnText}
+                      </button>
+                      <span style="font-size:0.65rem; color:var(--gold-light); cursor:pointer;" onclick="openDispatchModal('${dec.key}')">🎁 附赠丹药/法宝/灵枝犒赏</span>
+                    </div>
+                  `
+                }
               </div>
             `;
           }).join('');
@@ -4720,7 +4757,106 @@
       renderSectModal();
     }
 
-    function issueSectDecree(decreeKey) {
+    /* ==========================================================================
+       宗门令谕 · 长老赐宝激励与调兵遣将体系
+       ========================================================================== */
+    function calcBestowBonus(item, decDef) {
+      if (!item) return null;
+      const isPill = item.type === 'pill';
+      const isTreasure = ['weapon', 'armor', 'talisman', 'furnace'].includes(item.type);
+      const isSpiritPlant = ['herb', 'material'].includes(item.type);
+
+      const TIER_ORDER = ['fan', 'lianqi', 'zhuji', 'jindan', 'yuanying', 'huashen', 'lianxu', 'heti', 'dacheng', 'dujie', 'xian'];
+      const tierIdx = Math.max(0, TIER_ORDER.indexOf(item.tier || 'fan'));
+      const quality = item.quality || 'white';
+
+      let bonus = {
+        itemId: item.id,
+        name: item.name,
+        type: item.type,
+        quality: quality,
+        category: isPill ? 'pill' : (isTreasure ? 'treasure' : 'spirit_plant'),
+        categoryName: isPill ? '💊 灵丹妙药' : (isTreasure ? '⚔️ 法宝神兵' : '🌿 灵枝灵植'),
+        durationReduction: 0,
+        bonusExp: 0,
+        bonusStones: 0,
+        bonusHerbsCount: 0,
+        bonusDisciples: 0,
+        bonusRep: 0,
+        extraLootName: '',
+        extraLootItem: null,
+        bonusDesc: '',
+        shortBonus: ''
+      };
+
+      if (isPill) {
+        if (tierIdx <= 1) { // 凡/炼气
+          bonus.durationReduction = 1;
+          bonus.bonusExp = 1200;
+          bonus.bonusStones = 120;
+          bonus.bonusRep = 10;
+          bonus.shortBonus = '耗时-1月，修为反哺+1200，灵石+120';
+        } else if (tierIdx <= 3) { // 筑基/金丹
+          bonus.durationReduction = 1;
+          bonus.bonusExp = 4500;
+          bonus.bonusStones = 400;
+          bonus.bonusRep = 25;
+          bonus.shortBonus = '耗时-1月，修为反哺+4500，灵石+400';
+        } else { // 元婴及以上
+          bonus.durationReduction = 2;
+          bonus.bonusExp = 15000;
+          bonus.bonusStones = 1200;
+          bonus.bonusRep = 50;
+          bonus.shortBonus = '耗时-2月，修为反哺+15000，灵石+1200';
+        }
+        bonus.bonusDesc = `服食灵丹经脉大畅，历练耗时-${bonus.durationReduction}月，凯旋额外反哺自身修为+${bonus.bonusExp}点、灵石+${bonus.bonusStones}！`;
+
+      } else if (isTreasure) {
+        if (tierIdx <= 1) {
+          bonus.bonusStones = 300;
+          bonus.bonusRep = 15;
+          bonus.shortBonus = '战意昂扬，缴获灵石+300，威望+15';
+        } else if (tierIdx <= 3) {
+          bonus.bonusStones = 800;
+          bonus.bonusRep = 30;
+          bonus.extraLootItem = { id: "loot_yaodan_3", name: "三阶紫府妖丹", type: "material", tier: "jindan", quality: "purple", desc: "金丹大妖内丹，妖元滚滚", price: 150 };
+          bonus.extraLootName = bonus.extraLootItem.name;
+          bonus.shortBonus = '战力暴涨，灵石+800，斩获【三阶紫府妖丹】';
+        } else {
+          bonus.bonusStones = 2500;
+          bonus.bonusRep = 60;
+          bonus.extraLootItem = { id: "loot_yaodan_5", name: "五阶通天神蛟内丹", type: "material", tier: "huashen", quality: "gold", desc: "化神真灵妖王内丹，天地异宝", price: 800 };
+          bonus.extraLootName = bonus.extraLootItem.name;
+          bonus.shortBonus = '神威浩荡，灵石+2500，斩获【五阶通天神蛟内丹】';
+        }
+        bonus.bonusDesc = `法宝护体诛邪荡魔，凯旋额外缴获灵石+${bonus.bonusStones}块、威望+${bonus.bonusRep}${bonus.extraLootName ? '，斩获【' + bonus.extraLootName + '】' : ''}！`;
+
+      } else {
+        if (tierIdx <= 1) {
+          bonus.bonusHerbsCount = 3;
+          bonus.bonusDisciples = (decDef && decDef.key === 'recruit') ? 15 : 5;
+          bonus.bonusRep = 15;
+          bonus.shortBonus = (decDef && decDef.key === 'recruit') ? '引渡仙苗+15人，威望+15' : '额外带回灵草+3份，威望+15';
+        } else if (tierIdx <= 3) {
+          bonus.bonusHerbsCount = 5;
+          bonus.bonusDisciples = (decDef && decDef.key === 'recruit') ? 35 : 12;
+          bonus.bonusRep = 30;
+          bonus.shortBonus = (decDef && decDef.key === 'recruit') ? '引渡仙苗+35人，威望+30' : '额外带回奇珍灵草+5份，威望+30';
+        } else {
+          bonus.bonusHerbsCount = 8;
+          bonus.bonusDisciples = (decDef && decDef.key === 'recruit') ? 70 : 25;
+          bonus.bonusRep = 60;
+          bonus.shortBonus = (decDef && decDef.key === 'recruit') ? '引渡仙苗+70人，威望+60' : '额外带回绝品神药+8份，威望+60';
+        }
+        bonus.bonusDesc = `通灵灵枝药脉相生，凯旋额外采获奇珍灵草+${bonus.bonusHerbsCount}份${(decDef && decDef.key === 'recruit') ? `，多引渡+${bonus.bonusDisciples}名新晋门生` : ''}！`;
+      }
+
+      return bonus;
+    }
+
+    let currentDispatchDecreeKey = null;
+
+    function openDispatchModal(decreeKey) {
       if (!G.sect || !G.sect.id || G.sect.name === "散修") {
         alert("散修无法发布宗门令谕！");
         return;
@@ -4774,11 +4910,244 @@
         return;
       }
 
+      currentDispatchDecreeKey = decreeKey;
+
+      // 提取储物袋中可用于犒赏的丹药、法宝、灵植灵枝
+      const inv = G.inventory || [];
+      const eligibleItems = inv.filter(i => (i.count || 0) > 0 && ['pill', 'weapon', 'armor', 'talisman', 'furnace', 'herb', 'material'].includes(i.type));
+
+      const pills = eligibleItems.filter(i => i.type === 'pill');
+      const treasures = eligibleItems.filter(i => ['weapon', 'armor', 'talisman', 'furnace'].includes(i.type));
+      const spiritPlants = eligibleItems.filter(i => ['herb', 'material'].includes(i.type));
+
+      let optHtml = `<option value="">🚫 不附赠赏赐 (常规出巡，按本门常例结算)</option>`;
+
+      if (pills.length > 0) {
+        optHtml += `<optgroup label="💊 灵丹妙药 (服食经脉大畅，历练耗时大幅缩短，反哺自身修为)">`;
+        pills.forEach(p => {
+          const tier = getItemTierInfo(p);
+          optHtml += `<option value="${p.id}">【${p.name}】×${p.count} [${tier.name}] - ${p.desc.slice(0, 18)}...</option>`;
+        });
+        optHtml += `</optgroup>`;
+      }
+
+      if (treasures.length > 0) {
+        optHtml += `<optgroup label="⚔️ 法宝神兵 (执宝护体战意滔天，战备灵石翻倍，斩获极品大妖内丹)">`;
+        treasures.forEach(t => {
+          const tier = getItemTierInfo(t);
+          optHtml += `<option value="${t.id}">【${t.name}】×${t.count} [${tier.name}] - 威能/防护:${t.power || t.def || t.price}</option>`;
+        });
+        optHtml += `</optgroup>`;
+      }
+
+      if (spiritPlants.length > 0) {
+        optHtml += `<optgroup label="🌿 灵枝灵植 (药脉感应大荒通灵，额外采获大量极品天材地宝与仙苗)">`;
+        spiritPlants.forEach(sp => {
+          const tier = getItemTierInfo(sp);
+          optHtml += `<option value="${sp.id}">【${sp.name}】×${sp.count} [${tier.name}] - ${sp.desc.slice(0, 18)}...</option>`;
+        });
+        optHtml += `</optgroup>`;
+      }
+
+      const body = document.getElementById('dispatchDecreeBody');
+      if (body) {
+        body.innerHTML = `
+          <!-- 令谕基本盘 -->
+          <div style="background:#0d141e; border:1px solid var(--border-subtle); border-radius:6px; padding:0.75rem 0.9rem; margin-bottom:0.75rem;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.35rem; flex-wrap:wrap; gap:0.4rem;">
+              <div style="font-size:1rem; font-weight:700; color:var(--gold-light); display:flex; align-items:center; gap:0.4rem;">
+                <span style="font-size:1.2rem;">${decDef.icon}</span>
+                <span>${decDef.title}</span>
+                <span class="item-tier-badge ${curRank.badge}" style="font-size:0.62rem;">${decDef.minRankName}</span>
+              </div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">
+                出巡门生：<b style="color:var(--text-main);">${decDef.reqDisciples}</b> 人 | 
+                待命门生：<b style="color:var(--jade-green);">${G.sect.disciples.idle}</b> 人
+              </div>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.5; margin-bottom:0.4rem;">
+              ${decDef.desc}
+            </div>
+            <div style="font-size:0.72rem; color:var(--ethereal-blue); background:rgba(52,152,219,0.1); border-radius:4px; padding:0.25rem 0.5rem;">
+              ⚡ <b>基础耗时</b>：${decDef.durationMonths} 个月 | 
+              <b>常规开销</b>：${decDef.costContrib} 功勋、${decDef.costStones} 灵石 | 
+              <b>基础战果</b>：${decDef.rewardDesc}
+            </div>
+          </div>
+
+          <!-- 长老赐宝选择器 -->
+          <div style="background:rgba(212,160,23,0.06); border:1px solid rgba(212,160,23,0.3); border-radius:6px; padding:0.75rem 0.9rem; margin-bottom:0.75rem;">
+            <div style="font-size:0.83rem; font-weight:700; color:var(--gold-light); margin-bottom:0.25rem; display:flex; align-items:center; gap:0.4rem;">
+              <span>🎁</span>
+              <span>长老赐宝激励 · 附赠宗门赏赐 (可选)</span>
+            </div>
+            <div style="font-size:0.72rem; color:var(--text-muted); line-height:1.5; margin-bottom:0.55rem;">
+              选派储物袋中的闲置丹药、法宝或通灵灵枝犒赏出征门生，可提振士气、大幅缩减历练月数并斩获超额厚赏：
+            </div>
+            <select id="selectBestowItem" style="width:100%; background:#101521; border:1px solid var(--gold-light); color:var(--text-main); padding:0.4rem 0.5rem; border-radius:4px; font-size:0.78rem;" onchange="updateDispatchPreview()">
+              ${optHtml}
+            </select>
+
+            <!-- 动态预览区 -->
+            <div id="dispatchBonusPreview" style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:rgba(0,0,0,0.35); border-radius:5px; border:1px solid var(--border-subtle); min-height:48px;">
+              <!-- 动态更新 -->
+            </div>
+          </div>
+
+          <!-- 调度出征成本结算 -->
+          <div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.4rem; padding:0 0.2rem;">
+            <div>扣除弟子：<b style="color:var(--text-main);">${decDef.reqDisciples} 人</b></div>
+            <div>扣除功勋：<b style="color:var(--gold-light);">${decDef.costContrib} 点</b></div>
+            <div>军备灵石：<b style="color:var(--gold-light);">${decDef.costStones} 块</b></div>
+            <div id="dispatchItemCostTag">赐宝扣减：<b style="color:var(--jade-green);">无 (常规)</b></div>
+          </div>
+        `;
+      }
+
+      updateDispatchPreview();
+      sfx.click();
+      openModal('modalDispatchDecree');
+    }
+
+    function updateDispatchPreview() {
+      if (!currentDispatchDecreeKey) return;
+      const decDef = SECT_DECREES_DEF.find(d => d.key === currentDispatchDecreeKey);
+      if (!decDef) return;
+
+      const sel = document.getElementById('selectBestowItem');
+      const previewBox = document.getElementById('dispatchBonusPreview');
+      const itemCostTag = document.getElementById('dispatchItemCostTag');
+      if (!sel || !previewBox) return;
+
+      const selectedId = sel.value;
+      if (!selectedId) {
+        previewBox.innerHTML = `
+          <div style="font-size:0.75rem; color:var(--text-muted); display:flex; align-items:center; gap:0.4rem;">
+            <span>🛡️</span>
+            <span>当前为<b>常规出巡</b>：预计耗时 <b>${decDef.durationMonths} 个月</b>，门生出征归宗后按本门规制领取标准功勋战果。</span>
+          </div>
+        `;
+        if (itemCostTag) itemCostTag.innerHTML = `赐宝扣减：<b style="color:var(--text-muted);">无 (常规出巡)</b>`;
+        return;
+      }
+
+      const item = (G.inventory || []).find(i => i.id === selectedId);
+      if (!item) return;
+
+      const bonus = calcBestowBonus(item, decDef);
+      const actualDuration = Math.max(1, decDef.durationMonths - (bonus.durationReduction || 0));
+
+      previewBox.innerHTML = `
+        <div style="font-size:0.8rem; font-weight:700; color:var(--gold-light); margin-bottom:0.25rem; display:flex; align-items:center; gap:0.4rem;">
+          <span>${bonus.categoryName}</span>
+          <span class="${bonus.quality}">【${bonus.name}】</span>
+          ${bonus.durationReduction > 0 ? `<span style="font-size:0.68rem; background:rgba(46,204,113,0.2); color:var(--jade-green); padding:0.1rem 0.35rem; border-radius:3px;">耗时 -${bonus.durationReduction}月</span>` : ''}
+        </div>
+        <div style="font-size:0.73rem; color:var(--jade-green); line-height:1.6;">
+          ✨ <b>赐宝加成效果</b>：${bonus.bonusDesc}
+        </div>
+        <div style="font-size:0.72rem; color:var(--ethereal-blue); margin-top:0.25rem;">
+          ⏱️ 实际出征周期：原 ${decDef.durationMonths} 个月 -> <b style="color:var(--gold-light); font-size:0.82rem;">${actualDuration} 个月</b>
+        </div>
+      `;
+
+      if (itemCostTag) {
+        itemCostTag.innerHTML = `赐宝扣减：<b class="${bonus.quality}">【${bonus.name}】×1</b> (结余:${(item.count || 1) - 1})`;
+      }
+    }
+
+    function confirmDispatchWithBestow() {
+      if (!currentDispatchDecreeKey) return;
+      const sel = document.getElementById('selectBestowItem');
+      const selectedId = sel ? sel.value : null;
+
+      let bestowItem = null;
+      if (selectedId) {
+        bestowItem = (G.inventory || []).find(i => i.id === selectedId);
+        if (!bestowItem || (bestowItem.count || 0) < 1) {
+          alert("所选赏赐物品已不在储物袋中！");
+          return;
+        }
+      }
+
+      closeModal('modalDispatchDecree');
+      issueSectDecree(currentDispatchDecreeKey, bestowItem);
+    }
+
+    function issueSectDecree(decreeKey, bestowItem = null) {
+      if (!G.sect || !G.sect.id || G.sect.name === "散修") {
+        alert("散修无法发布宗门令谕！");
+        return;
+      }
+      const curRank = getSectRankInfo(G.sect.rankKey);
+      if (!curRank.canIssueQuests) {
+        alert("尊位未及长老，无权调动宗门弟子发布令谕！");
+        return;
+      }
+
+      const decDef = SECT_DECREES_DEF.find(d => d.key === decreeKey);
+      if (!decDef) return;
+
+      const curRankIdx = SECT_RANKS.findIndex(r => r.key === G.sect.rankKey);
+      const reqRankIdx = SECT_RANKS.findIndex(r => r.key === decDef.minRankKey);
+      if (curRankIdx < reqRankIdx) {
+        alert(`此令谕唯有【${decDef.minRankName}】及以上尊位方可升座颁布！`);
+        return;
+      }
+
+      G.sect.activeDecrees = G.sect.activeDecrees || [];
+      const maxSlots = curRank.maxDecrees || 1;
+      if (G.sect.activeDecrees.length >= maxSlots) {
+        alert(`当前督办法令已达你职位上限（最多同时督办 ${maxSlots} 道）！\n请等待外出弟子凯旋归宗后再行遣使。`);
+        return;
+      }
+
+      const isAlreadyRunning = G.sect.activeDecrees.some(d => d.type === decreeKey);
+      if (isAlreadyRunning) {
+        alert(`【${decDef.title}】已有一支队伍在外执行中，不可重复调派！`);
+        return;
+      }
+
+      if (!G.sect.disciples) {
+        const baseCount = 1000;
+        G.sect.disciples = { total: baseCount, idle: baseCount, dispatched: 0 };
+      }
+
+      if (G.sect.disciples.idle < decDef.reqDisciples) {
+        alert(`宗门待命门人不足！当前空闲待命 ${G.sect.disciples.idle} 人，需调派 ${decDef.reqDisciples} 人。\n请等待外出弟子归宗，或颁布【广纳仙苗令】扩充门生！`);
+        return;
+      }
+
+      if ((G.sect.contrib || 0) < decDef.costContrib) {
+        alert(`宗门功勋不足！当前功勋 ${G.sect.contrib || 0} 点，颁发此令需 ${decDef.costContrib} 点。`);
+        return;
+      }
+
+      if (G.stones < decDef.costStones) {
+        alert(`所需赏金与军费灵石不足！当前灵石 ${G.stones} 块，需 ${decDef.costStones} 块。`);
+        return;
+      }
+
+      // 处理可选赏赐物品
+      let bonus = null;
+      if (bestowItem) {
+        if (typeof bestowItem === 'string') {
+          bestowItem = (G.inventory || []).find(i => i.id === bestowItem);
+        }
+        if (bestowItem && (bestowItem.count || 0) >= 1) {
+          bonus = calcBestowBonus(bestowItem, decDef);
+          bestowItem.count = (bestowItem.count || 1) - 1;
+          cleanZeroInv();
+        }
+      }
+
       // 扣除资源与调遣弟子
       G.sect.contrib -= decDef.costContrib;
       G.stones -= decDef.costStones;
       G.sect.disciples.idle -= decDef.reqDisciples;
       G.sect.disciples.dispatched = (G.sect.disciples.dispatched || 0) + decDef.reqDisciples;
+
+      const duration = bonus ? Math.max(1, decDef.durationMonths - (bonus.durationReduction || 0)) : decDef.durationMonths;
 
       const newDecree = {
         id: "dec_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
@@ -4786,16 +5155,21 @@
         title: decDef.title,
         icon: decDef.icon,
         assignedDisciples: decDef.reqDisciples,
-        totalMonths: decDef.durationMonths,
-        remainingMonths: decDef.durationMonths,
+        totalMonths: duration,
+        remainingMonths: duration,
         startedYear: G.year || 9427,
         startedMonth: G.ageMonths,
-        status: "running"
+        status: "running",
+        bestowedItem: bonus
       };
       G.sect.activeDecrees.push(newDecree);
 
       sfx.spell();
-      addLog(`👑【法令颁发 · 调兵遣将】你升座议事大殿，掷下【${decDef.title}】金箭！调派 ${decDef.reqDisciples} 名精锐门生领命出巡，预计历时 ${decDef.durationMonths} 个月！剩余待命弟子 ${G.sect.disciples.idle} 人。`, "breakthrough");
+      if (bonus) {
+        addLog(`👑【法令颁发 · 携宝出征】你升座议事大殿，掷下【${decDef.title}】金箭，并赐下【${bonus.name}】犒劳三军！调派 ${decDef.reqDisciples} 名精锐门生领命出巡，历练耗时缩减至 ${duration} 个月！剩余待命弟子 ${G.sect.disciples.idle} 人。`, "breakthrough");
+      } else {
+        addLog(`👑【法令颁发 · 调兵遣将】你升座议事大殿，掷下【${decDef.title}】金箭！调派 ${decDef.reqDisciples} 名精锐门生领命出巡，预计历时 ${duration} 个月！剩余待命弟子 ${G.sect.disciples.idle} 人。`, "breakthrough");
+      }
 
       saveToLocal();
       renderUI();
@@ -4942,6 +5316,71 @@
         addLog(`👑【令谕战报 · 太上极道征伐】太上荡魔神钟九震！远征全胜凯旋！缴获灵石 +${prizeStones} 块、斩获【${pillLianxu.name}】×1，名震四海！`, "breakthrough");
       }
 
+      // 额外结算：长老赐宝激励回报
+      let extraBestowHtml = "";
+      if (dec.bestowedItem) {
+        const b = dec.bestowedItem;
+        let bestowLootLines = [];
+
+        if (b.durationReduction > 0) {
+          bestowLootLines.push(`<div>• <b>神速历练</b>：受赐灵丹滋养，历练耗时减少 <b>${b.durationReduction} 个月</b>，提早凯旋！</div>`);
+        }
+        if (b.bonusExp > 0) {
+          G.exp += b.bonusExp;
+          bestowLootLines.push(`<div>• <b>反哺道行</b>：自身修为经验 <b style="color:var(--gold-light);">+${b.bonusExp} 点</b></div>`);
+        }
+        if (b.bonusStones > 0) {
+          G.stones += b.bonusStones;
+          bestowLootLines.push(`<div>• <b>犒赏缴获</b>：额外缴获战备灵石 <b style="color:var(--gold-light);">+${b.bonusStones} 块</b></div>`);
+        }
+        if (b.bonusRep > 0) {
+          G.stats.reputation = (G.stats.reputation || 0) + b.bonusRep;
+          bestowLootLines.push(`<div>• <b>门风威望</b>：修真界威望 +${b.bonusRep} 点</div>`);
+        }
+        if (b.bonusDisciples > 0 && G.sect.disciples) {
+          G.sect.disciples.total += b.bonusDisciples;
+          G.sect.disciples.idle += b.bonusDisciples;
+          bestowLootLines.push(`<div>• <b>引渡仙苗</b>：通灵神气感应，额外多引渡 <b style="color:var(--jade-green);">+${b.bonusDisciples} 名新晋仙苗入宗</b>！</div>`);
+        }
+        if (b.bonusHerbsCount > 0) {
+          const HERB_POOL = [
+            ITEMS_DB.herb_spirit,
+            ITEMS_DB.herb_zhuji,
+            ITEMS_DB.herb_longevity,
+            ITEMS_DB.herb_jiangchen,
+            ITEMS_DB.herb_wanshou,
+            ITEMS_DB.herb_soul_wood,
+            ITEMS_DB.branch_spirit
+          ].filter(Boolean);
+          let extraHerbs = [];
+          for (let i = 0; i < b.bonusHerbsCount; i++) {
+            const h = HERB_POOL[Math.floor(Math.random() * HERB_POOL.length)];
+            addItemToInv(h, 1);
+            extraHerbs.push(h);
+          }
+          bestowLootLines.push(`<div>• <b>药脉采撷</b>：额外采获灵草：${extraHerbs.map(h => `<span class="${h.quality}">${h.name}</span>`).join('、')}</div>`);
+        }
+        if (b.extraLootItem) {
+          addItemToInv(b.extraLootItem, 1);
+          bestowLootLines.push(`<div>• <b>重宝斩获</b>：斩获极品战利：<span class="${b.extraLootItem.quality}">${b.extraLootItem.name}</span> ×1</div>`);
+        }
+
+        extraBestowHtml = `
+          <div style="margin-top:0.65rem; background:rgba(212,160,23,0.12); border:1px solid rgba(212,160,23,0.4); border-radius:6px; padding:0.6rem 0.8rem;">
+            <div style="font-weight:700; color:var(--gold-light); font-size:0.83rem; margin-bottom:0.25rem;">
+              🎖️ 门生承蒙长老厚赐【<span class="${b.quality}">${b.name}</span>】加倍回报：
+            </div>
+            <div style="font-size:0.73rem; color:var(--text-muted); line-height:1.5; font-style:italic; margin-bottom:0.35rem;">
+              “受长辈随身宝物犒劳，众弟子军心大振，感念长生护道之恩，特将超额战果加倍呈献！”
+            </div>
+            <div style="font-size:0.78rem; line-height:1.8; color:var(--jade-green);">
+              ${bestowLootLines.join('')}
+            </div>
+          </div>
+        `;
+        addLog(`👑【赐宝回报】出征门生承蒙你所赐【${b.name}】之恩，凯旋特献超额战果！修为+${b.bonusExp}、灵石+${b.bonusStones}！`, "breakthrough");
+      }
+
       // 从 activeDecrees 中移除该法令
       G.sect.activeDecrees = G.sect.activeDecrees.filter(d => d.id !== decreeId);
 
@@ -4960,6 +5399,7 @@
             <div style="background:rgba(0,0,0,0.3); border-radius:6px; padding:0.65rem 0.85rem; border:1px solid var(--border-subtle);">
               <div style="font-size:0.82rem; font-weight:600; color:var(--gold-primary); margin-bottom:0.35rem;">🎁 战利品与功勋呈报：</div>
               ${spoilsHtml}
+              ${extraBestowHtml}
             </div>
           </div>
         `;
