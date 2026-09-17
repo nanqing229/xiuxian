@@ -1218,8 +1218,11 @@
   <!-- 模态框：战斗决斗场 -->
   <div class="modal-overlay" id="modalCombat">
     <div class="modal-content">
-      <div class="modal-header">
+      <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center;">
         <div class="modal-title" style="color:var(--cinnabar);">⚔️ 狭路相逢 · 生死相搏</div>
+        <label style="font-size:0.75rem; color:var(--gold-light); display:inline-flex; align-items:center; gap:4px; cursor:pointer; user-select:none;">
+          <input type="checkbox" id="chkAutoCombatToggle" checked> 遇敌自动推演
+        </label>
       </div>
       <div class="modal-body">
         <div class="combat-arena">
@@ -3424,10 +3427,14 @@
        时空流速中枢
        ========================================================================== */
     let timeSpeedMode = 'paused';
+    let lastActiveSpeedMode = null; // 记录最近一次激活的自流转速度（normal 或 fast）
     let timerIntervalId = null;
 
     function setTimeSpeed(mode) {
       timeSpeedMode = mode;
+      if (mode === 'normal' || mode === 'fast') {
+        lastActiveSpeedMode = mode;
+      }
       document.querySelectorAll('.speed-btn').forEach(btn => btn.classList.remove('active'));
 
       if (timerIntervalId) {
@@ -5778,6 +5785,9 @@
       if (document.getElementById('chkAutoBreakthrough')) {
         document.getElementById('chkAutoBreakthrough').checked = !!G.autoBreakthrough;
       }
+      if (document.getElementById('chkAutoCombatToggle')) {
+        document.getElementById('chkAutoCombatToggle').checked = G.autoCombat !== false;
+      }
 
       // 角色信息
       document.getElementById('charName').textContent = G.name;
@@ -6833,12 +6843,14 @@
                 sfx.success();
                 addItemToInv(targetHerb, 1);
                 addLog(`抖落硫磺药粉，凶物受惊退散，你从容将珍贵的【${targetHerb.name}】掘起收入药囊！`, "fortune");
+                G.activeEvent = null;
+                renderUI();
+                resumeAutoTimeIfEligible("惊退凶兽采药归来");
               } else {
                 addLog(`此地乃【${curMap.name}】，高阶大妖灵智已开，寻常药散根本无法逼退，凶兽怒吼扑杀而来！`, "danger");
+                G.activeEvent = null;
                 startCombat(beastEnemy);
               }
-              G.activeEvent = null;
-              renderUI();
             }
           },
           {
@@ -6856,6 +6868,7 @@
               addLog(`你敛息收敛神识从灵草近旁从容退下，虽未得【${targetHerb.name}】，但保全自身气血不损。`, "normal");
               G.activeEvent = null;
               renderUI();
+              resumeAutoTimeIfEligible("避险脱身");
             }
           }
         ]
@@ -6867,6 +6880,77 @@
       if (G && G.activeEvent && G.activeEvent.choices[idx]) {
         G.activeEvent.choices[idx].act();
       }
+    }
+
+    /* ==========================================================================
+       战斗与时空自动恢复中枢
+       ========================================================================== */
+    function resumeAutoTimeIfEligible(actionDesc = "历练平患") {
+      if (!G || !lastActiveSpeedMode) return false;
+
+      // 1. 气血低于警戒线 (35%) -> 限制驻足！
+      if (G.hp < G.maxHp * 0.35) {
+        pauseTime("气血虚竭严重，时空停顿！请立即疗伤温养！");
+        addLog(`【战后急停】虽经平患，但周天气血已降至 ${G.hp}/${G.maxHp}（低于35%警戒线）！为防道途陨落已自动驻足，请立即服丹或换选【🍵 温养调元】！`, "danger");
+        lastActiveSpeedMode = null;
+        return false;
+      }
+
+      // 2. 寿元将尽 (< 5年) -> 限制驻足！
+      if (G.maxAge - G.ageYears <= 5 && G.maxAge - G.ageYears > 0) {
+        pauseTime("大限将至（残存寿元不足5年）！");
+        addLog("【天命暮年】华发苍颜，残生不足五载！已自动驻足，速寻延寿之物或突破关隘！", "danger");
+        lastActiveSpeedMode = null;
+        return false;
+      }
+
+      // 3. 气机受挫内伤冷却中 -> 限制驻足！
+      if (G.breakthroughInjuryMonths > 0) {
+        pauseTime("冲关受挫，气机紊乱！需温养调理！");
+        lastActiveSpeedMode = null;
+        return false;
+      }
+
+      // 4. 仍有未决机缘事件 -> 限制驻足！
+      if (G.activeEvent) {
+        pauseTime("遭遇重大因果机缘，等待抉择！");
+        lastActiveSpeedMode = null;
+        return false;
+      }
+
+      // 5. 闭关吐纳且大境界瓶颈缺少专属护道神丹 -> 限制驻足！
+      const curRealm = REALMS[G.realmIndex] || REALMS[0];
+      const req = BREAKTHROUGH_REQUISITES[G.realmIndex];
+      const isCultivating = (G.routine || 'cultivate') === 'cultivate';
+      const hasPill = req ? ((G.inventory || []).some(i => i.id === req.id && i.count > 0) || Boolean(G[req.buffKey])) : true;
+      if (isCultivating && G.exp >= curRealm.maxExp && req && !hasPill) {
+        pauseTime(`冲击【${REALMS[G.realmIndex + 1].name}】缺乏护道神丹【${req.name}】！`);
+        lastActiveSpeedMode = null;
+        return false;
+      }
+
+      // 无任何驻足限制，平滑恢复战前自流转速度！
+      const resumeSpeed = lastActiveSpeedMode;
+      setTimeSpeed(resumeSpeed);
+      const rNames = {
+        cultivate: "🧘 闭关吐纳",
+        herb: "🌿 采药寻灵",
+        bounty: "📜 差事兼修",
+        explore: "🗺️ 探幽猎妖",
+        heal: "🍵 温养调元"
+      };
+      const routineName = rNames[G.routine || 'cultivate'] || "修行方略";
+      addLog(`【岁月重启】${actionDesc}，气血安泰（${G.hp}/${G.maxHp}），继续自动流转【${routineName}】……`, "fortune");
+      return true;
+    }
+
+    function finishCombatAndResume() {
+      closeModal('modalCombat');
+      combatAutoRunning = false;
+      curEnemy = null;
+      saveToLocal();
+      renderUI();
+      resumeAutoTimeIfEligible("斩敌平患");
     }
 
     /* ==========================================================================
@@ -6884,9 +6968,30 @@
       document.getElementById('combatPlayerName').textContent = G.name;
       document.getElementById('combatPlayerRealm').textContent = (REALMS[G.realmIndex] || REALMS[0]).name;
 
+      const chkAuto = document.getElementById('chkAutoCombatToggle');
+      if (chkAuto && G) chkAuto.checked = G.autoCombat !== false;
+
       updateCombatUI();
       document.getElementById('combatLogStream').innerHTML = `<div style="color:var(--cinnabar);">【遭遇强敌】对方杀意凛然，大战一触即发！</div>`;
       openModal('modalCombat');
+
+      // 若战前处于自流转中，且启用了遇敌自动推演
+      if (lastActiveSpeedMode && G && G.autoCombat !== false) {
+        combatAutoRunning = true;
+        if (document.getElementById('btnCombatAuto')) {
+          document.getElementById('btnCombatAuto').textContent = "⚡ 自动推演中…（点击可中断）";
+        }
+        setTimeout(() => {
+          if (combatAutoRunning && curEnemy && curEnemy.hp > 0 && G && G.hp > 0) {
+            appendCombatLog(`<div style="color:var(--purple-rare); font-size:0.82rem; margin-top:0.3rem;">【自动推演启阵】岁月推演未歇，剑光掠影自动决战！</div>`);
+            runAutoCombatStep();
+          }
+        }, 450);
+      } else {
+        if (document.getElementById('btnCombatAuto')) {
+          document.getElementById('btnCombatAuto').textContent = "⚡ 自动推演 · 决一死战";
+        }
+      }
     }
 
     function updateCombatUI() {
@@ -6975,10 +7080,13 @@
       combatAutoRunning = false;
       if (Math.random() < 0.55) {
         sfx.success();
-        alert("你虚晃一招果断借地形脱身遁走！");
-        closeModal('modalCombat');
         addLog(`遭遇强敌 ${curEnemy.name}，你审时度势避战脱身。`, 'normal');
-        renderUI();
+        if (!lastActiveSpeedMode) {
+          alert("你虚晃一招果断借地形脱身遁走！");
+          finishCombatAndResume();
+        } else {
+          setTimeout(finishCombatAndResume, 350);
+        }
       } else {
         sfx.fail();
         appendCombatLog(`逃路被阻，反受截杀重击！`);
@@ -7006,11 +7114,22 @@
         sfx.click();
         if (combatAutoRunning) {
           combatAutoRunning = false;
+          document.getElementById('btnCombatAuto').textContent = "⚡ 自动推演 · 决一死战";
           appendCombatLog(`<div style="color:var(--text-muted);">【推演中断】你恢复手动搏杀操控。</div>`);
         } else {
           combatAutoRunning = true;
+          document.getElementById('btnCombatAuto').textContent = "⚡ 自动推演中…（点击可中断）";
           appendCombatLog(`<div style="color:var(--purple-rare);">【自动推演开启】全神贯注，杀伐决断！</div>`);
           runAutoCombatStep();
+        }
+      };
+    }
+
+    if (document.getElementById('chkAutoCombatToggle')) {
+      document.getElementById('chkAutoCombatToggle').onchange = (e) => {
+        if (G) {
+          G.autoCombat = e.target.checked;
+          saveToLocal();
         }
       };
     }
@@ -7021,26 +7140,37 @@
         combatAutoRunning = false;
         sfx.breakthrough();
         if (curEnemy.isSpar) {
-          alert(`【演武切磋 · 获胜】\n你气定神闲收敛灵力，与【${curEnemy.npcName}】拱手一笑！\n对方大赞：“道友神通惊人，在下心服口服！”\n\n声望 +${(curEnemy.sparRep || 3) * 3}，气血与法力已彻底平复！`);
-          closeModal('modalCombat');
           G.hp = G.maxHp;
           G.mp = G.maxMp;
-          G.stats.reputation += (curEnemy.sparRep || 3) * 3;
-          addLog(`与【${curEnemy.npcName}】演武切磋大胜，声望提升，气血平复。`, 'fortune');
+          const repGain = (curEnemy.sparRep || 3) * 3;
+          G.stats.reputation += repGain;
+          addLog(`与【${curEnemy.npcName}】演武切磋大胜，声望提升 ${repGain} 点，气血平复。`, 'fortune');
+          appendCombatLog(`<div style="color:var(--gold-light); font-weight:bold; font-size:0.95rem; margin-top:0.4rem;">🎉 【演武切磋 · 获胜】与【${curEnemy.npcName}】斗法切磋大胜！</div>`);
+          if (!lastActiveSpeedMode) {
+            alert(`【演武切磋 · 获胜】\n你气定神闲收敛灵力，与【${curEnemy.npcName}】拱手一笑！\n对方大赞：“道友神通惊人，在下心服口服！”\n\n声望 +${repGain}，气血与法力已彻底平复！`);
+            finishCombatAndResume();
+          } else {
+            setTimeout(finishCombatAndResume, 450);
+          }
         } else {
-          alert(`惨烈厮杀！你成功诛杀强敌【${curEnemy.name}】！`);
-          closeModal('modalCombat');
+          const stonesGot = curEnemy.loot ? (curEnemy.loot.stones || 0) : 0;
+          const silverGot = curEnemy.loot ? (curEnemy.loot.silver || 0) : 0;
           if (curEnemy.loot) {
-            G.stones += curEnemy.loot.stones || 0;
-            G.silver += curEnemy.loot.silver || 0;
+            G.stones += stonesGot;
+            G.silver += silverGot;
             if (curEnemy.loot.item) addItemToInv(curEnemy.loot.item, 1);
           }
           addExp(30, "斩敌感悟");
           G.stats.reputation += 5;
-          addLog(`【斩敌获胜】诛杀【${curEnemy.name}】，获得灵石 ${curEnemy.loot.stones || 0} 块，凡银 ${curEnemy.loot.silver || 0} 两！`, 'breakthrough');
+          addLog(`【斩敌获胜】诛杀【${curEnemy.name}】，获得灵石 ${stonesGot} 块，凡银 ${silverGot} 两！`, 'breakthrough');
+          appendCombatLog(`<div style="color:var(--gold-light); font-weight:bold; font-size:0.95rem; margin-top:0.4rem;">🎉 惨烈厮杀！你成功诛杀强敌【${curEnemy.name}】！</div>`);
+          if (!lastActiveSpeedMode) {
+            alert(`惨烈厮杀！你成功诛杀强敌【${curEnemy.name}】！`);
+            finishCombatAndResume();
+          } else {
+            setTimeout(finishCombatAndResume, 450);
+          }
         }
-        saveToLocal();
-        renderUI();
         return;
       }
 
@@ -7063,18 +7193,22 @@
           combatAutoRunning = false;
           if (curEnemy.isSpar) {
             sfx.alert();
-            alert(`【演武切磋 · 惜败】\n【${curEnemy.npcName}】及时收回法器，朗声笑道：“承让承让！道友根基非凡，来日必成大器！”\n\n虽惜败一招，但你在高境交手中获益良多：\n体魄 +2，神魂 +2，气血与法力已为你温养调理复原！`);
-            closeModal('modalCombat');
             G.hp = G.maxHp;
             G.mp = G.maxMp;
             G.stats.phy += 2;
             G.stats.soul += 2;
             addLog(`与【${curEnemy.npcName}】切磋惜败，但窥得高深法门，体魄+2，神魂+2。`, 'normal');
-            saveToLocal();
-            renderUI();
+            appendCombatLog(`<div style="color:var(--text-muted); font-size:0.9rem; margin-top:0.3rem;">【演武惜败】对方及时收力，你受益良多，体魄+2，神魂+2。</div>`);
+            if (!lastActiveSpeedMode) {
+              alert(`【演武切磋 · 惜败】\n【${curEnemy.npcName}】及时收回法器，朗声笑道：“承让承让！道友根基非凡，来日必成大器！”\n\n虽惜败一招，但你在高境交手中获益良多：\n体魄 +2，神魂 +2，气血与法力已为你温养调理复原！`);
+              finishCombatAndResume();
+            } else {
+              setTimeout(finishCombatAndResume, 450);
+            }
             return;
           } else {
             sfx.fail();
+            lastActiveSpeedMode = null;
             alert(`气血耗尽……你倒在血泊之中，此生道途就此陨落！`);
             closeModal('modalCombat');
             settleKarmaAndReset();
@@ -7630,7 +7764,10 @@
     });
 
     // 速度控制器按钮
-    document.getElementById('btnSpeedPause').onclick = () => setTimeSpeed('paused');
+    document.getElementById('btnSpeedPause').onclick = () => {
+      lastActiveSpeedMode = null; // 玩家主动点击暂停，清空自动恢复记忆
+      setTimeSpeed('paused');
+    };
     document.getElementById('btnSpeedNormal').onclick = () => setTimeSpeed('normal');
     document.getElementById('btnSpeedFast').onclick = () => setTimeSpeed('fast');
 
