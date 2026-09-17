@@ -3503,24 +3503,40 @@
         return;
       }
       const curRealm = REALMS[G.realmIndex] || REALMS[0];
+      const curRoutine = G.routine || 'cultivate';
+      const isCultivating = curRoutine === 'cultivate';
+
       if (G.exp >= curRealm.maxExp && G.realmIndex < REALMS.length - 1) {
         G.exp = curRealm.maxExp; // 严禁超溢，锁死在极限
         const nextRealm = REALMS[G.realmIndex + 1];
         const req = BREAKTHROUGH_REQUISITES[G.realmIndex];
+        const hasPill = req ? ((G.inventory || []).some(i => i.id === req.id && i.count > 0) || Boolean(G[req.buffKey])) : true;
+
+        if (hasPill) {
+          G._missingPillWarned = false; // 已得神丹，警示解除
+        }
 
         if (G.autoBreakthrough) {
           // 自动破境严格纪律：
           // 1. 若气机紊乱内伤未愈，等待温养恢复
           if (G.breakthroughInjuryMonths > 0) return;
 
-          // 2. 若属于大境界关隘天堑，先检测是否已备齐专属护道神丹
-          if (req) {
-            const hasPill = (G.inventory || []).some(i => i.id === req.id && i.count > 0) || G[req.buffKey];
-            if (!hasPill) {
-              pauseTime(`冲击【${nextRealm.name}】缺乏护道神丹【${req.name}】！`);
-              addLog(`【关隘天堑】突破至【${nextRealm.name}】天劫险阻，储物袋中尚缺【${req.name}】！为防道基反噬崩毁已自动驻足，请开炉炼丹或坊市求购！`, "danger");
-              return;
+          // 2. 若属于大境界关隘天堑，检测是否已备齐专属护道神丹
+          if (req && !hasPill) {
+            // 核心逻辑修复：如果玩家当前并非【闭关吐纳】（例如正在【🌿 采药寻灵】、【📜 差事兼修】、【🗺️ 探幽猎妖】、【🍵 温养调元】等）
+            // 说明玩家正主动外出搜集药草或赚取灵石以筹备炼丹资粮，绝不可因缺少丹药而强行驻足打断寻药历练！
+            if (!isCultivating) {
+              return; // 采药/差事/探幽等正常流转，不予阻拦
             }
+
+            // 若在【闭关吐纳】中且初次触及大关瓶颈时，予以驻足提示一次，避免盲目空转耗损寿元
+            if (!G._missingPillWarned) {
+              G._missingPillWarned = true;
+              pauseTime(`冲击【${nextRealm.name}】缺乏护道神丹【${req.name}】！`);
+              addLog(`【关隘天堑】修为圆满欲破境【${nextRealm.name}】，惟储物袋中尚缺【${req.name}】！已暂缓闭关，请换选【🌿 采药寻灵】搜集药草炼丹，或前往坊市求购！亦可继续闭关打磨道基至无瑕极境！`, "danger");
+            }
+            // 若玩家已知晓并再次点击流转（例如想继续打磨道基至100%），则不再反复驻足
+            return;
           }
 
           // 3. 道基打磨纪律：道基必须打磨至精纯稳固（>= 80%）才允许自动冲关，杜绝盲目赌博！
@@ -3529,13 +3545,18 @@
             return;
           }
 
-          // 达到极限 + 道基打磨稳固 + 护道神丹齐备 -> 纪律冲关
-          doBreakthrough(true);
-          return;
+          // 4. 只有在【闭关吐纳】时，或全条件圆满齐备时方自动冲关
+          if (isCultivating) {
+            doBreakthrough(true);
+            return;
+          }
         } else {
+          // 手动突破模式：仅在首次触碰瓶颈时提示
           if (!G._bottleneckNotified) {
             G._bottleneckNotified = true;
-            pauseTime(`修为已臻【${curRealm.name}】大圆满，关隘就绪！`);
+            if (isCultivating) {
+              pauseTime(`修为已臻【${curRealm.name}】大圆满，关隘就绪！`);
+            }
             const pillHint = req ? `（大境界关隘务必备妥【${req.name}】）` : "（可继续打磨道基至无瑕极境提高把握）";
             addLog(`【极限已至】修为已达【${curRealm.name}】极限！周天经络气海饱满。${pillHint}`, "breakthrough");
           }
@@ -3543,6 +3564,7 @@
         }
       } else {
         G._bottleneckNotified = false;
+        G._missingPillWarned = false;
       }
       if (G.maxAge - G.ageYears <= 5 && G.maxAge - G.ageYears > 0) {
         if (!G._lifeWarned) {
@@ -7224,6 +7246,8 @@
         G.exp = 0;
         G.foundation = 0;
         G.breakthroughInjuryMonths = 0;
+        G._missingPillWarned = false;
+        G._bottleneckNotified = false;
         G.stats.reputation += 20;
         addLog(`【突破功成】引灵锻体！你成功突破桎梏晋升【${newRealm.name}】！寿元威能激增！`, 'breakthrough');
         syncNpcsForCurrentState(G, true);
@@ -7582,6 +7606,13 @@
         sfx.click();
         const r = card.getAttribute('data-routine');
         G.routine = r;
+        if (r !== 'cultivate') {
+          const statusSub = document.getElementById('timeStatusSub');
+          if (statusSub && statusSub.textContent.includes('缺乏护道神丹')) {
+            const rName = card.querySelector('.routine-name') ? card.querySelector('.routine-name').textContent.trim() : r;
+            statusSub.textContent = `已切入【${rName}】，可继续流转岁月筹备资粮`;
+          }
+        }
         saveToLocal();
         renderUI();
       };
