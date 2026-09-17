@@ -6,11 +6,11 @@
   <title>九天万界·修仙人生模拟器</title>
   <style>
     :root {
-      --bg-deep: #0b0f14;
-      --bg-card: #151d26;
+      --bg-deep: #0a0e14;
+      --bg-card: #141b24;
       --bg-card-hover: #1c2633;
-      --border-subtle: #2a3746;
-      --border-focus: #4b627a;
+      --border-subtle: #243140;
+      --border-focus: #3d5168;
       --gold-primary: #d4af37;
       --gold-light: #f7e089;
       --gold-dim: #8c7322;
@@ -41,13 +41,13 @@
       flex-direction: column;
       overflow-x: hidden;
       background-image: 
-        radial-gradient(ellipse at 15% 20%, rgba(20, 45, 65, 0.45) 0%, transparent 50%),
-        radial-gradient(ellipse at 85% 80%, rgba(35, 25, 45, 0.4) 0%, transparent 50%);
+        radial-gradient(ellipse at 15% 20%, rgba(18, 38, 56, 0.5) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 80%, rgba(38, 24, 45, 0.45) 0%, transparent 50%);
     }
 
     /* 顶部通栏导航 */
     header {
-      background: rgba(15, 23, 32, 0.95);
+      background: rgba(14, 20, 28, 0.95);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border-subtle);
       padding: 0.75rem 1.5rem;
@@ -674,8 +674,8 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.78);
-      backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(5px);
       display: none;
       align-items: center;
       justify-content: center;
@@ -695,7 +695,7 @@
       max-width: 650px;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
       display: flex;
       flex-direction: column;
       animation: zoomIn 0.2s ease;
@@ -784,7 +784,7 @@
 
     /* 表单控件 */
     .form-group {
-      margin-bottom: 1rem;
+      margin-bottom: 0.95rem;
     }
 
     .form-label {
@@ -858,27 +858,27 @@
     <div class="header-quick-stats">
       <div class="quick-stat">
         <span class="label" style="color:var(--text-muted);">历法：</span>
-        <span class="val" id="topTimeDisplay">天元9427年 · 7月</span>
+        <span class="val" id="topTimeDisplay">--</span>
       </div>
       <div class="quick-stat">
         <span class="label" style="color:var(--text-muted);">寿元：</span>
-        <span class="val" id="topAgeDisplay">26 / 82 岁</span>
+        <span class="val" id="topAgeDisplay">--</span>
       </div>
       <div class="quick-stat">
         <span class="label" style="color:var(--text-muted);">灵石：</span>
-        <span class="val" id="topStonesDisplay" style="color:#67e8f9;">11 块</span>
+        <span class="val" id="topStonesDisplay" style="color:#67e8f9;">0 块</span>
       </div>
       <div class="quick-stat">
         <span class="label" style="color:var(--text-muted);">银两：</span>
-        <span class="val" id="topSilverDisplay" style="color:#e2e8f0;">34 两</span>
+        <span class="val" id="topSilverDisplay" style="color:#e2e8f0;">0 两</span>
       </div>
     </div>
 
     <div class="header-actions">
       <button class="btn" id="btnAudioToggle" title="音效开关">🔊 音效: 开</button>
-      <button class="btn" id="btnSaveGame" title="导出或保存存档">💾 存档</button>
-      <button class="btn" id="btnLoadGame" title="载入存档">📂 读档</button>
-      <button class="btn btn-cinnabar" id="btnRestart" title="重塑肉身轮回">🔄 重生</button>
+      <button class="btn" id="btnSaveGame" title="导出存档天机码">💾 备份存档</button>
+      <button class="btn" id="btnLoadGame" title="导入存档天机码">📂 导入存档</button>
+      <button class="btn btn-cinnabar" id="btnResetAll" title="清空本地所有数据并重新创建角色">🗑️ 抹除此世</button>
     </div>
   </header>
 
@@ -894,11 +894,11 @@
       <div class="panel-body">
         
         <div class="char-profile">
-          <div class="char-name" id="charName">临川</div>
+          <div class="char-name" id="charName">未入道途</div>
           <div class="char-badge-row">
-            <span class="badge badge-realm" id="badgeRealm">炼气二层</span>
-            <span class="badge badge-root" id="badgeRoot">木水土三灵根</span>
-            <span class="badge" id="badgeIdentity">栖霞镇散修</span>
+            <span class="badge badge-realm" id="badgeRealm">凡人</span>
+            <span class="badge badge-root" id="badgeRoot">灵根未辨</span>
+            <span class="badge" id="badgeIdentity">凡俗平民</span>
           </div>
         </div>
 
@@ -906,41 +906,41 @@
         <div class="stat-bar-group">
           <div class="bar-row">
             <div class="bar-label-val">
-              <span>修为关隘 (<span id="expVal">35</span>/100)</span>
-              <span id="breakthroughProb" style="color:var(--gold-primary);">突破率: 45%</span>
+              <span>修为关隘 (<span id="expVal">0</span>/<span id="maxExpVal">100</span>)</span>
+              <span id="breakthroughProb" style="color:var(--gold-primary);">突破把握: 0%</span>
             </div>
             <div class="progress-track">
-              <div class="progress-fill fill-exp" id="barExp" style="width: 35%;"></div>
+              <div class="progress-fill fill-exp" id="barExp" style="width: 0%;"></div>
             </div>
           </div>
 
           <div class="bar-row">
             <div class="bar-label-val">
-              <span>气血体魄 (<span id="hpVal">85</span>/<span id="maxHpVal">100</span>)</span>
-              <span id="hpState" style="color:var(--text-muted);">气血平稳</span>
+              <span>气血体魄 (<span id="hpVal">0</span>/<span id="maxHpVal">100</span>)</span>
+              <span id="hpState" style="color:var(--text-muted);">气血如常</span>
             </div>
             <div class="progress-track">
-              <div class="progress-fill fill-hp" id="barHp" style="width: 85%;"></div>
+              <div class="progress-fill fill-hp" id="barHp" style="width: 100%;"></div>
             </div>
           </div>
 
           <div class="bar-row">
             <div class="bar-label-val">
-              <span>丹田灵力 (<span id="mpVal">45</span>/<span id="maxMpVal">60</span>)</span>
-              <span id="mpState" style="color:var(--ethereal-blue);">木灵清气</span>
+              <span>丹田灵力 (<span id="mpVal">0</span>/<span id="maxMpVal">0</span>)</span>
+              <span id="mpState" style="color:var(--ethereal-blue);">灵息微茫</span>
             </div>
             <div class="progress-track">
-              <div class="progress-fill fill-mp" id="barMp" style="width: 75%;"></div>
+              <div class="progress-fill fill-mp" id="barMp" style="width: 0%;"></div>
             </div>
           </div>
 
           <div class="bar-row">
             <div class="bar-label-val">
-              <span>残存寿元 (<span id="ageVal">26</span>/<span id="maxAgeVal">82</span> 岁)</span>
-              <span id="lifePercent" style="color:var(--text-muted);">青壮之期</span>
+              <span>残存寿元 (<span id="ageVal">0</span>/<span id="maxAgeVal">80</span> 岁)</span>
+              <span id="lifePercent" style="color:var(--text-muted);">寿数天定</span>
             </div>
             <div class="progress-track">
-              <div class="progress-fill fill-life" id="barLife" style="width: 31%;"></div>
+              <div class="progress-fill fill-life" id="barLife" style="width: 20%;"></div>
             </div>
           </div>
         </div>
@@ -949,19 +949,19 @@
         <div class="attr-grid">
           <div class="attr-item">
             <span class="attr-k">体魄</span>
-            <span class="attr-v" id="attrPhy">40 (凡骨)</span>
+            <span class="attr-v" id="attrPhy">--</span>
           </div>
           <div class="attr-item">
             <span class="attr-k">神魂</span>
-            <span class="attr-v" id="attrSoul">45 (凝固)</span>
+            <span class="attr-v" id="attrSoul">--</span>
           </div>
           <div class="attr-item">
             <span class="attr-k">悟性</span>
-            <span class="attr-v" id="attrCom">42 (中平)</span>
+            <span class="attr-v" id="attrCom">--</span>
           </div>
           <div class="attr-item">
             <span class="attr-k">心性</span>
-            <span class="attr-v" id="attrMind">谨小慎微</span>
+            <span class="attr-v" id="attrMind">--</span>
           </div>
           <div class="attr-item">
             <span class="attr-k">气运</span>
@@ -969,7 +969,7 @@
           </div>
           <div class="attr-item">
             <span class="attr-k">因果业力</span>
-            <span class="attr-v" id="attrKarma">浅薄 (3)</span>
+            <span class="attr-v" id="attrKarma">浅薄 (0)</span>
           </div>
         </div>
 
@@ -977,10 +977,10 @@
         <div class="info-block">
           <div class="info-block-title">
             <span>📖 主修功法</span>
-            <span id="techGrade" style="font-size:0.75rem; color:#facc15;">黄级下品</span>
+            <span id="techGrade" style="font-size:0.75rem; color:#facc15;">--</span>
           </div>
-          <div id="techName" style="font-weight:600; margin-bottom:0.25rem;">《长春引气诀》残篇</div>
-          <div id="techDesc" style="font-size:0.75rem; color:var(--text-muted);">录有炼气前三层吐纳法，气机偶有涩滞。每月静修灵气+8。</div>
+          <div id="techName" style="font-weight:600; margin-bottom:0.25rem;">暂无功法</div>
+          <div id="techDesc" style="font-size:0.75rem; color:var(--text-muted);">尚未踏入宗门或获得吐纳真诀。</div>
         </div>
 
         <!-- 当前道途与声望 -->
@@ -989,10 +989,10 @@
             <span>🧭 道途与声名</span>
           </div>
           <div style="font-size:0.8rem; margin-bottom:0.2rem;">
-            当前道途：<span id="daoName" style="color:var(--gold-light);">求存求稳</span>
+            当前道途：<span id="daoName" style="color:var(--gold-light);">求索未明</span>
           </div>
           <div style="font-size:0.78rem; color:var(--text-muted);">
-            区域声望：<span id="repName">栖霞镇 (6) · 平平无奇采药客</span>
+            区域声望：<span id="repName">无名之辈 (0)</span>
           </div>
         </div>
 
@@ -1006,7 +1006,7 @@
       <div class="story-log-box">
         <div class="story-log-header">
           <span>📜 天地元黄 · 岁月沉浮录</span>
-          <span id="currentLocTag">📍 当前所在：栖霞镇 · 青石巷柴房</span>
+          <span id="currentLocTag">📍 当前所在：天地凡尘</span>
         </div>
         <div class="story-log-content" id="storyLogContent">
           <!-- 动态日志条目 -->
@@ -1016,7 +1016,7 @@
       <!-- 突发奇遇 / 抉择卡片 (若无则隐藏) -->
       <div class="event-card" id="eventCard">
         <div class="event-title" id="eventTitle">⚡ 遭遇变故</div>
-        <div class="event-desc" id="eventDesc">你在云林山脉山崖边发现了一株散发微弱赤芒的灵草，但崖缝阴影中正盘踞着一双猩红的蛇瞳……</div>
+        <div class="event-desc" id="eventDesc">--</div>
         <div class="event-choices" id="eventChoices">
           <!-- 选项按钮由JS渲染 -->
         </div>
@@ -1034,7 +1034,7 @@
             <div class="action-card" id="actCultivate">
               <div class="action-icon">🧘‍♂️</div>
               <div class="action-name">闭关吐纳</div>
-              <div class="action-desc">在柴房静坐吞吐天地微弱灵气，稳固境界，增加修为关隘进度。</div>
+              <div class="action-desc">静坐吞吐天地微弱灵气，稳固境界，增加修为关隘进度。</div>
               <div class="action-cost">消耗：时间1月</div>
             </div>
 
@@ -1048,35 +1048,35 @@
             <div class="action-card" id="actGatherHerbs">
               <div class="action-icon">🌿</div>
               <div class="action-name">山野采药</div>
-              <div class="action-desc">前往云林山脉外围探寻赤血草、野山参，可能遭遇低阶野兽或同道。</div>
-              <div class="action-cost">耗费体力 / 存在遇袭风险</div>
+              <div class="action-desc">探寻深山外围峭壁与荒野，采摘灵药草木，可能遭遇野兽或同道。</div>
+              <div class="action-cost">耗费体力 / 存在遇险风险</div>
             </div>
 
             <div class="action-card" id="actExploreRuins">
               <div class="action-icon">🗺️</div>
               <div class="action-name">探幽历练</div>
-              <div class="action-desc">深入乱石窟断魂涧等凶险之地，搜寻古修洞府残迹与无主奇遇。</div>
+              <div class="action-desc">深入凶险瘴谷与古修残冢，搜寻无主遗泽，机遇与凶险并存。</div>
               <div class="action-cost">危险度：中~高</div>
             </div>
 
             <div class="action-card" id="actMarket">
               <div class="action-icon">🏛️</div>
               <div class="action-name">坊市市集</div>
-              <div class="action-desc">前往百草堂、万宝阁分号采购丹药、符箓，或在地摊碰碰运气。</div>
+              <div class="action-desc">前往修真坊市商号采购丹药、符箓，或在地摊出货兑换灵石。</div>
               <div class="action-cost">花费：灵石 / 凡银</div>
             </div>
 
             <div class="action-card" id="actWorkBounty">
               <div class="action-icon">📜</div>
               <div class="action-name">接取差事</div>
-              <div class="action-desc">替凡人镖局押镖、去陆家灵田驱虫或抄录道书，稳赚安稳钱粮。</div>
+              <div class="action-desc">帮修仙家族照看灵田、抄写道书或为凡人押镖，换取安稳资粮。</div>
               <div class="action-cost">稳定收益 / 消耗岁月</div>
             </div>
 
             <div class="action-card" id="actVisitNpc">
               <div class="action-icon">👥</div>
               <div class="action-name">交游拜访</div>
-              <div class="action-desc">寻访镇上药堂孙掌柜、房东陆执事或邻里阿牛，打探传闻，联络因果。</div>
+              <div class="action-desc">寻访熟识同道或地方主事，打探四方传闻，联络人情因果。</div>
               <div class="action-cost">增进关系 / 获悉内幕</div>
             </div>
 
@@ -1106,8 +1106,8 @@
         <!-- 标签1：储物袋 -->
         <div class="tab-pane active" id="tabInv">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-            <span style="font-size:0.8rem; color:var(--text-muted);">容量：<span id="invCount">4</span>/20</span>
-            <span style="font-size:0.8rem; color:var(--gold-light);">凡铁柴刀已佩带</span>
+            <span style="font-size:0.8rem; color:var(--text-muted);">容量：<span id="invCount">0</span>/20</span>
+            <span style="font-size:0.8rem; color:var(--gold-light);">随身行囊</span>
           </div>
           <div class="inv-list" id="invList">
             <!-- 物品动态列表 -->
@@ -1117,7 +1117,7 @@
         <!-- 标签2：因果谱 (NPC列表) -->
         <div class="tab-pane" id="tabNpc">
           <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.4rem;">
-            相逢即是因果，此界生灵各有命数：
+            相逢即是因果，世间生灵各有命运：
           </div>
           <div id="npcList" style="display:flex; flex-direction:column; gap:0.6rem;">
             <!-- NPC 动态列表 -->
@@ -1127,7 +1127,7 @@
         <!-- 标签3：天地万界月报 -->
         <div class="tab-pane" id="tabWorld">
           <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.4rem;">
-            天地不仁，万物自化。世界不因你而存：
+            天地不仁，万物自化。世界独立运转：
           </div>
           <div id="worldNewsList" style="display:flex; flex-direction:column; gap:0.6rem;">
             <!-- 世界大势动态列表 -->
@@ -1143,12 +1143,12 @@
   <div class="modal-overlay" id="modalShop">
     <div class="modal-content">
       <div class="modal-header">
-        <div class="modal-title">🏛️ 栖霞镇坊市 · 百草堂与万宝分阁</div>
+        <div class="modal-title">🏛️ 坊市集市 · 百宝丹药阁</div>
         <button class="btn" style="padding:0.2rem 0.5rem;" onclick="closeModal('modalShop')">✕</button>
       </div>
       <div class="modal-body">
         <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
-          药香扑鼻，柜台后孙掌柜正拨弄着算盘，架上陈列着散修日常所需之物。
+          药香扑鼻，柜台后主事正拨弄着铜算盘，货架上陈列着修士与凡人所需之物。
         </p>
         <div class="inv-list" id="shopItemList">
           <!-- 货架商品 -->
@@ -1156,7 +1156,7 @@
       </div>
       <div class="modal-footer">
         <span style="font-size:0.85rem; margin-right:auto; color:var(--gold-light);">
-          你当前持有：<span id="shopUserStones">11</span> 灵石，<span id="shopUserSilver">34</span> 两凡银
+          你当前持有：<span id="shopUserStones">0</span> 灵石，<span id="shopUserSilver">0</span> 两凡银
         </span>
         <button class="btn" onclick="closeModal('modalShop')">离开坊市</button>
       </div>
@@ -1172,23 +1172,23 @@
       <div class="modal-body">
         <div class="combat-arena">
           <div class="combat-combatant">
-            <div class="combat-name" id="combatPlayerName" style="color:var(--gold-light);">临川</div>
-            <div style="font-size:0.8rem; color:var(--text-muted);" id="combatPlayerRealm">炼气二层</div>
+            <div class="combat-name" id="combatPlayerName" style="color:var(--gold-light);">修士</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);" id="combatPlayerRealm">凡人</div>
             <div class="progress-track" style="margin-top:0.3rem;">
               <div class="progress-fill fill-hp" id="combatPlayerHpBar" style="width:100%;"></div>
             </div>
-            <div style="font-size:0.75rem;" id="combatPlayerHpText">气血: 85/100</div>
+            <div style="font-size:0.75rem;" id="combatPlayerHpText">气血: 0/0</div>
           </div>
 
           <div class="combat-vs">VS</div>
 
           <div class="combat-combatant">
-            <div class="combat-name" id="combatEnemyName" style="color:#f87171;">狡黠的劫道散修</div>
-            <div style="font-size:0.8rem; color:var(--text-muted);" id="combatEnemyRealm">炼气二层</div>
+            <div class="combat-name" id="combatEnemyName" style="color:#f87171;">强敌</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);" id="combatEnemyRealm">炼气一层</div>
             <div class="progress-track" style="margin-top:0.3rem;">
               <div class="progress-fill fill-hp" id="combatEnemyHpBar" style="width:100%; background:#ef4444;"></div>
             </div>
-            <div style="font-size:0.75rem;" id="combatEnemyHpText">气血: 70/70</div>
+            <div style="font-size:0.75rem;" id="combatEnemyHpText">气血: 0/0</div>
           </div>
         </div>
 
@@ -1197,9 +1197,9 @@
         </div>
 
         <div class="combat-actions-bar" id="combatActionsBar">
-          <button class="btn btn-gold" id="btnCombatAttack">🗡️ 挥刀劈砍</button>
-          <button class="btn btn-jade" id="btnCombatCast">✨ 引气术轰击</button>
-          <button class="btn" id="btnCombatItem">💊 撒毒粉/吞药</button>
+          <button class="btn btn-gold" id="btnCombatAttack">🗡️ 近身搏杀</button>
+          <button class="btn btn-jade" id="btnCombatCast">✨ 运转灵息轰击</button>
+          <button class="btn" id="btnCombatItem">💊 撒药粉/吞药</button>
           <button class="btn" id="btnCombatDodge">💨 灵巧游移</button>
           <button class="btn btn-cinnabar" id="btnCombatFlee">🏃 亡命遁逃</button>
         </div>
@@ -1207,47 +1207,89 @@
     </div>
   </div>
 
-  <!-- 模态框：重塑肉身 / 新角色创建 -->
+  <!-- 模态框：初入凡尘 · 角色创建阶段 (首启强制创建，无默认值) -->
   <div class="modal-overlay" id="modalCreation">
-    <div class="modal-content" style="max-width:550px;">
+    <div class="modal-content" style="max-width:580px;">
       <div class="modal-header">
-        <div class="modal-title">☯️ 轮回转世 · 重塑道胎</div>
+        <div class="modal-title">☯️ 大道初启 · 命格由天</div>
       </div>
       <div class="modal-body">
+        <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.5;">
+          天地不因你而存，生老病死各安天命。请决定你在九天万界的初始命格（所有数据纯保存在你的浏览器本地）：
+        </p>
+
         <div class="form-group">
-          <label class="form-label">道号 / 姓名：</label>
-          <input type="text" class="form-control" id="createName" value="临川" maxlength="8">
+          <label class="form-label">道号 / 姓名 <span style="color:var(--cinnabar);">*必填</span>：</label>
+          <input type="text" class="form-control" id="createName" placeholder="输入姓名或道号，亦可点击下方【摇签】随机" maxlength="8">
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+          <div class="form-group">
+            <label class="form-label">性别：</label>
+            <select class="form-control" id="createGender">
+              <option value="男">男</option>
+              <option value="女">女</option>
+              <option value="阴阳莫测">阴阳莫测 (天生异相)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">初始骨龄：</label>
+            <select class="form-control" id="createAge">
+              <option value="16">16 岁 (少年入道)</option>
+              <option value="18">18 岁 (风华正茂)</option>
+              <option value="22">22 岁 (青年自立)</option>
+              <option value="26">26 岁 (涉世渐深)</option>
+              <option value="30">30 岁 (而立向道)</option>
+            </select>
+          </div>
         </div>
 
         <div class="form-group">
           <label class="form-label">出身来历：</label>
           <select class="form-control" id="createOrigin">
-            <option value="scavenger">底层采药散修 (带生锈柴刀、熟识山野药草)</option>
-            <option value="clan_decline">落魄世家后裔 (初始灵石较多、通晓修真常识)</option>
-            <option value="hunter">凡俗猎户遗孤 (体魄强健、感知敏锐、耐寒热)</option>
-            <option value="sect_slave">宗门外门杂役 (懂低阶药田打理、心性质朴)</option>
-            <option value="merchant">凡间药行少东 (通晓商道、碎银充足、巧舌如簧)</option>
+            <option value="scavenger">底层采药散修 (携带防身柴刀与驱兽粉，熟稔山野药草)</option>
+            <option value="clan_decline">落魄世家余脉 (初始携带少量灵石、通晓修真常识)</option>
+            <option value="sect_slave">宗门外门杂役 (擅长灵田杂务，心性淳朴坚忍)</option>
+            <option value="hunter">凡俗猎户遗孤 (体魄强健，耐苦寒，感知灵敏)</option>
+            <option value="merchant">凡间药行少东 (碎银充盈，通晓商贾买卖之术)</option>
+            <option value="orphan">市井流浪孤儿 (性格谨慎狡黠，保命直觉极强)</option>
+            <option value="scholar">落第寒门书生 (悟性出众，神魂清澈，体魄偏弱)</option>
           </select>
         </div>
 
         <div class="form-group">
           <label class="form-label">先天灵根：</label>
           <select class="form-control" id="createRoot">
-            <option value="three">木水土三灵根 (中庸之资，进境较慢，稳打稳扎)</option>
-            <option value="double">水木双灵根 (道资聪颖，吐纳迅速，灵气纯净)</option>
-            <option value="four">四灵根杂品 (灵根杂驳，难破关隘，但坚韧非常)</option>
-            <option value="single">天火单灵根 (万中无一，天之骄子，但招人暗算)</option>
+            <option value="three">木水土三灵根 (中庸之资，进境平稳，道基扎实)</option>
+            <option value="double">水木双灵根 (道资出众，吐纳迅速，灵气精纯)</option>
+            <option value="four">四灵根杂品 (灵根杂驳，修行缓慢，但坚韧如铁)</option>
+            <option value="five">伪五灵根 (凡胎逆仙，修行极难，需大机缘)</option>
+            <option value="single">天火单灵根 (天之骄子，灵息狂暴，引人侧目)</option>
+            <option value="mutation">变异风雷灵根 (异禀神力，杀伐刚烈，神通威猛)</option>
           </select>
         </div>
 
         <div class="form-group">
           <label class="form-label">天命特质：</label>
           <select class="form-control" id="createTalent">
-            <option value="perception">感知敏锐 (探索易发觉机缘与危险，身法出众)</option>
-            <option value="comprehension">悟性超凡 (研读功法破关更顺，领悟道途快)</option>
-            <option value="physique">龙精虎猛 (气血体魄上限极高，防御坚实)</option>
-            <option value="fortune">福缘深厚 (隐秘气运极高，绝处逢生概率大)</option>
-            <option value="calm">心如古井 (突破不易走火入魔，不易中幻术)</option>
+            <option value="perception">感知敏锐 (探险易觅机缘与危险，身法出众)</option>
+            <option value="comprehension">悟性绝伦 (参悟古经与突破瓶颈把握大增)</option>
+            <option value="physique">龙精虎猛 (气血体魄上限极高，御敌强韧)</option>
+            <option value="soul">神魂清澈 (灵息深厚，不易受反噬与神识震慑)</option>
+            <option value="fortune">福缘深厚 (隐秘气运极高，每多逢凶化吉)</option>
+            <option value="calm">心如止水 (突破不易走火入魔，道心澄明)</option>
+            <option value="ordinary">平平无奇 (大道至简，无初始偏颇，全凭后天造化)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">初始心愿道途：</label>
+          <select class="form-control" id="createDao">
+            <option value="求稳长生">求稳长生 (谨小慎微，避祸远祸，只争万载寿元)</option>
+            <option value="逆天杀伐">逆天杀伐 (与天争命，一剑荡尽不平路)</option>
+            <option value="富甲仙界">富甲仙界 (聚八方灵物，以万贯灵石叩仙门)</option>
+            <option value="随心随性">随心随性 (游戏红尘，行止由心，不拘正邪)</option>
           </select>
         </div>
       </div>
@@ -1258,29 +1300,29 @@
     </div>
   </div>
 
-  <!-- 模态框：存档 / 读档导出 -->
+  <!-- 模态框：本地存档备份与导入 -->
   <div class="modal-overlay" id="modalSaveLoad">
     <div class="modal-content">
       <div class="modal-header">
-        <div class="modal-title" id="saveLoadTitle">💾 仙缘天机录 (存档/读档)</div>
+        <div class="modal-title" id="saveLoadTitle">💾 仙缘天机录 (本地备份/迁移)</div>
         <button class="btn" style="padding:0.2rem 0.5rem;" onclick="closeModal('modalSaveLoad')">✕</button>
       </div>
       <div class="modal-body">
         <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.75rem;">
-          世界自动保存在本命法宝（浏览器本地缓存）。你亦可复制或粘贴存档天机码：
+          所有游戏数据实时保存在当前浏览器本地。如需更换手机或浏览器，可复制下方天机码在另一台设备粘贴恢复：
         </p>
-        <textarea class="form-control" id="saveLoadCode" rows="6" placeholder="在此粘贴存档码，或点击下方复制存档码..."></textarea>
+        <textarea class="form-control" id="saveLoadCode" rows="6" placeholder="在此粘贴存档天机码，或点击下方复制..."></textarea>
       </div>
       <div class="modal-footer">
-        <button class="btn" id="btnCopySaveCode">📋 复制当前存档码</button>
-        <button class="btn btn-gold" id="btnApplySaveCode">📥 导入此天机码并恢复</button>
+        <button class="btn" id="btnCopySaveCode">📋 复制存档天机码</button>
+        <button class="btn btn-gold" id="btnApplySaveCode">📥 导入此码并恢复</button>
       </div>
     </div>
   </div>
 
   <script>
     /* ==========================================================================
-       音效引擎 (Web Audio API 纯程序合成，无需任何外部音频文件)
+       纯浏览器音效引擎 (Web Audio API 纯程序合成)
        ========================================================================== */
     class SoundFX {
       constructor() {
@@ -1311,9 +1353,7 @@
         osc.start();
         osc.stop(this.ctx.currentTime + duration);
       }
-      click() {
-        this.playNote(520, 'triangle', 0.08, 0.08);
-      }
+      click() { this.playNote(520, 'triangle', 0.08, 0.08); }
       success() {
         this.playNote(440, 'sine', 0.4, 0.15);
         setTimeout(() => this.playNote(659.25, 'sine', 0.5, 0.18), 120);
@@ -1323,9 +1363,7 @@
           setTimeout(() => this.playNote(f, 'sine', 0.9, 0.2), i * 150);
         });
       }
-      fail() {
-        this.playNote(180, 'sawtooth', 0.35, 0.12);
-      }
+      fail() { this.playNote(180, 'sawtooth', 0.35, 0.12); }
       slash() {
         this.playNote(300, 'square', 0.1, 0.1);
         setTimeout(() => this.playNote(120, 'sawtooth', 0.15, 0.15), 50);
@@ -1338,7 +1376,7 @@
     const sfx = new SoundFX();
 
     /* ==========================================================================
-       世界常数与境界定义
+       世界常数与境界数据库
        ========================================================================== */
     const REALMS = [
       { name: "凡人", maxExp: 30, baseHp: 80, baseMp: 0, lifeBonus: 0, power: 10 },
@@ -1361,179 +1399,144 @@
 
     const ITEMS_DB = {
       herb_red: { id: "herb_red", name: "赤血草", type: "herb", desc: "通体微红的一阶灵草，百草堂紧俏收作物。", price: 1, silver: 0, heal: 0 },
-      vine_gold: { id: "vine_gold", name: "百年金钱藤", type: "herb", desc: "深山悬崖所采，藤如铜钱，炼制聚气丹主材。", price: 3, silver: 0, heal: 0 },
-      pill_blood: { id: "pill_blood", name: "凝血散", type: "pill", desc: "凡俗与散修常用的伤药，止血生肌，恢复40点气血。", price: 0, silver: 5, heal: 40 },
-      pill_qi: { id: "pill_qi", name: "聚气丹", type: "pill", desc: "一阶中品灵丹，服用可增加40点修为，提升冲关概率。", price: 3, silver: 0, exp: 40 },
-      pill_detox: { id: "pill_detox", name: "避毒丸", type: "pill", desc: "以雄黄与灵草炼制，可解低阶瘴气蛇毒。", price: 1, silver: 0, buff: "antipoison" },
-      powder_beast: { id: "powder_beast", name: "粗制驱兽粉", type: "usable", desc: "散发刺鼻硫磺药气，可惊退普通野兽与一阶低级妖蛇。", price: 0, silver: 3 },
-      sword_rust: { id: "sword_rust", name: "淬灵断刃柴刀", type: "weapon", desc: "磨得锋薄的精铁柴刀，曾浸泡灵泉水，锋锐微含木气。", price: 1, power: 12 },
-      sword_steel: { id: "sword_steel", name: "青钢长剑", type: "weapon", desc: "百宝阁精锻下品法器，锋芒凌厉，提升攻杀威能。", price: 6, power: 35 },
-      shield_wood: { id: "shield_wood", name: "青玄木盾", type: "armor", desc: "以百年沉木刻录避矢阵，可抵御低阶法术轰击。", price: 8, def: 20 },
-      scroll_chun: { id: "scroll_chun", name: "《长春引气残篇》", type: "book", desc: "粗糙兽皮刻录的残本，行气略有涩滞。" }
+      vine_gold: { id: "vine_gold", name: "百年金钱藤", type: "herb", desc: "深山悬崖所采，炼制聚气丹与筑基主材。", price: 3, silver: 0, heal: 0 },
+      pill_blood: { id: "pill_blood", name: "凝血散", type: "pill", desc: "散修常用的外伤良药，止血生肌，恢复40点气血。", price: 0, silver: 5, heal: 40 },
+      pill_qi: { id: "pill_qi", name: "聚气丹", type: "pill", desc: "一阶灵丹，服用可直接增加40点修为进度。", price: 3, silver: 0, exp: 40 },
+      pill_detox: { id: "pill_detox", name: "避毒丸", type: "pill", desc: "以灵草与雄黄所炼，可解瘴气与低阶蛇毒。", price: 1, silver: 0, buff: "antipoison" },
+      powder_beast: { id: "powder_beast", name: "粗制驱兽粉", type: "usable", desc: "散发刺鼻药气，可惊退普通野兽与低阶妖蛇。", price: 0, silver: 3 },
+      sword_rust: { id: "sword_rust", name: "防身短刃柴刀", type: "weapon", desc: "常年劈柴攀山的精铁小刀，虽无品阶却轻便趁手。", price: 1, power: 12 },
+      sword_steel: { id: "sword_steel", name: "青钢长剑", type: "weapon", desc: "坊市精锻下品法器，锋芒凌厉，提升攻杀威能。", price: 6, power: 35 },
+      shield_wood: { id: "shield_wood", name: "青玄木盾", type: "armor", desc: "刻录避矢阵的百年沉木盾牌，可抵御低阶法术。", price: 8, def: 20 },
+      scroll_chun: { id: "scroll_chun", name: "《引气吐纳残卷》", type: "book", desc: "散修入门吐纳心法，静修可稳步纳气。" }
     };
 
     /* ==========================================================================
-       玩家初始状态（严格还原第1轮的临川）
+       本地数据存储 (100% 存在浏览器 LocalStorage)
        ========================================================================== */
-    function getInitialState() {
-      return {
-        name: "临川",
-        gender: "男",
-        ageYears: 26,
-        ageMonths: 7,
-        maxAge: 82,
-        realmIndex: 2, // 炼气二层
-        exp: 35,
-        hp: 85,
-        maxHp: 100,
-        mp: 45,
-        maxMp: 60,
-        stones: 11,
-        silver: 34,
-        root: "木水土三灵根",
-        talent: "感知敏锐",
-        temperament: "谨小慎微",
-        identity: "栖霞镇散修",
-        location: "栖霞镇 · 青石巷柴房",
-        stats: {
-          phy: 40,
-          soul: 45,
-          com: 42,
-          karma: 3,
-          fortune: "？？？",
-          reputation: 6
-        },
-        technique: {
-          name: "《长春引气诀》残篇",
-          grade: "黄级下品",
-          desc: "录有炼气前三层吐纳法，气机偶有涩滞。每月静修灵气+8。",
-          bonusExp: 8
-        },
-        dao: "求存求稳",
-        inventory: [
-          { ...ITEMS_DB.sword_rust, count: 1 },
-          { ...ITEMS_DB.powder_beast, count: 2 },
-          { ...ITEMS_DB.pill_blood, count: 2 },
-          { ...ITEMS_DB.herb_red, count: 1 }
-        ],
-        npcs: [
-          { id: "sun", name: "孙掌柜", title: "百草堂主事", realm: "炼气四层", rel: 20, desc: "精明势利，但收药规矩守信。", loc: "百草堂" },
-          { id: "aniu", name: "哑巴阿牛", title: "青石巷邻里", realm: "凡人", rel: 70, desc: "天生失语，质朴本分，常照看门扉。", loc: "青石巷" },
-          { id: "chen_san", name: "陈三", title: "坊市泼皮散修", realm: "炼气二层", rel: -15, desc: "眼神阴鸷，常在茶摊窥探进出散修底细。", loc: "散修茶摊" },
-          { id: "lu_manager", name: "陆清平", title: "陆家外执事", realm: "炼气六层", rel: 5, desc: "高高在上，唯重灵石例钱。", loc: "陆家别院" }
-        ],
-        worldLogs: [
-          { year: 9427, month: 7, text: "清晨推开柴扉，昨夜行气强冲第三层关隘失败留下的胸口隐痛已平复。屋舍例钱还剩两日，前路多艰。", type: "fortune" }
-        ],
-        worldNews: [
-          "【宗门】传闻云林山脉深处有低沉古兽吼声，苍梧陆家数位筑基客卿已动身探查。",
-          "【市肆】百草堂急收赤血草与金钱藤，一阶灵药行市坚挺。",
-          "【暗流】坊市近郊黑水滩有几名散修火并，据闻有一具身首异处的尸体被丢弃在乱葬岗。"
-        ],
-        activeEvent: null
-      };
+    const STORAGE_KEY = "XIUXIAN_WORLD_DATA_V1";
+
+    let G = null; // 当前运行状态，无硬编码默认值
+
+    function saveToLocal() {
+      if (!G) return;
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(G));
+      } catch (e) {
+        console.warn("Local storage save error", e);
+      }
     }
 
-    let G = getInitialState();
+    function loadFromLocal() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.name && parsed.realmIndex !== undefined) {
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.warn("Local storage load error", e);
+      }
+      return null;
+    }
+
+    function clearLocalData() {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (e) {}
+    }
 
     /* ==========================================================================
-       核心渲染与界面绑定
+       界面渲染引擎
        ========================================================================== */
     function renderUI() {
+      if (!G) return;
+
       // 顶部条
       document.getElementById('topTimeDisplay').textContent = `天元${G.year || 9427}年 · ${G.ageMonths}月`;
       document.getElementById('topAgeDisplay').textContent = `${G.ageYears} / ${G.maxAge} 岁`;
       document.getElementById('topStonesDisplay').textContent = `${G.stones} 块`;
       document.getElementById('topSilverDisplay').textContent = `${G.silver} 两`;
 
-      // 角色卡
+      // 角色信息
       document.getElementById('charName').textContent = G.name;
-      const curRealm = REALMS[G.realmIndex];
+      const curRealm = REALMS[G.realmIndex] || REALMS[0];
       document.getElementById('badgeRealm').textContent = curRealm.name;
       document.getElementById('badgeRoot').textContent = G.root;
       document.getElementById('badgeIdentity').textContent = G.identity;
 
-      // 经验条
+      // 修为与状态条
       const expPercent = Math.min(100, Math.round((G.exp / curRealm.maxExp) * 100));
       document.getElementById('expVal').textContent = G.exp;
+      document.getElementById('maxExpVal').textContent = curRealm.maxExp;
       document.getElementById('barExp').style.width = expPercent + '%';
 
-      // 突破概率简要估算
       let baseChance = Math.max(15, Math.min(85, Math.round((G.exp / curRealm.maxExp) * 55 + (G.stats.com * 0.4))));
-      if (G.exp >= curRealm.maxExp) baseChance = Math.min(90, baseChance + 25);
-      document.getElementById('breakthroughProb').textContent = `破境把握: ${baseChance}%`;
+      if (G.exp >= curRealm.maxExp) baseChance = Math.min(92, baseChance + 25);
+      document.getElementById('breakthroughProb').textContent = `突破把握: ${baseChance}%`;
 
-      // 气血
       const hpPercent = Math.min(100, Math.round((G.hp / G.maxHp) * 100));
       document.getElementById('hpVal').textContent = G.hp;
       document.getElementById('maxHpVal').textContent = G.maxHp;
       document.getElementById('barHp').style.width = hpPercent + '%';
-      document.getElementById('hpState').textContent = G.hp < 40 ? "伤势沉重" : (G.hp < 75 ? "略带气血虚浮" : "气血充盈");
+      document.getElementById('hpState').textContent = G.hp < 40 ? "气血衰败" : (G.hp < 75 ? "略带气滞" : "气血充盈");
 
-      // 灵力
-      const mpPercent = Math.min(100, Math.round((G.mp / G.maxMp) * 100));
+      const mpPercent = G.maxMp > 0 ? Math.min(100, Math.round((G.mp / G.maxMp) * 100)) : 0;
       document.getElementById('mpVal').textContent = G.mp;
       document.getElementById('maxMpVal').textContent = G.maxMp;
       document.getElementById('barMp').style.width = mpPercent + '%';
+      document.getElementById('mpState').textContent = G.mp > 0 ? "灵息流转" : "凡躯无灵";
 
-      // 寿元
       const lifePercent = Math.min(100, Math.round((G.ageYears / G.maxAge) * 100));
       document.getElementById('ageVal').textContent = G.ageYears;
       document.getElementById('maxAgeVal').textContent = G.maxAge;
       document.getElementById('barLife').style.width = lifePercent + '%';
-      document.getElementById('lifePercent').textContent = lifePercent > 80 ? "风烛残年" : (lifePercent > 50 ? "中年自省" : "青壮风华");
+      document.getElementById('lifePercent').textContent = lifePercent > 80 ? "大限将至" : (lifePercent > 50 ? "中年自省" : "青壮韶华");
 
-      // 属性六维
+      // 六维属性
       document.getElementById('attrPhy').textContent = `${G.stats.phy}`;
       document.getElementById('attrSoul').textContent = `${G.stats.soul}`;
       document.getElementById('attrCom').textContent = `${G.stats.com}`;
       document.getElementById('attrMind').textContent = G.temperament;
       document.getElementById('attrFortune').textContent = G.stats.fortune;
-      document.getElementById('attrKarma').textContent = `${G.stats.karma} (因果纠缠)`;
+      document.getElementById('attrKarma').textContent = `因果 (${G.stats.karma})`;
 
-      // 功法
+      // 功法与道途
       document.getElementById('techGrade').textContent = G.technique.grade;
       document.getElementById('techName').textContent = G.technique.name;
       document.getElementById('techDesc').textContent = G.technique.desc;
-
-      // 道途与声望
       document.getElementById('daoName').textContent = G.dao;
-      document.getElementById('repName').textContent = `栖霞镇 (${G.stats.reputation})`;
+      document.getElementById('repName').textContent = `${G.location.split('·')[0].trim()} (${G.stats.reputation})`;
 
-      // 位置
+      // 当前所在
       document.getElementById('currentLocTag').textContent = `📍 当前所在：${G.location}`;
 
-      // 渲染日志
+      // 各模块刷新
       renderLogs();
-
-      // 渲染背包
       renderInventory();
-
-      // 渲染NPC
       renderNpcs();
-
-      // 渲染月报
       renderWorldNews();
-
-      // 突发事件卡片
       renderEventCard();
     }
 
     function addLog(text, type = 'normal') {
-      const year = G.year || 9427;
+      if (!G) return;
       G.worldLogs.unshift({
-        year: year,
+        year: G.year || 9427,
         month: G.ageMonths,
         text: text,
         type: type
       });
       if (G.worldLogs.length > 50) G.worldLogs.pop();
+      saveToLocal();
       renderLogs();
     }
 
     function renderLogs() {
       const box = document.getElementById('storyLogContent');
       box.innerHTML = '';
+      if (!G || !G.worldLogs) return;
       G.worldLogs.forEach(log => {
         const div = document.createElement('div');
         div.className = `log-entry log-${log.type}`;
@@ -1549,8 +1552,9 @@
       const list = document.getElementById('invList');
       const countEl = document.getElementById('invCount');
       list.innerHTML = '';
-      let total = 0;
+      if (!G || !G.inventory) return;
 
+      let total = 0;
       G.inventory.forEach((item, idx) => {
         total += item.count || 1;
         const itemDiv = document.createElement('div');
@@ -1579,6 +1583,8 @@
     function renderNpcs() {
       const list = document.getElementById('npcList');
       list.innerHTML = '';
+      if (!G || !G.npcs) return;
+
       G.npcs.forEach(npc => {
         const div = document.createElement('div');
         div.className = 'npc-card';
@@ -1600,8 +1606,8 @@
           <div style="font-size:0.78rem; color:var(--text-muted);">${npc.title} · ${npc.loc}</div>
           <div style="font-size:0.75rem; color:#94a3b8;">${npc.desc}</div>
           <div class="npc-actions">
-            <button class="btn inv-btn" onclick="interactNpc('${npc.id}', 'talk')">攀谈探听</button>
-            <button class="btn inv-btn btn-gold" onclick="interactNpc('${npc.id}', 'gift')">馈赠灵物</button>
+            <button class="btn inv-btn" onclick="interactNpc('${npc.id}', 'talk')">攀谈打探</button>
+            <button class="btn inv-btn btn-gold" onclick="interactNpc('${npc.id}', 'gift')">馈赠结缘</button>
           </div>
         `;
         list.appendChild(div);
@@ -1611,6 +1617,8 @@
     function renderWorldNews() {
       const list = document.getElementById('worldNewsList');
       list.innerHTML = '';
+      if (!G || !G.worldNews) return;
+
       G.worldNews.forEach(news => {
         const div = document.createElement('div');
         div.style.background = '#0f172a';
@@ -1626,7 +1634,7 @@
 
     function renderEventCard() {
       const card = document.getElementById('eventCard');
-      if (!G.activeEvent) {
+      if (!G || !G.activeEvent) {
         card.classList.remove('active');
         return;
       }
@@ -1652,87 +1660,81 @@
     }
 
     /* ==========================================================================
-       时间推进与月度结算引擎
+       时间推进与世界自主演化
        ========================================================================== */
     function advanceMonth() {
+      if (!G) return;
       G.ageMonths++;
       if (G.ageMonths > 12) {
         G.ageMonths = 1;
         G.ageYears++;
         G.year = (G.year || 9427) + 1;
-        addLog(`岁月悠悠，又是一载冬去春来。你如今已步入 ${G.ageYears} 岁。`, 'normal');
+        addLog(`岁月悠悠，又是一载冬去春来。你如今已是 ${G.ageYears} 岁骨龄。`, 'normal');
       }
 
-      // 寿命检查
+      // 寿元大限
       if (G.ageYears >= G.maxAge) {
         sfx.fail();
-        alert(`寿元枯竭，大限已至！你坐在青石巷的旧蒲团上，气血渐冷，魂归黄泉……享年 ${G.ageYears} 岁。`);
+        alert(`【大限已至】寿元枯竭，气血渐冷……你在天地凡尘间油尽灯枯，享年 ${G.ageYears} 岁。`);
+        clearLocalData();
         openModal('modalCreation');
         return;
       }
 
-      // 灵力微量自然恢复
-      G.mp = Math.min(G.maxMp, G.mp + 15);
-      
-      // 世界独立动态演化
-      evolveWorldState();
+      // 灵力自然舒缓
+      if (G.maxMp > 0) {
+        G.mp = Math.min(G.maxMp, G.mp + 15);
+      }
 
+      evolveWorld();
+      saveToLocal();
       renderUI();
     }
 
-    function evolveWorldState() {
-      const worldPool = [
-        "【天地】苍梧道突降灵雨，周边凡间粮草大丰收，凡俗安康。",
-        "【宗门】陆家一名资质上佳的天才子弟成功开辟气海，引动陆氏高层赐下灵器。",
-        "【坊市】黑市中悄然流出一瓶中品破障丹，引得数名炼气巅峰散修暗中争抢。",
-        "【异动】云林山脉外围有散修队伍发现二阶妖熊掌痕，数家药行暂停了采药重赏。",
-        "【劫难】凡俗齐国与赵国在北境陈兵百万，修仙宗门暗中在两军挑选中意道苗。"
+    function evolveWorld() {
+      const pool = [
+        "【天地】苍梧大域忽降甘霖灵雨，凡间五谷丰登，灵田百草舒展。",
+        "【宗门】附近宗门招募新血，多名年轻修士通过考核登入仙门外院。",
+        "【坊市】坊市传出一枚上乘破障丹引得各路散修竞相竞价。",
+        "【异动】深山外围妖气偶尔起伏，凡人猎户多有暂避归家者。",
+        "【劫数】黑水荒滩一带听闻有杀人夺宝恶徒伏诛，遗物散落无踪。"
       ];
-      // 随机轮换一条新闻
-      if (Math.random() < 0.45) {
-        const chosen = worldPool[Math.floor(Math.random() * worldPool.length)];
-        G.worldNews.unshift(chosen);
+      if (Math.random() < 0.4) {
+        const item = pool[Math.floor(Math.random() * pool.length)];
+        G.worldNews.unshift(item);
         if (G.worldNews.length > 5) G.worldNews.pop();
-      }
-
-      // NPC 自主人生演变
-      if (Math.random() < 0.25) {
-        const chen = G.npcs.find(n => n.id === "chen_san");
-        if (chen && Math.random() < 0.5) {
-          chen.desc = "听说上月在暗巷与人分赃不均被削掉了半只耳朵，行事越发阴狠。";
-        }
       }
     }
 
     /* ==========================================================================
-       玩家主要行动处理
+       玩家常规行动处理
        ========================================================================== */
-    // 1. 闭关吐纳
     document.getElementById('actCultivate').onclick = () => {
       sfx.click();
+      if (!G) return;
       if (G.activeEvent) {
-        alert("眼前尚有突发因果未了，无法静心闭关！");
+        alert("眼前尚有突发因果未决，无法入定！");
         return;
       }
-      const curRealm = REALMS[G.realmIndex];
-      const baseGain = (G.technique.bonusExp || 8) + Math.floor(G.stats.com * 0.15);
-      G.exp = Math.min(curRealm.maxExp * 1.5, G.exp + baseGain);
-      
-      let extraText = "";
+      const curRealm = REALMS[G.realmIndex] || REALMS[0];
+      const gain = (G.technique.bonusExp || 6) + Math.floor(G.stats.com * 0.15);
+      G.exp = Math.min(curRealm.maxExp * 1.5, G.exp + gain);
+
+      let hint = "";
       if (Math.random() < 0.2) {
         G.stats.com += 1;
-        extraText = "吐纳之间隐有所悟，悟性微增。";
+        hint = "心有所悟，悟性微增。";
       }
-      addLog(`你在柴房闭关吐纳整月，依《长春引气诀》引气归丹田，修为增加 ${baseGain} 点。${extraText}`, 'normal');
+      addLog(`你闭门静心吐纳整月，引气沉入丹田，修为增加 ${gain} 点。${hint}`, 'normal');
       advanceMonth();
     };
 
-    // 2. 破境冲关
     document.getElementById('actBreakthrough').onclick = () => {
       sfx.click();
-      const curRealm = REALMS[G.realmIndex];
+      if (!G) return;
+      const curRealm = REALMS[G.realmIndex] || REALMS[0];
       if (G.realmIndex >= REALMS.length - 1) {
-        alert("已达目前推演之极境，需寻觅更高阶古经！");
+        alert("已达目前推演极境，需更高阶功法传承！");
         return;
       }
 
@@ -1740,9 +1742,7 @@
       let chance = Math.max(15, Math.min(85, Math.round(ratio * 55 + (G.stats.com * 0.35))));
       if (G.exp >= curRealm.maxExp) chance = Math.min(92, chance + 25);
 
-      const roll = Math.random() * 100;
-      if (roll < chance) {
-        // 成功突破
+      if (Math.random() * 100 < chance) {
         sfx.breakthrough();
         G.realmIndex++;
         const nextRealm = REALMS[G.realmIndex];
@@ -1752,165 +1752,149 @@
         G.mp = G.maxMp;
         G.maxAge += nextRealm.lifeBonus;
         G.exp = 0;
-        G.stats.reputation += 8;
-        addLog(`【天道轰鸣】体内灵力如惊雷奔涌！你势如破竹冲破关隘，成功晋入【${nextRealm.name}】！寿元大增，气血澎湃！`, 'breakthrough');
+        G.stats.reputation += 10;
+        addLog(`【突破破境】体内灵息如江河奔涌冲破穴窍！你成功晋入【${nextRealm.name}】！寿元威能大增！`, 'breakthrough');
       } else {
-        // 突破失败
         sfx.fail();
-        const damage = Math.floor(G.maxHp * 0.25);
-        G.hp = Math.max(15, G.hp - damage);
-        G.exp = Math.max(0, Math.floor(G.exp * 0.8));
-        addLog(`【冲关受挫】行气至关键穴窍时灵力逆乱反噬，胸口气血翻腾，受到 ${damage} 点暗伤反噬！需静养化解。`, 'danger');
+        const dmg = Math.floor(G.maxHp * 0.25);
+        G.hp = Math.max(10, G.hp - dmg);
+        G.exp = Math.max(0, Math.floor(G.exp * 0.75));
+        addLog(`【冲关受挫】行气至关隘时气机逆乱反噬，受到 ${dmg} 点内伤，需好生调理！`, 'danger');
       }
       advanceMonth();
     };
 
-    // 3. 山野采药
     document.getElementById('actGatherHerbs').onclick = () => {
       sfx.click();
+      if (!G) return;
       if (G.activeEvent) {
-        alert("请先处置眼前的突发境遇！");
+        alert("请先处置当下的突发境遇！");
         return;
       }
-      G.location = "云林山脉外围";
-
-      // 概率触发突发事件，否则正常采摘
-      const roll = Math.random();
-      if (roll < 0.45) {
-        // 正常采集
-        const gotHerb = Math.random() < 0.6 ? ITEMS_DB.herb_red : ITEMS_DB.powder_beast;
-        addItemToInv(gotHerb, 1);
+      const r = Math.random();
+      if (r < 0.5) {
+        const item = Math.random() < 0.6 ? ITEMS_DB.herb_red : ITEMS_DB.powder_beast;
+        addItemToInv(item, 1);
         G.silver += 2;
-        addLog(`你背负药篓攀爬云林外围峭壁，寻得【${gotHerb.name}】一株，并采摘凡品草药换得纹银两两。山风吹拂，略有收获。`, 'fortune');
+        addLog(`你翻山越岭，在荒野石缝中寻获一株【${item.name}】，换得碎银二两。`, 'fortune');
         advanceMonth();
-      } else if (roll < 0.8) {
-        // 触发遭遇选择
+      } else if (r < 0.8) {
         triggerHerbEncounterEvent();
       } else {
-        // 遭遇劫道敌人战斗
         startCombat({
-          name: "狡黠的蒙面散修",
-          realm: "炼气二层",
-          hp: 75,
-          maxHp: 75,
-          atk: 14,
-          loot: { stones: 2, silver: 8, item: ITEMS_DB.herb_red }
+          name: "狡猾的夺宝散修",
+          realm: "炼气一层",
+          hp: 65,
+          maxHp: 65,
+          atk: 12,
+          loot: { stones: 1, silver: 6, item: ITEMS_DB.herb_red }
         });
       }
     };
 
-    // 4. 探幽历练 (断魂涧等)
     document.getElementById('actExploreRuins').onclick = () => {
       sfx.click();
-      G.location = "乱石窟 · 断魂涧";
-      const roll = Math.random();
-      if (roll < 0.4) {
-        // 遇险负伤或退走
+      if (!G) return;
+      const r = Math.random();
+      if (r < 0.4) {
         const dmg = 20;
         G.hp = Math.max(10, G.hp - dmg);
-        addLog(`你涉足断魂涧阴障之地，古洞深邃，不幸被微弱残阵禁制扫中，损失 ${dmg} 点气血，只得掩面退走。`, 'danger');
+        addLog(`你探寻深山古洞，不慎触及微弱残存阵纹，气血受损 ${dmg} 点，只得退避。`, 'danger');
         advanceMonth();
-      } else if (roll < 0.75) {
-        // 获得珍贵奇遇机缘
+      } else if (r < 0.75) {
         sfx.success();
         addItemToInv(ITEMS_DB.vine_gold, 1);
-        G.stones += 3;
+        G.stones += 2;
         G.exp += 25;
-        addLog(`【绝壁机缘】在断魂涧一处倾颓古修残墓前，你凭借敏锐直觉避开陷阱，采得一株【百年金钱藤】，并在石匣中拾得下品灵石 3 块！`, 'fortune');
+        addLog(`【绝崖奇遇】在古修石刻旁避开机关，采得【百年金钱藤】，并在瓦砾中寻得下品灵石 2 块！`, 'fortune');
         advanceMonth();
       } else {
-        // 遭遇二阶低级妖狼
         startCombat({
-          name: "幽林青目妖狼",
-          realm: "一阶巅峰妖兽",
-          hp: 110,
-          maxHp: 110,
-          atk: 18,
-          loot: { stones: 4, silver: 15, item: ITEMS_DB.vine_gold }
+          name: "凶戾的独角幽狼",
+          realm: "一阶初期妖兽",
+          hp: 95,
+          maxHp: 95,
+          atk: 16,
+          loot: { stones: 3, silver: 10, item: ITEMS_DB.vine_gold }
         });
       }
     };
 
-    // 5. 坊市市集
     document.getElementById('actMarket').onclick = () => {
       sfx.click();
       openShopModal();
     };
 
-    // 6. 接取差事
     document.getElementById('actWorkBounty').onclick = () => {
       sfx.click();
-      const earns = 8;
-      G.silver += earns;
-      G.exp += 6;
-      addLog(`你前往陆家灵田充任看护杂役整月，以微弱水行灵力施展行雨诀驱除害虫，挣得纹银 ${earns} 两，劳形之余心境亦趋沉静。`, 'normal');
+      if (!G) return;
+      G.silver += 6;
+      G.exp += 5;
+      addLog(`你在灵田与镇集间奔波充任护卫杂役一月，挣得纹银 6 两，磨练了筋骨。`, 'normal');
       advanceMonth();
     };
 
-    // 7. 交游拜访
     document.getElementById('actVisitNpc').onclick = () => {
       sfx.click();
       document.querySelector('[data-tab="tabNpc"]').click();
-      addLog(`你在栖霞镇街巷茶楼间走动，留心熟人近况，打探修真界与周边深浅动向。`, 'normal');
+      addLog(`你在街头茶肆间走动，察言观色，打探修真界最新虚实。`, 'normal');
     };
 
-    // 8. 疗伤温养
     document.getElementById('actRestHeal').onclick = () => {
       sfx.click();
-      const heal = Math.floor(G.maxHp * 0.4);
+      if (!G) return;
+      const heal = Math.floor(G.maxHp * 0.45);
       G.hp = Math.min(G.maxHp, G.hp + heal);
-      addLog(`你闭门煎服温补凡药，静养一月，通体经络温润，气血恢复 ${heal} 点。`, 'fortune');
+      addLog(`你闭关静养温补气血，体内暗伤化解大半，恢复气血 ${heal} 点。`, 'fortune');
       advanceMonth();
     };
 
-    // 9. 下一个月直接推演
     document.getElementById('btnNextMonth').onclick = () => {
       sfx.click();
-      addLog(`时光荏苒，你在青石巷度过了波澜不惊的一个月。`, 'normal');
+      addLog(`静观云卷云舒，平凡的一月悄然而过。`, 'normal');
       advanceMonth();
     };
 
     /* ==========================================================================
-       突发事件库与交互选择
+       突发事件
        ========================================================================== */
     function triggerHerbEncounterEvent() {
       G.activeEvent = {
-        title: "🌿 绝壁崖缝的灵药与妖蛇",
-        desc: "你攀在峭壁上，在一处岩缝中看见一株叶片滴血般殷红的【赤血草】，年份足有三十余年。但在石隙深处，一条碧磷斑蛇正盘踞在旁吐着信子，蛇瞳泛着寒光。",
+        title: "🌿 崖缝灵药与妖蛇对峙",
+        desc: "绝壁缝隙中有一株散发微光的【赤血草】，但近旁石隙中一条碧磷妖蛇正昂首吞吐信子，警惕盯视着你。",
         choices: [
           {
-            text: "撒出驱兽药粉",
-            hint: "需消耗一包驱兽粉，稳健驱逐（成功率极高）",
+            text: "撒出驱兽粉",
+            hint: "需消耗一包驱兽粉，稳妥驱逐",
             act: () => {
-              const powder = G.inventory.find(i => i.id === "powder_beast" && i.count > 0);
-              if (powder) {
-                powder.count--;
+              const item = G.inventory.find(i => i.id === "powder_beast" && i.count > 0);
+              if (item) {
+                item.count--;
                 cleanZeroInv();
                 sfx.success();
                 addItemToInv(ITEMS_DB.herb_red, 1);
-                addLog("你谨慎抖落刺鼻的驱兽硫磺粉，碧磷斑蛇受惊嘶鸣缩回崖缝深处，你趁机将赤血草完整掘出放入药篓！", "fortune");
+                addLog("抖落硫磺驱兽粉，妖蛇退缩回洞，你从容将赤血草收入囊中！", "fortune");
               } else {
-                addLog("你伸手入怀才发觉驱兽粉早已用尽！惊动了妖蛇，被迫挥刀拼死迎击！", "danger");
-                startCombat({ name: "被惊扰的碧磷斑蛇", realm: "一阶妖蛇", hp: 60, maxHp: 60, atk: 12, loot: { stones: 1, silver: 5, item: ITEMS_DB.herb_red } });
+                addLog("你伸手一摸才发觉并无驱兽粉，激怒妖蛇，被迫迎击！", "danger");
+                startCombat({ name: "惊怒的碧磷妖蛇", realm: "一阶低级妖物", hp: 55, maxHp: 55, atk: 11, loot: { stones: 1, silver: 4, item: ITEMS_DB.herb_red } });
               }
               G.activeEvent = null;
               advanceMonth();
             }
           },
           {
-            text: "拔出柴刀强行袭杀",
-            hint: "考验体魄与战力，直接斩蛇取草",
+            text: "拔刃直接斩杀",
+            hint: "近身搏杀，直接夺宝",
             act: () => {
               G.activeEvent = null;
-              startCombat({ name: "盘踞的碧磷斑蛇", realm: "一阶妖蛇", hp: 60, maxHp: 60, atk: 12, loot: { stones: 1, silver: 5, item: ITEMS_DB.herb_red } });
+              startCombat({ name: "碧磷妖蛇", realm: "一阶低级妖物", hp: 55, maxHp: 55, atk: 11, loot: { stones: 1, silver: 4, item: ITEMS_DB.herb_red } });
             }
           },
           {
-            text: "谨慎退避，不立危墙",
-            hint: "道途漫漫，安全第一，不受蛇毒之祸",
+            text: "谨慎后撤不冒险",
+            hint: "命比草贵，安步当车",
             act: () => {
-              addLog("你打量片刻，自忖身法不便若落崖得不偿失，深吸一口气悄然收绳退走。虽失灵药，心境却更显沉稳。", "normal");
-              G.stats.mind = "沉稳求全";
+              addLog("你收刀敛息从崖畔退下，虽未得灵草，但保全了自身安泰。", "normal");
               G.activeEvent = null;
               advanceMonth();
             }
@@ -1921,13 +1905,13 @@
     }
 
     function resolveEventChoice(idx) {
-      if (G.activeEvent && G.activeEvent.choices[idx]) {
+      if (G && G.activeEvent && G.activeEvent.choices[idx]) {
         G.activeEvent.choices[idx].act();
       }
     }
 
     /* ==========================================================================
-       回合制策略战斗引擎
+       战斗系统
        ========================================================================== */
     let curEnemy = null;
 
@@ -1936,11 +1920,11 @@
       document.getElementById('combatEnemyName').textContent = curEnemy.name;
       document.getElementById('combatEnemyRealm').textContent = curEnemy.realm;
       document.getElementById('combatPlayerName').textContent = G.name;
-      document.getElementById('combatPlayerRealm').textContent = REALMS[G.realmIndex].name;
+      document.getElementById('combatPlayerRealm').textContent = (REALMS[G.realmIndex] || REALMS[0]).name;
       
       updateCombatUI();
       const logBox = document.getElementById('combatLogStream');
-      logBox.innerHTML = `<div style="color:var(--cinnabar);">【交锋初启】遭遇 ${curEnemy.name}，杀意扑面而来！</div>`;
+      logBox.innerHTML = `<div style="color:var(--cinnabar);">【遭遇强敌】对方杀意凛然，大战一触即发！</div>`;
       openModal('modalCombat');
     }
 
@@ -1950,7 +1934,6 @@
 
       document.getElementById('combatPlayerHpBar').style.width = pPercent + '%';
       document.getElementById('combatPlayerHpText').textContent = `气血: ${G.hp}/${G.maxHp}`;
-
       document.getElementById('combatEnemyHpBar').style.width = ePercent + '%';
       document.getElementById('combatEnemyHpText').textContent = `气血: ${curEnemy.hp}/${curEnemy.maxHp}`;
     }
@@ -1963,38 +1946,35 @@
       logBox.scrollTop = logBox.scrollHeight;
     }
 
-    // 战斗行动：劈砍
     document.getElementById('btnCombatAttack').onclick = () => {
       sfx.slash();
-      const dmg = Math.floor(15 + (G.stats.phy * 0.35) + (Math.random() * 8));
+      const dmg = Math.floor(14 + (G.stats.phy * 0.35) + (Math.random() * 8));
       curEnemy.hp = Math.max(0, curEnemy.hp - dmg);
-      appendCombatLog(`你手腕一抖，手中柴刀带出一道冷冽铁光，劈中对方，造成 <b>${dmg}</b> 点伤势！`);
+      appendCombatLog(`你踏步劈斩，刀刃破空，对敌人造成 <b>${dmg}</b> 点伤害！`);
       checkCombatTurn();
     };
 
-    // 战斗行动：法术轰击
     document.getElementById('btnCombatCast').onclick = () => {
       if (G.mp < 15) {
-        alert("丹田灵力不支，无法施展灵术！");
+        alert("丹田灵力不支，无法聚气施法！");
         return;
       }
       sfx.spell();
       G.mp -= 15;
-      const dmg = Math.floor(28 + (G.stats.soul * 0.4) + (Math.random() * 10));
+      const dmg = Math.floor(26 + (G.stats.soul * 0.4) + (Math.random() * 10));
       curEnemy.hp = Math.max(0, curEnemy.hp - dmg);
-      appendCombatLog(`你默诵法诀，指尖木灵清气凝聚成锐利气锥迸射，洞穿其护体气机，造成 <b>${dmg}</b> 点重创！`);
+      appendCombatLog(`你掐动法诀引出一道灵光锐气，贯通敌方防线，造成 <b>${dmg}</b> 点重创！`);
       checkCombatTurn();
     };
 
-    // 战斗行动：撒毒粉或吃药
     document.getElementById('btnCombatItem').onclick = () => {
-      const blood = G.inventory.find(i => i.id === "pill_blood" && i.count > 0);
-      if (blood) {
-        blood.count--;
+      const pill = G.inventory.find(i => i.id === "pill_blood" && i.count > 0);
+      if (pill) {
+        pill.count--;
         cleanZeroInv();
         sfx.success();
         G.hp = Math.min(G.maxHp, G.hp + 40);
-        appendCombatLog(`你急速仰头吞下一粒【凝血散】，胸腹气血翻腾渐止，恢复了 40 点气血！`);
+        appendCombatLog(`你急速仰脖吞下一剂凝血散，气血恢复 40 点！`);
         checkCombatTurn(true);
         return;
       }
@@ -2002,46 +1982,41 @@
       if (powder) {
         powder.count--;
         cleanZeroInv();
-        curEnemy.atk = Math.max(5, curEnemy.atk - 6);
-        appendCombatLog(`你抓出一把驱兽毒灰扬洒而出，迷了对方双目，敌方攻势大乱，攻击威能下降！`);
+        curEnemy.atk = Math.max(5, curEnemy.atk - 5);
+        appendCombatLog(`你挥手扬出一阵呛人药粉，扰乱敌方视野，敌方攻击减弱！`);
         checkCombatTurn(true);
         return;
       }
-      alert("储物袋中无可用之疗伤丹药或驱兽毒粉！");
+      alert("行囊中暂无可用药散！");
     };
 
-    // 战斗行动：闪避
     document.getElementById('btnCombatDodge').onclick = () => {
       sfx.click();
-      appendCombatLog(`你施展市井滚地身法，紧贴山岩游走，全力戒备对手后手破绽！`);
+      appendCombatLog(`你侧身腾挪紧贴岩壁，全力戒备对手破绽！`);
       checkCombatTurn(false, true);
     };
 
-    // 战斗行动：遁逃
     document.getElementById('btnCombatFlee').onclick = () => {
       sfx.click();
       if (Math.random() < 0.55) {
         sfx.success();
-        alert("你虚晃一刀，借助熟稔地形借树遁入山林深处，成功脱身！");
+        alert("你虚晃一招果断借地形脱身，甩开了追敌！");
         closeModal('modalCombat');
-        addLog(`遭遇强敌 ${curEnemy.name}，你审时度势借地形果断遁离。`, 'normal');
+        addLog(`遭遇强敌 ${curEnemy.name}，你审时度势避战遁走。`, 'normal');
         advanceMonth();
       } else {
         sfx.fail();
-        appendCombatLog(`逃窜受阻！对方截断了退路，反而暴起一击！`);
+        appendCombatLog(`逃路被堵，反受截击！`);
         checkCombatTurn();
       }
     };
 
-    function checkCombatTurn(skipPlayerDamage = false, isDodging = false) {
+    function checkCombatTurn(skipDamage = false, isDodging = false) {
       updateCombatUI();
-
-      // 敌方死
       if (curEnemy.hp <= 0) {
         sfx.breakthrough();
-        alert(`惨烈搏杀！你手刃强敌【${curEnemy.name}】！搜寻其身畔遗物……`);
+        alert(`惨烈厮杀！你击溃了强敌【${curEnemy.name}】！`);
         closeModal('modalCombat');
-
         if (curEnemy.loot) {
           G.stones += curEnemy.loot.stones || 0;
           G.silver += curEnemy.loot.silver || 0;
@@ -2049,71 +2024,65 @@
         }
         G.exp += 30;
         G.stats.karma += 2;
-        addLog(`【斩敌获胜】诛杀【${curEnemy.name}】，搜获灵石 ${curEnemy.loot.stones || 0} 块，凡银 ${curEnemy.loot.silver || 0} 两。血腥染手，因果微增。`, 'breakthrough');
+        addLog(`【斩获战利】诛杀【${curEnemy.name}】，获得灵石 ${curEnemy.loot.stones || 0} 块，凡银 ${curEnemy.loot.silver || 0} 两。`, 'breakthrough');
         advanceMonth();
         return;
       }
 
-      // 敌方反击
       setTimeout(() => {
-        let eDmg = Math.floor(curEnemy.atk + (Math.random() * 6));
+        let eDmg = Math.floor(curEnemy.atk + (Math.random() * 5));
         if (isDodging) {
           eDmg = Math.floor(eDmg * 0.4);
-          appendCombatLog(`你早有防备，侧身滑步卸去大半力道，仅受刮蹭 <b>${eDmg}</b> 点伤势！`);
+          appendCombatLog(`你身法灵动卸去大部分力道，只受微创 <b>${eDmg}</b> 点！`);
         } else {
           sfx.slash();
-          appendCombatLog(`${curEnemy.name} 目露凶光，狠厉反扑，劈中你的肩头，造成 <b>${eDmg}</b> 点伤害！`);
+          appendCombatLog(`${curEnemy.name} 狠厉出手，击伤你的手臂，造成 <b>${eDmg}</b> 点创伤！`);
         }
         G.hp = Math.max(0, G.hp - eDmg);
         updateCombatUI();
 
         if (G.hp <= 0) {
           sfx.fail();
-          alert(`眼前一黑，你气绝倒在血泊之中……未能在此残酷修仙界活出名堂！`);
+          alert(`气血耗尽……你倒在血泊之中，此生道途就此陨落！`);
           closeModal('modalCombat');
+          clearLocalData();
           openModal('modalCreation');
         }
       }, 350);
     }
 
     /* ==========================================================================
-       背包与坊市商铺
+       物品与坊市
        ========================================================================== */
-    function addItemToInv(itemTemplate, qty = 1) {
-      const existing = G.inventory.find(i => i.id === itemTemplate.id);
-      if (existing) {
-        existing.count = (existing.count || 1) + qty;
-      } else {
-        G.inventory.push({ ...itemTemplate, count: qty });
-      }
+    function addItemToInv(item, qty = 1) {
+      const ex = G.inventory.find(i => i.id === item.id);
+      if (ex) ex.count = (ex.count || 1) + qty;
+      else G.inventory.push({ ...item, count: qty });
+      saveToLocal();
       renderInventory();
     }
 
     function cleanZeroInv() {
       G.inventory = G.inventory.filter(i => (i.count || 0) > 0);
+      saveToLocal();
       renderInventory();
     }
 
     function useItem(idx) {
       const item = G.inventory[idx];
       if (!item) return;
-
       if (item.id === "pill_blood") {
         G.hp = Math.min(G.maxHp, G.hp + 40);
         item.count--;
         sfx.success();
-        addLog("服下凝血散，皮肉伤口止血收敛，气血回复40点。", "fortune");
+        addLog("服下凝血散，气血平复回转40点。", "fortune");
       } else if (item.id === "pill_qi") {
         G.exp += 40;
         item.count--;
         sfx.breakthrough();
-        addLog("吞服聚气丹，温润纯净药力化开，丹田修为关隘大进40点！", "breakthrough");
-      } else if (item.id === "pill_detox") {
-        item.count--;
-        sfx.success();
-        addLog("含化避毒丸，胸臆清明，拔除体表山岚湿毒。", "normal");
+        addLog("吞化聚气丹，丹田修为关隘激增40点！", "breakthrough");
       } else {
-        alert("此物品非直接内服之药。");
+        alert("此物品非直接服用之药。");
         return;
       }
       cleanZeroInv();
@@ -2124,15 +2093,12 @@
       const item = G.inventory[idx];
       if (!item) return;
       sfx.click();
-      if (confirm(`是否典卖 ${item.name}？(可换取对应灵石或碎银)`)) {
-        if (item.price > 0) {
-          G.stones += item.price;
-        } else {
-          G.silver += (item.silver || 1) * 2;
-        }
+      if (confirm(`是否典卖 ${item.name}？`)) {
+        if (item.price > 0) G.stones += item.price;
+        else G.silver += (item.silver || 1) * 2;
         item.count--;
         cleanZeroInv();
-        addLog(`你在坊市柜台典卖了一份【${item.name}】。`, "normal");
+        addLog(`典卖了一件【${item.name}】。`, "normal");
         renderUI();
       }
     }
@@ -2140,15 +2106,7 @@
     function openShopModal() {
       const list = document.getElementById('shopItemList');
       list.innerHTML = '';
-
-      const forSale = [
-        ITEMS_DB.pill_blood,
-        ITEMS_DB.pill_qi,
-        ITEMS_DB.powder_beast,
-        ITEMS_DB.sword_steel,
-        ITEMS_DB.shield_wood
-      ];
-
+      const forSale = [ITEMS_DB.pill_blood, ITEMS_DB.pill_qi, ITEMS_DB.powder_beast, ITEMS_DB.sword_steel, ITEMS_DB.shield_wood];
       forSale.forEach(item => {
         const d = document.createElement('div');
         d.className = 'inv-item';
@@ -2159,13 +2117,10 @@
             <span class="inv-desc">${item.desc}</span>
             <span style="font-size:0.75rem; color:var(--gold-light);">售价：${costStr}</span>
           </div>
-          <div>
-            <button class="btn inv-btn btn-gold" onclick="buyFromShop('${item.id}')">购置</button>
-          </div>
+          <div><button class="btn inv-btn btn-gold" onclick="buyFromShop('${item.id}')">买入</button></div>
         `;
         list.appendChild(d);
       });
-
       document.getElementById('shopUserStones').textContent = G.stones;
       document.getElementById('shopUserSilver').textContent = G.silver;
       openModal('modalShop');
@@ -2174,188 +2129,215 @@
     function buyFromShop(itemId) {
       const item = ITEMS_DB[itemId];
       if (!item) return;
-
       if (item.price > 0) {
-        if (G.stones < item.price) {
-          alert("囊中羞涩，灵石不足！");
-          return;
-        }
+        if (G.stones < item.price) { alert("囊中灵石不足！"); return; }
         G.stones -= item.price;
       } else {
-        if (G.silver < item.silver) {
-          alert("银两短缺，孙掌柜斜了你一眼。");
-          return;
-        }
+        if (G.silver < item.silver) { alert("白银短缺！"); return; }
         G.silver -= item.silver;
       }
-
       sfx.success();
       addItemToInv(item, 1);
       document.getElementById('shopUserStones').textContent = G.stones;
       document.getElementById('shopUserSilver').textContent = G.silver;
-      addLog(`你在百草堂买下一份【${item.name}】，小心收入储物背篓。`, "normal");
+      addLog(`在坊市买入一份【${item.name}】。`, "normal");
       renderUI();
     }
 
-    /* ==========================================================================
-       NPC 互动系统
-       ========================================================================== */
-    function interactNpc(npcId, actType) {
+    function interactNpc(id, act) {
       sfx.click();
-      const npc = G.npcs.find(n => n.id === npcId);
+      const npc = G.npcs.find(n => n.id === id);
       if (!npc) return;
-
-      if (actType === 'talk') {
-        if (npcId === "sun") {
-          alert(`孙掌柜拨弄着算盘，头也不抬道：“临川啊，赤血草与金钱藤只要采来，老夫随时按行规收下，绝不短你半块灵石。不过山里那几队采药人没回来的事……你进山时自个留心点！”`);
-        } else if (npcId === "aniu") {
-          alert(`哑巴阿牛比划着手势，指了指你家屋檐，憨厚地笑了笑，又塞给你半块凡人粗面烙饼。`);
-          G.hp = Math.min(G.maxHp, G.hp + 5);
-        } else if (npcId === "chen_san") {
-          alert(`陈三斜乜着你腰间的旧柴刀，冷笑一声：“临川老弟，最近手气不错嘛，听说经常去断魂涧？哪天带兄弟一起发发财？”眼神里满是试探。`);
-        } else if (npcId === "lu_manager") {
-          alert(`陆清平高坐太师椅，品了一口灵茶：“下半年例钱按时交齐便好。陆家庇护栖霞镇一方太平，莫要让本执事难做。”`);
-        }
-      } else if (actType === 'gift') {
-        if (G.stones < 1 && G.silver < 5) {
-          alert("你囊中空空，拿不出任何像样的礼数。");
-          return;
-        }
+      if (act === 'talk') {
+        alert(`${npc.name}（${npc.title}）道：“大道艰险，道友行走四方，万事以稳为贵。”`);
+      } else if (act === 'gift') {
         if (G.stones >= 1) {
           G.stones -= 1;
-          npc.rel += 10;
+          npc.rel += 12;
           sfx.success();
-          alert(`你奉上一块下品灵石，${npc.name} 态度大为缓和，对你频频颔首。`);
+          alert(`你赠上一块灵石，${npc.name} 笑意吟吟，对你频频颔首。`);
+        } else if (G.silver >= 4) {
+          G.silver -= 4;
+          npc.rel += 5;
+          sfx.success();
+          alert(`你奉上几两银子作为打点，对方客套收下。`);
         } else {
-          G.silver -= 5;
-          npc.rel += 4;
-          sfx.success();
-          alert(`你送上凡银打点，${npc.name} 神色略显客气。`);
+          alert("身无长物，拿不出相宜礼物。");
+          return;
         }
+        saveToLocal();
         renderUI();
       }
     }
 
     /* ==========================================================================
-       角色创建与重开
+       角色创建系统 (不提供任何默认值，全由玩家点选或随机)
        ========================================================================== */
-    document.getElementById('btnRestart').onclick = () => {
-      sfx.click();
-      if (confirm("是否放弃当前世间肉身，重新摇签开启下一世修仙人生？")) {
-        openModal('modalCreation');
-      }
-    };
+    const RANDOM_NAMES = ["陆长生", "顾清秋", "沈炼", "莫问天", "云无咎", "楚渊", "方夕", "韩立", "林寻", "苏离", "叶辰", "白子衿", "宋玄青", "江映雪", "宁归尘"];
 
     document.getElementById('btnRollRandom').onclick = () => {
       sfx.click();
-      const names = ["临川", "顾长青", "沈炼", "陆沉舟", "莫问天", "云无咎", "楚渊", "方夕", "韩厉"];
-      document.getElementById('createName').value = names[Math.floor(Math.random() * names.length)];
-      
-      const origins = ["scavenger", "clan_decline", "hunter", "sect_slave", "merchant"];
+      document.getElementById('createName').value = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+      const origins = ["scavenger", "clan_decline", "sect_slave", "hunter", "merchant", "orphan", "scholar"];
       document.getElementById('createOrigin').value = origins[Math.floor(Math.random() * origins.length)];
-
-      const roots = ["three", "double", "four", "single"];
+      const roots = ["three", "double", "four", "five", "single", "mutation"];
       document.getElementById('createRoot').value = roots[Math.floor(Math.random() * roots.length)];
-
-      const talents = ["perception", "comprehension", "physique", "fortune", "calm"];
+      const talents = ["perception", "comprehension", "physique", "soul", "fortune", "calm", "ordinary"];
       document.getElementById('createTalent').value = talents[Math.floor(Math.random() * talents.length)];
+      const daos = ["求稳长生", "逆天杀伐", "富甲仙界", "随心随性"];
+      document.getElementById('createDao').value = daos[Math.floor(Math.random() * daos.length)];
     };
 
     document.getElementById('btnConfirmCreate').onclick = () => {
+      const name = document.getElementById('createName').value.trim();
+      if (!name) {
+        alert("修仙求道，总需留一真名道号！请输入你的名字，或点击【🎲 摇签·天命全随机】。");
+        return;
+      }
       sfx.breakthrough();
-      const newName = document.getElementById('createName').value.trim() || "无名散修";
+
+      const gender = document.getElementById('createGender').value;
+      const age = parseInt(document.getElementById('createAge').value, 10);
       const origin = document.getElementById('createOrigin').value;
-      const rootType = document.getElementById('createRoot').value;
-      const talentType = document.getElementById('createTalent').value;
+      const rootVal = document.getElementById('createRoot').value;
+      const talentVal = document.getElementById('createTalent').value;
+      const daoVal = document.getElementById('createDao').value;
 
-      G = getInitialState();
-      G.name = newName;
+      // 组装新角色
+      let rootDesc = "木水土三灵根";
+      let basePhy = 40, baseSoul = 40, baseCom = 40;
+      let startStones = 2, startSilver = 15;
+      let startIdentity = "市井散人";
+      let startRealmIdx = 0; // 默认凡人
+      let bonusExp = 5;
 
-      // 资质定制映射
-      if (rootType === "double") {
-        G.root = "水木双灵根 (奇才)";
-        G.stats.com += 8;
-        G.exp = 50;
-      } else if (rootType === "four") {
-        G.root = "四灵根杂品 (凡品)";
-        G.stats.phy += 10;
-      } else if (rootType === "single") {
-        G.root = "天火单灵根 (天之骄子)";
-        G.realmIndex = 3; // 炼气三层
-        G.exp = 20;
-        G.stats.com += 15;
-      }
+      if (rootVal === "double") { rootDesc = "水木双灵根 (奇才)"; baseCom += 8; startRealmIdx = 1; }
+      else if (rootVal === "four") { rootDesc = "四灵根杂品 (凡资)"; basePhy += 6; }
+      else if (rootVal === "five") { rootDesc = "伪五灵根 (逆天凡胎)"; basePhy += 10; baseSoul += 5; }
+      else if (rootVal === "single") { rootDesc = "天火单灵根 (天骄)"; baseCom += 15; startRealmIdx = 2; }
+      else if (rootVal === "mutation") { rootDesc = "变异风雷灵根 (异禀)"; basePhy += 12; baseSoul += 10; startRealmIdx = 1; }
 
-      if (origin === "clan_decline") {
-        G.identity = "落魄世家余脉";
-        G.stones += 10;
-        G.silver += 50;
+      let inv = [{ ...ITEMS_DB.sword_rust, count: 1 }];
+
+      if (origin === "scavenger") {
+        startIdentity = "山野采药散修";
+        inv.push({ ...ITEMS_DB.powder_beast, count: 2 }, { ...ITEMS_DB.herb_red, count: 1 });
+      } else if (origin === "clan_decline") {
+        startIdentity = "破落修真世家后裔";
+        startStones += 10;
+        startSilver += 30;
+      } else if (origin === "sect_slave") {
+        startIdentity = "宗门外门杂役";
+        startStones += 3;
+        bonusExp += 3;
       } else if (origin === "hunter") {
-        G.identity = "深山猎户入道";
-        G.stats.phy += 15;
-        G.maxHp += 20;
-        G.hp = G.maxHp;
+        startIdentity = "深山猎户遗孤";
+        basePhy += 15;
+      } else if (origin === "merchant") {
+        startIdentity = "药商行少东家";
+        startSilver += 60;
+      } else if (origin === "scholar") {
+        startIdentity = "寒门落第书生";
+        baseCom += 12;
+        baseSoul += 10;
       }
 
-      if (talentType === "comprehension") {
-        G.talent = "悟性超凡";
-        G.stats.com += 12;
-      } else if (talentType === "physique") {
-        G.talent = "龙精虎猛";
-        G.stats.phy += 20;
-        G.maxHp += 30;
-        G.hp = G.maxHp;
-      } else if (talentType === "fortune") {
-        G.talent = "福缘深厚";
-        G.stats.fortune = "紫气萦绕";
-      }
+      let talentDesc = "平平无奇";
+      let fortuneDesc = "？？？";
 
+      if (talentVal === "perception") { talentDesc = "感知敏锐"; baseSoul += 8; }
+      else if (talentVal === "comprehension") { talentDesc = "悟性绝伦"; baseCom += 15; }
+      else if (talentVal === "physique") { talentDesc = "龙精虎猛"; basePhy += 20; }
+      else if (talentVal === "soul") { talentDesc = "神魂清澈"; baseSoul += 18; }
+      else if (talentVal === "fortune") { talentDesc = "福缘深厚"; fortuneDesc = "紫气蒸腾"; }
+      else if (talentVal === "calm") { talentDesc = "心如止水"; baseSoul += 10; baseCom += 5; }
+
+      const realm = REALMS[startRealmIdx];
+      const maxHp = realm.baseHp + basePhy;
+      const maxMp = realm.baseMp;
+
+      G = {
+        name: name,
+        gender: gender,
+        ageYears: age,
+        ageMonths: 1,
+        maxAge: 75 + realm.lifeBonus + Math.floor(basePhy * 0.2),
+        realmIndex: startRealmIdx,
+        exp: 0,
+        hp: maxHp,
+        maxHp: maxHp,
+        mp: maxMp,
+        maxMp: maxMp,
+        stones: startStones,
+        silver: startSilver,
+        root: rootDesc,
+        talent: talentDesc,
+        temperament: "沉静自持",
+        identity: startIdentity,
+        location: "苍梧边陲 · 栖霞镇",
+        stats: {
+          phy: basePhy,
+          soul: baseSoul,
+          com: baseCom,
+          karma: 0,
+          fortune: fortuneDesc,
+          reputation: 0
+        },
+        technique: {
+          name: "《引气吐纳残卷》",
+          grade: "黄级下品",
+          desc: "散修引灵入门心法。每月吐纳灵气提升。",
+          bonusExp: bonusExp
+        },
+        dao: daoVal,
+        inventory: inv,
+        npcs: [
+          { id: "sun", name: "孙掌柜", title: "百草堂主事", realm: "炼气四层", rel: 10, desc: "精明守矩，执掌坊市草药吞吐。", loc: "百草堂" },
+          { id: "aniu", name: "阿牛", title: "邻里少年", realm: "凡人", rel: 40, desc: "质朴勤恳，常在镇集帮工。", loc: "栖霞市井" },
+          { id: "lu", name: "陆执事", title: "陆氏别院主事", realm: "炼气六层", rel: 0, desc: "苍梧陆家驻地执事，威严冷峻。", loc: "陆家仙苑" }
+        ],
+        worldLogs: [
+          { year: 9427, month: 1, text: `【大道始生】凡尘初醒，道号【${name}】。生于微末，踏上修仙长生之路。`, type: "breakthrough" }
+        ],
+        worldNews: [
+          "【天地】苍梧大域诸城坊市安泰，偶有低阶秘境隐光闪现传闻。",
+          "【四方】修真界浩瀚无垠，各大仙门道统每隔数年开山收徒。"
+        ],
+        activeEvent: null
+      };
+
+      saveToLocal();
       closeModal('modalCreation');
-      addLog(`【大道初开】生于天地凡尘，道号【${G.name}】。踏上漫漫修仙之路，祸福相依，生死由天。`, 'breakthrough');
       renderUI();
     };
 
     /* ==========================================================================
-       存档 / 读档 / 本地缓存
+       本地数据重置与备份恢复
        ========================================================================== */
-    const STORAGE_KEY = "XIUXIAN_SIM_SAVE_V1";
-
-    function autoSave() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(G));
-      } catch (e) {
-        console.warn("Auto save failed", e);
+    document.getElementById('btnResetAll').onclick = () => {
+      sfx.click();
+      if (confirm("【警告】确定彻底抹除当前此生因果与本地数据吗？\n所有修为、法宝、进度将被清空，重新进入角色创建。")) {
+        clearLocalData();
+        G = null;
+        document.getElementById('createName').value = "";
+        openModal('modalCreation');
       }
-    }
-
-    function autoLoad() {
-      try {
-        const data = localStorage.getItem(STORAGE_KEY);
-        if (data) {
-          const parsed = JSON.parse(data);
-          if (parsed && parsed.name) {
-            G = parsed;
-          }
-        }
-      } catch (e) {
-        console.warn("Auto load failed", e);
-      }
-    }
+    };
 
     document.getElementById('btnSaveGame').onclick = () => {
       sfx.click();
-      autoSave();
+      if (!G) return;
+      saveToLocal();
       const code = btoa(encodeURIComponent(JSON.stringify(G)));
       document.getElementById('saveLoadCode').value = code;
-      document.getElementById('saveLoadTitle').textContent = "💾 仙缘天机录 (已保存到本地)";
+      document.getElementById('saveLoadTitle').textContent = "💾 备份天机码 (可复制到其他设备)";
       openModal('modalSaveLoad');
     };
 
     document.getElementById('btnLoadGame').onclick = () => {
       sfx.click();
-      const code = btoa(encodeURIComponent(JSON.stringify(G)));
-      document.getElementById('saveLoadCode').value = code;
-      document.getElementById('saveLoadTitle').textContent = "📂 导入天机码恢复生灵档案";
+      document.getElementById('saveLoadCode').value = "";
+      document.getElementById('saveLoadTitle').textContent = "📂 导入天机码恢复此生命格";
       openModal('modalSaveLoad');
     };
 
@@ -2364,36 +2346,28 @@
       const textarea = document.getElementById('saveLoadCode');
       textarea.select();
       document.execCommand('copy');
-      alert("存档天机码已成功复制到剪贴板！随时可在其它设备恢复。");
+      alert("天机码已复制至剪贴板！");
     };
 
     document.getElementById('btnApplySaveCode').onclick = () => {
       const code = document.getElementById('saveLoadCode').value.trim();
-      if (!code) {
-        alert("请输入有效的存档码！");
-        return;
-      }
+      if (!code) { alert("请先粘贴有效的天机码！"); return; }
       try {
         const decoded = JSON.parse(decodeURIComponent(atob(code)));
         if (decoded && decoded.name) {
           G = decoded;
           sfx.success();
-          autoSave();
+          saveToLocal();
           renderUI();
           closeModal('modalSaveLoad');
-          alert(`成功恢复道友【${G.name}】之天命因果！`);
-        } else {
-          throw new Error("格式不合");
-        }
+          alert(`成功恢复道友【${G.name}】之道胎因果！`);
+        } else { throw new Error("格式无效"); }
       } catch (e) {
         sfx.fail();
-        alert("存档码解析失败，请检查是否完整！");
+        alert("天机码解析失败，请核实内容是否完整！");
       }
     };
 
-    /* ==========================================================================
-       界面通用控制与模态框
-       ========================================================================== */
     function openModal(id) {
       const el = document.getElementById(id);
       if (el) el.classList.add('active');
@@ -2404,39 +2378,46 @@
       if (el) el.classList.remove('active');
     }
 
-    // 标签页切换
+    // 标签页
     document.querySelectorAll('.right-tab-btn').forEach(btn => {
       btn.onclick = () => {
         sfx.click();
         document.querySelectorAll('.right-tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
-        const targetId = btn.getAttribute('data-tab');
-        document.getElementById(targetId).classList.add('active');
+        document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
       };
     });
 
-    // 音效切换
+    // 音效开关
     document.getElementById('btnAudioToggle').onclick = (e) => {
       sfx.enabled = !sfx.enabled;
       e.target.textContent = sfx.enabled ? "🔊 音效: 开" : "🔈 音效: 关";
       if (sfx.enabled) sfx.click();
     };
 
-    // 洞察自身
+    // 洞察
     document.getElementById('btnInspectSelf').onclick = () => {
       sfx.click();
-      alert(`【内视己身】\n道号：${G.name}\n灵根：${G.root}\n特质：${G.talent}\n主修：${G.technique.name} (${G.technique.grade})\n当前所悟之道：${G.dao}\n因果累积：${G.stats.karma} (杀伐过多易引心魔与仇家，善缘或有暗助)`);
+      if (!G) return;
+      alert(`【洞见己身】\n道号：${G.name} (${G.gender})\n骨龄：${G.ageYears} 岁\n灵根：${G.root}\n特质：${G.talent}\n主修：${G.technique.name}\n道途：${G.dao}\n储物：${G.stones} 灵石 / ${G.silver} 两白银\n所有数据完整保存在本地浏览器中。`);
     };
 
-    // 页面加载自启
+    // 页面启动检查
     window.onload = () => {
-      autoLoad();
-      renderUI();
+      const saved = loadFromLocal();
+      if (saved) {
+        G = saved;
+        renderUI();
+      } else {
+        // 无本地存档：清空输入框，强制弹出创建界面，绝无默认值
+        document.getElementById('createName').value = "";
+        openModal('modalCreation');
+      }
     };
 
-    // 定时器自动存储
-    setInterval(autoSave, 5000);
+    // 定时保存
+    setInterval(saveToLocal, 3000);
   </script>
 </body>
 </html>
