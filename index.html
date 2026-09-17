@@ -1357,7 +1357,7 @@
     const sfx = new SoundFX();
 
     /* ==========================================================================
-       修仙境界常数
+       修仙境界常数（凡人至飞升真仙 34 阶超长境界链）
        ========================================================================== */
     const REALMS = [
       { name: "凡人", maxExp: 30, baseHp: 80, baseMp: 0, lifeBonus: 0, power: 10 },
@@ -1375,53 +1375,108 @@
       { name: "筑基中期", maxExp: 3800, baseHp: 1300, baseMp: 1800, lifeBonus: 150, power: 1800 },
       { name: "筑基后期", maxExp: 5500, baseHp: 1900, baseMp: 2600, lifeBonus: 180, power: 2600 },
       { name: "筑基圆满", maxExp: 8000, baseHp: 2800, baseMp: 3800, lifeBonus: 220, power: 3800 },
-      { name: "金丹真人", maxExp: 18000, baseHp: 6000, baseMp: 8000, lifeBonus: 400, power: 8500 }
+      // 金丹大道（原金丹真人对应此处索引15，老存档玩家无缝平移继承）
+      { name: "金丹初期", maxExp: 15000, baseHp: 4500, baseMp: 6000, lifeBonus: 350, power: 6500 },
+      { name: "金丹中期", maxExp: 22000, baseHp: 6500, baseMp: 9000, lifeBonus: 100, power: 9500 },
+      { name: "金丹后期", maxExp: 32000, baseHp: 9000, baseMp: 13000, lifeBonus: 100, power: 14000 },
+      { name: "金丹圆满", maxExp: 48000, baseHp: 13000, baseMp: 19000, lifeBonus: 150, power: 20000 },
+      // 碎丹成婴（寿元大幅跨越至千年）
+      { name: "元婴初期", maxExp: 80000, baseHp: 20000, baseMp: 30000, lifeBonus: 800, power: 35000 },
+      { name: "元婴中期", maxExp: 120000, baseHp: 30000, baseMp: 45000, lifeBonus: 200, power: 55000 },
+      { name: "元婴后期", maxExp: 180000, baseHp: 45000, baseMp: 68000, lifeBonus: 200, power: 85000 },
+      { name: "元婴大圆满", maxExp: 280000, baseHp: 65000, baseMp: 100000, lifeBonus: 300, power: 130000 },
+      // 化神入虚（凝练天地法相）
+      { name: "化神初期", maxExp: 450000, baseHp: 100000, baseMp: 160000, lifeBonus: 2000, power: 200000 },
+      { name: "化神中期", maxExp: 700000, baseHp: 150000, baseMp: 240000, lifeBonus: 500, power: 300000 },
+      { name: "化神后期", maxExp: 1100000, baseHp: 220000, baseMp: 360000, lifeBonus: 500, power: 450000 },
+      { name: "化神大圆满", maxExp: 1600000, baseHp: 320000, baseMp: 520000, lifeBonus: 1000, power: 650000 },
+      // 炼虚期（遁入虚空，天人合一）
+      { name: "炼虚初期", maxExp: 2500000, baseHp: 480000, baseMp: 800000, lifeBonus: 4000, power: 950000 },
+      { name: "炼虚中期", maxExp: 3800000, baseHp: 700000, baseMp: 1200000, lifeBonus: 2000, power: 1400000 },
+      { name: "炼虚圆满", maxExp: 5800000, baseHp: 1000000, baseMp: 1800000, lifeBonus: 3000, power: 2000000 },
+      // 高阶巨擘
+      { name: "合体期", maxExp: 9000000, baseHp: 1600000, baseMp: 3000000, lifeBonus: 15000, power: 3200000 },
+      { name: "大乘期", maxExp: 15000000, baseHp: 2600000, baseMp: 5000000, lifeBonus: 30000, power: 5000000 },
+      { name: "渡劫期", maxExp: 25000000, baseHp: 4000000, baseMp: 8000000, lifeBonus: 50000, power: 8000000 },
+      { name: "飞升真仙", maxExp: 99999999, baseHp: 9999999, baseMp: 9999999, lifeBonus: 999999, power: 99999999 }
     ];
 
     /* ==========================================================================
        物品、草药、法宝数据库
        ========================================================================== */
     const ITEMS_DB = {
-      // 草药
-      herb_red: { id: "herb_red", name: "赤血草", type: "herb", quality: "white", desc: "一阶灵草，通体赤红，炼制凝血丹与聚气丹基础药引。", price: 1, silver: 0 },
+      // 草药：一阶至九阶造化仙草
+      herb_red: { id: "herb_red", name: "赤血草", type: "herb", quality: "white", desc: "一阶灵草，通体赤红，炼制凝血散与聚气丹基础药引。", price: 1, silver: 0 },
       vine_gold: { id: "vine_gold", name: "百年金钱藤", type: "herb", quality: "green", desc: "攀附峭壁之灵藤，坚韧似铜，炼制聚气丹与破障散主材。", price: 3, silver: 0 },
       herb_spirit: { id: "herb_spirit", name: "紫灵花", type: "herb", quality: "blue", desc: "二阶灵药，凝聚天地清气，炼制破障丹与筑基主材。", price: 8, silver: 0 },
       herb_zhuji: { id: "herb_zhuji", name: "筑基灵草", type: "herb", quality: "purple", desc: "极其稀罕的夺天地造化之草，炼制【天元筑基丹】必不可缺！", price: 30, silver: 0 },
-      herb_longevity: { id: "herb_longevity", name: "九叶寿元果", type: "herb", quality: "purple", desc: "三百年一开花结实，蕴含生机造化，炼制延寿金丹主药。", price: 50, silver: 0 },
+      herb_longevity: { id: "herb_longevity", name: "九叶寿元果", type: "herb", quality: "purple", desc: "三百年一开花结实，蕴含生机造化，炼制延寿丸主药。", price: 50, silver: 0 },
+      // 高阶新增草药
+      herb_jiangchen: { id: "herb_jiangchen", name: "绛云朱果", type: "herb", quality: "purple", desc: "三阶极品灵果，生长于火山地脉灵泉旁，炼制【四品降尘金丹】主药！", price: 90, silver: 0 },
+      herb_wanshou: { id: "herb_wanshou", name: "万寿火灵芝", type: "herb", quality: "purple", desc: "四阶宝药，生机极为澎湃，服之延年益寿，炼制【四品万寿延元丹】核心。", price: 180, silver: 0 },
+      herb_ying: { id: "herb_ying", name: "九窍凝婴草", type: "herb", quality: "orange", desc: "五阶天地灵珍，孕育纯正婴灵之气，炼制【五品九转结婴丹】不可替代！", price: 500, silver: 0 },
+      herb_soul_wood: { id: "herb_soul_wood", name: "万年养魂木", type: "herb", quality: "orange", desc: "六阶通灵神木，万年不腐，安抚紫府神魂，炼制【六品化神定阳丹】核心。", price: 1200, silver: 0 },
+      herb_tianhua: { id: "herb_tianhua", name: "太虚造化果", type: "herb", quality: "red", desc: "七阶神异道果，内蕴虚空道韵，炼制【七品太虚涅槃丹】与高阶突破神药！", price: 3000, silver: 0 },
+      herb_xiancao: { id: "herb_xiancao", name: "九转涅槃仙草", type: "herb", quality: "red", desc: "八阶仙草，蕴含涅槃法则，炼制【八品两仪合体丹】与【绝品九霄辟雷神丹】！", price: 8000, silver: 0 },
+      herb_daoguo: { id: "herb_daoguo", name: "混沌鸿蒙道果", type: "herb", quality: "red", desc: "九阶绝品神物，天地初开时之造化灵种，炼制【鸿蒙造化真仙丹】飞升至宝！", price: 20000, silver: 0 },
 
-      // 丹药
+      // 丹药：一品至九品及仙丹
       pill_blood: { id: "pill_blood", name: "一品凝血散", type: "pill", quality: "white", desc: "散修必备疗伤药，止血生肌，恢复50点气血。", heal: 50, price: 0, silver: 5 },
       pill_qi: { id: "pill_qi", name: "一品聚气丹", type: "pill", quality: "green", desc: "一阶灵丹，服用直接增加50点修为关隘进度。", exp: 50, price: 3, silver: 0 },
       pill_break: { id: "pill_break", name: "二品破障散", type: "pill", quality: "blue", desc: "化解气机窒碍，使下次冲关成功率提升 25%！", buff: "breakthrough_25", price: 10, silver: 0 },
-      pill_zhuji: { id: "pill_zhuji", name: "天元筑基丹", type: "pill", quality: "purple", desc: "逆天夺命的二阶圣药！突破筑基境成功率大幅暴涨50%，保全经脉不损！", buff: "zhuji_protect", price: 45, silver: 0 },
+      pill_zhuji: { id: "pill_zhuji", name: "天元筑基丹", type: "pill", quality: "purple", desc: "二阶圣药！突破筑基境成功率大幅暴涨50%，保全经脉不损！", buff: "zhuji_protect", price: 45, silver: 0 },
       pill_life: { id: "pill_life", name: "养寿九转丸", type: "pill", quality: "purple", desc: "生机弥漫之丹，服用可直接延寿 15 年！", lifeExtend: 15, price: 60, silver: 0 },
       pill_tianling: { id: "pill_tianling", name: "三品天灵淬骨丹", type: "pill", quality: "purple", desc: "三阶宝丹！伐毛洗髓，永久增加15点体魄，气血上限大幅攀升！", price: 80, silver: 0 },
       pill_jinghun: { id: "pill_jinghun", name: "三品凝神清心丹", type: "pill", quality: "purple", desc: "三阶宝丹！滋养识海，永久增加15点神魂，抗魔悟性法威暴涨！", price: 80, silver: 0 },
+      // 高阶关隘神丹
+      pill_jindan: { id: "pill_jindan", name: "四品降尘金丹", type: "pill", quality: "purple", desc: "四阶极品灵丹！突破【金丹初期】成功率暴增50%，稳固九品金丹大道！", price: 200, silver: 0 },
+      pill_wanshou_dan: { id: "pill_wanshou_dan", name: "四品万寿延元丹", type: "pill", quality: "purple", desc: "夺天地寿数之灵丹，服用直接延寿 100 载！", price: 350, silver: 0 },
+      pill_yuanying: { id: "pill_yuanying", name: "五品九转结婴丹", type: "pill", quality: "orange", desc: "五阶化婴圣药！碎金丹、聚元婴，突破【元婴初期】成功率大幅暴涨50%！", price: 800, silver: 0 },
+      pill_huashen: { id: "pill_huashen", name: "六品化神定阳丹", type: "pill", quality: "orange", desc: "六阶通神圣丹！神识凝聚天地法相，突破【化神初期】成功率暴增50%！", price: 2000, silver: 0 },
+      pill_tiandao: { id: "pill_tiandao", name: "六品天道感悟丹", type: "pill", quality: "orange", desc: "蕴含天地至理，服用体魄、神魂、悟性全属性各永久暴涨 50 点！", price: 2500, silver: 0 },
+      pill_lianxu: { id: "pill_lianxu", name: "七品太虚涅槃丹", type: "pill", quality: "red", desc: "七阶涅槃神丹！元神与肉身遁入太虚，突破【炼虚初期】成功率暴涨50%！", price: 5000, silver: 0 },
+      pill_heti: { id: "pill_heti", name: "八品两仪合体丹", type: "pill", quality: "red", desc: "八阶逆天神丹！身神合一，突破【合体期】成功率大幅暴涨50%！", price: 12000, silver: 0 },
+      pill_dacheng: { id: "pill_dacheng", name: "九品造化大乘丹", type: "pill", quality: "red", desc: "九阶造化仙丹！法则圆融，突破【大乘期】至尊境成功率暴涨50%！", price: 25000, silver: 0 },
+      pill_dujie: { id: "pill_dujie", name: "绝品九霄辟雷神丹", type: "pill", quality: "red", desc: "辟九霄天雷劫力，突破【渡劫期】成功率暴涨50%！", price: 50000, silver: 0 },
+      pill_feisheng: { id: "pill_feisheng", name: "鸿蒙造化真仙丹", type: "pill", quality: "red", desc: "九天飞升至尊神药！引动三十三重天祥云接引，成就【飞升真仙】长生大道！", price: 100000, silver: 0 },
       powder_beast: { id: "powder_beast", name: "粗制驱兽粉", type: "usable", quality: "white", desc: "刺鼻硫磺药气，可惊退普通野兽与低阶妖蛇。", price: 0, silver: 3 },
 
-      // 装备：兵器
+      // 装备：兵器（凡铁至九阶仙器）
       sword_rust: { id: "sword_rust", name: "防身短刃柴刀", type: "weapon", quality: "white", desc: "常年攀山砍柴的精铁短刀，轻巧敏捷。", power: 12, price: 1 },
       sword_steel: { id: "sword_steel", name: "寒铁青锋剑", type: "weapon", quality: "green", desc: "百炼精钢注入寒泉淬火，剑芒森寒，杀力不俗。", power: 35, price: 6 },
       sword_fire: { id: "sword_fire", name: "玄火裂空刃", type: "weapon", quality: "blue", desc: "二阶下品法刃，挥动隐带烈焰，斩妖诛敌锐不可当。", power: 90, price: 25 },
       sword_seven: { id: "sword_seven", name: "龙泉七星飞剑", type: "weapon", quality: "purple", desc: "筑基大修本命飞剑，御空斩敌于百步之外！", power: 220, price: 90 },
+      sword_lingbao: { id: "sword_lingbao", name: "纯阳斩龙飞剑", type: "weapon", quality: "purple", desc: "金丹宗师淬炼极阳精金打造，剑气纵横千丈！", power: 550, price: 300 },
+      sword_yuanying: { id: "sword_yuanying", name: "诛仙青索灵宝剑", type: "weapon", quality: "orange", desc: "五阶通灵法宝，元婴大修士心神寄托之重器！", power: 1500, price: 1200 },
+      sword_tongtian: { id: "sword_tongtian", name: "通天太虚斩神剑", type: "weapon", quality: "red", desc: "七阶通天灵宝，划破虚空，荡尽世间群魔！", power: 4200, price: 6000 },
+      sword_xian: { id: "sword_xian", name: "九天太一降魔圣剑", type: "weapon", quality: "red", desc: "真仙界传承无上仙剑，剑锋所向，万界俯首！", power: 16000, price: 30000 },
 
       // 装备：防具
       shield_wood: { id: "shield_wood", name: "青玄木盾", type: "armor", quality: "green", desc: "刻录避矢阵的百年沉木盾牌，可御箭矢低阶法术。", def: 20, maxHp: 30, price: 8 },
       armor_robe: { id: "armor_robe", name: "流云玄羽法袍", type: "armor", quality: "blue", desc: "二阶灵丝编织，流光溢彩，兼具避水火与卸力奇效。", def: 55, maxHp: 90, price: 28 },
       armor_gold: { id: "armor_gold", name: "乌金辟劫宝甲", type: "armor", quality: "purple", desc: "深海乌金打造，抗衡天雷劫力，固若金汤！", def: 140, maxHp: 240, price: 100 },
+      armor_tianyu: { id: "armor_tianyu", name: "天罡玄煞法衣", type: "armor", quality: "purple", desc: "四阶天罡灵气织就，卸去三成法术攻杀！", def: 380, maxHp: 800, price: 350 },
+      armor_taixu: { id: "armor_taixu", name: "太虚九龙混元袍", type: "armor", quality: "orange", desc: "六阶灵宝道袍，九龙护体，万法不侵！", def: 1200, maxHp: 3000, price: 2000 },
+      armor_xian: { id: "armor_xian", name: "万劫不灭紫金仙铠", type: "armor", quality: "red", desc: "九天仙光凝聚而成的护体金铠，万劫不磨！", def: 5500, maxHp: 16000, price: 25000 },
 
       // 装备：灵宝饰品
       talisman_ring: { id: "talisman_ring", name: "青玉纳戒", type: "talisman", quality: "green", desc: "储纳须弥，微弱温养丹田，灵力上限+40。", maxMp: 40, price: 12 },
       talisman_soul: { id: "talisman_soul", name: "温神聚魄玉佩", type: "talisman", quality: "blue", desc: "深山暖玉雕琢，宁心静气，神魂+15，抗拒心魔。", soul: 15, maxMp: 80, price: 30 },
+      talisman_haotian: { id: "talisman_haotian", name: "昊天清虚宝镜", type: "talisman", quality: "purple", desc: "四阶异宝，洞察敌方破绽，神魂+45，灵力+250。", soul: 45, maxMp: 250, price: 280 },
+      talisman_taiji: { id: "talisman_taiji", name: "太极乾坤阴阳图", type: "talisman", quality: "orange", desc: "六阶通天灵宝，阴阳周天循环，神魂+180，灵力+1200。", soul: 180, maxMp: 1200, price: 2200 },
+      talisman_dongtian: { id: "talisman_dongtian", name: "鸿蒙洞天紫金葫", type: "talisman", quality: "red", desc: "自成一方天地的小洞天仙葫，神魂+600，灵力+6000！", soul: 600, maxMp: 6000, price: 20000 },
 
-      // 丹炉
+      // 丹炉神鼎
       pot_clay: { id: "pot_clay", name: "粗陶药罐", type: "furnace", quality: "white", desc: "凡俗熬药罐，勉强温火，成丹率+0%。", alchRate: 0, price: 0 },
       pot_bronze: { id: "pot_bronze", name: "青铜八卦炉", type: "furnace", quality: "green", desc: "一阶丹炉，刻录八卦聚火阵，炼丹成丹率+15%。", alchRate: 15, price: 15 },
-      pot_purple: { id: "pot_purple", name: "紫金炼灵神鼎", type: "furnace", quality: "purple", desc: "二阶极品丹鼎，地脉紫火温养，成丹率+35%，更易爆出极品丹！", alchRate: 35, price: 80 }
+      pot_purple: { id: "pot_purple", name: "紫金炼灵神鼎", type: "furnace", quality: "purple", desc: "二阶极品丹鼎，地脉紫火温养，成丹率+35%，更易爆出极品丹！", alchRate: 35, price: 80 },
+      pot_jiulong: { id: "pot_jiulong", name: "九龙地心神火炉", type: "furnace", quality: "purple", desc: "四阶丹道宗师至宝，引九龙地脉天火，成丹率+50%！", alchRate: 50, price: 400 },
+      pot_taixu: { id: "pot_taixu", name: "太虚八卦炼天鼎", type: "furnace", quality: "orange", desc: "六阶通灵神鼎，天地为炉兮造化为工，成丹率+75%！", alchRate: 75, price: 3000 },
+      pot_xian: { id: "pot_xian", name: "乾坤混沌造化仙鼎", type: "furnace", quality: "red", desc: "真仙界遗落绝世神鼎，天地灵气自然凝丹，成丹率+100%，极品丹爆率100%！", alchRate: 100, price: 25000 }
     };
 
     /* ==========================================================================
-       丹方配方库
+       丹方配方库（一品至九品及飞升仙丹）
        ========================================================================== */
     const ALCHEMY_RECIPES = [
       {
@@ -1493,11 +1548,112 @@
         materials: [{ id: "herb_longevity", count: 1 }, { id: "herb_spirit", count: 3 }],
         baseSuccess: 40,
         expGain: 120
+      },
+      // 高阶丹方
+      {
+        id: "rec_jindan",
+        name: "四品降尘金丹",
+        targetItem: "pill_jindan",
+        reqLevel: 4,
+        desc: "绛云朱果×1 + 筑基灵草×1 + 紫灵花×2 -> 金丹大关突破概率暴增50%！",
+        materials: [{ id: "herb_jiangchen", count: 1 }, { id: "herb_zhuji", count: 1 }, { id: "herb_spirit", count: 2 }],
+        baseSuccess: 45,
+        expGain: 200
+      },
+      {
+        id: "rec_wanshou",
+        name: "四品万寿延元丹",
+        targetItem: "pill_wanshou_dan",
+        reqLevel: 4,
+        desc: "万寿火灵芝×1 + 紫灵花×2 + 寿元果×1 -> 夺天地造化，直接延寿 100 载！",
+        materials: [{ id: "herb_wanshou", count: 1 }, { id: "herb_spirit", count: 2 }, { id: "herb_longevity", count: 1 }],
+        baseSuccess: 45,
+        expGain: 260
+      },
+      {
+        id: "rec_yuanying",
+        name: "五品九转结婴丹",
+        targetItem: "pill_yuanying",
+        reqLevel: 5,
+        desc: "九窍凝婴草×1 + 绛云朱果×2 + 万寿火灵芝×1 -> 碎丹成婴神药！元婴冲关概率暴增50%！",
+        materials: [{ id: "herb_ying", count: 1 }, { id: "herb_jiangchen", count: 2 }, { id: "herb_wanshou", count: 1 }],
+        baseSuccess: 40,
+        expGain: 450
+      },
+      {
+        id: "rec_huashen",
+        name: "六品化神定阳丹",
+        targetItem: "pill_huashen",
+        reqLevel: 6,
+        desc: "万年养魂木×1 + 九窍凝婴草×2 -> 凝聚天地法相神丹，化神突破率暴涨50%！",
+        materials: [{ id: "herb_soul_wood", count: 1 }, { id: "herb_ying", count: 2 }],
+        baseSuccess: 35,
+        expGain: 800
+      },
+      {
+        id: "rec_tiandao",
+        name: "六品天道感悟丹",
+        targetItem: "pill_tiandao",
+        reqLevel: 6,
+        desc: "万年养魂木×1 + 万寿火灵芝×2 -> 服之体魄、神魂、悟性全属性各暴涨 50 点！",
+        materials: [{ id: "herb_soul_wood", count: 1 }, { id: "herb_wanshou", count: 2 }],
+        baseSuccess: 35,
+        expGain: 900
+      },
+      {
+        id: "rec_lianxu",
+        name: "七品太虚涅槃丹",
+        targetItem: "pill_lianxu",
+        reqLevel: 7,
+        desc: "太虚造化果×1 + 万年养魂木×2 -> 肉身元神遁入虚空，炼虚突破率暴涨50%！",
+        materials: [{ id: "herb_tianhua", count: 1 }, { id: "herb_soul_wood", count: 2 }],
+        baseSuccess: 30,
+        expGain: 1500
+      },
+      {
+        id: "rec_heti",
+        name: "八品两仪合体丹",
+        targetItem: "pill_heti",
+        reqLevel: 8,
+        desc: "九转涅槃仙草×1 + 太虚造化果×2 -> 身神两仪圆满，合体期突破率暴增50%！",
+        materials: [{ id: "herb_xiancao", count: 1 }, { id: "herb_tianhua", count: 2 }],
+        baseSuccess: 25,
+        expGain: 2500
+      },
+      {
+        id: "rec_dacheng",
+        name: "九品造化大乘丹",
+        targetItem: "pill_dacheng",
+        reqLevel: 9,
+        desc: "九转涅槃仙草×2 + 太虚造化果×2 -> 法则通天彻地，大乘至尊境突破率暴增50%！",
+        materials: [{ id: "herb_xiancao", count: 2 }, { id: "herb_tianhua", count: 2 }],
+        baseSuccess: 20,
+        expGain: 4000
+      },
+      {
+        id: "rec_dujie",
+        name: "绝品九霄辟雷神丹",
+        targetItem: "pill_dujie",
+        reqLevel: 9,
+        desc: "九转涅槃仙草×2 + 混沌鸿蒙道果×1 -> 辟九天雷煞天劫，渡劫期突破率暴增50%！",
+        materials: [{ id: "herb_xiancao", count: 2 }, { id: "herb_daoguo", count: 1 }],
+        baseSuccess: 20,
+        expGain: 6000
+      },
+      {
+        id: "rec_feisheng",
+        name: "鸿蒙造化真仙丹",
+        targetItem: "pill_feisheng",
+        reqLevel: 9,
+        desc: "混沌鸿蒙道果×2 + 九转涅槃仙草×3 + 太虚造化果×3 -> 叩开天门，成就【飞升真仙】万古长生！",
+        materials: [{ id: "herb_daoguo", count: 2 }, { id: "herb_xiancao", count: 3 }, { id: "herb_tianhua", count: 3 }],
+        baseSuccess: 18,
+        expGain: 12000
       }
     ];
 
     /* ==========================================================================
-       四方大域与地图配置
+       四方大域与地图配置（修真界至九霄天门）
        ========================================================================== */
     const MAPS_DB = [
       {
@@ -1543,11 +1699,55 @@
           { name: "仙城黑市杀手", realm: "筑基初期", hp: 650, atk: 85, loot: { silver: 100, stones: 30, item: ITEMS_DB.herb_longevity } },
           { name: "叛逆魔门邪修", realm: "筑基中期", hp: 1100, atk: 130, loot: { silver: 200, stones: 60, item: ITEMS_DB.sword_fire } }
         ]
+      },
+      {
+        id: "tianxinghai",
+        name: "天星海 · 万仙外岛",
+        minRealm: 15, // 金丹初期
+        desc: "汪洋无际之修真海域，海底灵脉密布，出产绛云朱果与万寿火灵芝！",
+        herbChance: { herb_jiangchen: 0.45, herb_wanshou: 0.35, herb_longevity: 0.2 },
+        enemyPool: [
+          { name: "碧海独角赤蛟", realm: "三阶妖将", hp: 5500, atk: 280, loot: { silver: 400, stones: 120, item: ITEMS_DB.herb_jiangchen } },
+          { name: "天星海劫掠巨寇", realm: "金丹后期", hp: 11000, atk: 480, loot: { silver: 800, stones: 280, item: ITEMS_DB.sword_lingbao } }
+        ]
+      },
+      {
+        id: "tianyuan",
+        name: "天渊神冢 · 蛮荒禁地",
+        minRealm: 19, // 元婴初期
+        desc: "古仙魔陨落之凶地，地煞罡风肆虐，孕育九窍凝婴草与万年养魂木！",
+        herbChance: { herb_ying: 0.45, herb_soul_wood: 0.35, herb_wanshou: 0.2 },
+        enemyPool: [
+          { name: "九幽白骨魔皇", realm: "四阶鬼皇", hp: 32000, atk: 1100, loot: { silver: 2000, stones: 800, item: ITEMS_DB.herb_soul_wood } },
+          { name: "蛮荒赤炎真犼", realm: "元婴大圆满", hp: 68000, atk: 2100, loot: { silver: 5000, stones: 1800, item: ITEMS_DB.sword_yuanying } }
+        ]
+      },
+      {
+        id: "kunlun",
+        name: "九天昆仑 · 极道圣境",
+        minRealm: 23, // 化神初期
+        desc: "万山之祖，极道法则汇聚，常现太虚造化果与九转涅槃仙草！",
+        herbChance: { herb_tianhua: 0.45, herb_xiancao: 0.35, herb_soul_wood: 0.2 },
+        enemyPool: [
+          { name: "太古遗种纯阳金乌", realm: "五阶神禽", hp: 160000, atk: 4800, loot: { stones: 4000, item: ITEMS_DB.herb_tianhua } },
+          { name: "极道诛天剑尊投影", realm: "化神极境", hp: 350000, atk: 8800, loot: { stones: 9000, item: ITEMS_DB.sword_tongtian } }
+        ]
+      },
+      {
+        id: "feisheng_gate",
+        name: "九霄云外 · 飞升天门",
+        minRealm: 27, // 炼虚初期
+        desc: "沟通真仙界之南天神门，三十三重天罡雷火漫天，蕴含混沌鸿蒙道果！",
+        herbChance: { herb_daoguo: 0.4, herb_xiancao: 0.35, herb_tianhua: 0.25 },
+        enemyPool: [
+          { name: "九天雷劫罚罪神将", realm: "合体巅峰", hp: 1500000, atk: 28000, loot: { stones: 25000, item: ITEMS_DB.herb_daoguo } },
+          { name: "仙界接引真仙分魂", realm: "大乘巨擘", hp: 4500000, atk: 68000, loot: { stones: 80000, item: ITEMS_DB.sword_xian } }
+        ]
       }
     ];
 
     /* ==========================================================================
-       宗门门派库
+       宗门门派库（凡界至九天仙宗）
        ========================================================================== */
     const SECTS_DB = [
       {
@@ -1579,6 +1779,37 @@
         salary: 2,
         giftItem: ITEMS_DB.talisman_ring,
         tech: { name: "《陆氏玄水诀》", grade: "黄级上品", desc: "气脉中正平和，每月吐纳修为+10。", bonusExp: 10 }
+      },
+      // 高阶仙门道统
+      {
+        id: "taiqing",
+        name: "太清道德宗",
+        minRealm: 15, // 金丹初期
+        reqRoot: ["single", "double", "mutation"],
+        desc: "苍梧大域正道执牛耳者，底蕴深不可测。月俸极厚，赐纯阳飞剑与地品玄功！",
+        salary: 60,
+        giftItem: ITEMS_DB.sword_lingbao,
+        tech: { name: "《太清一气紫宵决》", grade: "地级上品", desc: "紫气东来，道法纯厚，每月吐纳修为+75，炼丹成功率+15%。", bonusExp: 75, alchBonus: 15, combatBonus: 80 }
+      },
+      {
+        id: "leiyin",
+        name: "九天雷音仙阁",
+        minRealm: 19, // 元婴初期
+        reqRoot: ["mutation", "single", "double"],
+        desc: "避世不出的上古雷道圣地，代行天罚。月俸奢华，赐九龙火炉与至高神雷！",
+        salary: 200,
+        giftItem: ITEMS_DB.pot_jiulong,
+        tech: { name: "《九天神雷真经》", grade: "天级下品", desc: "身化狂雷诛邪伏魔，每月吐纳修为+220，杀伤威力倍增！", bonusExp: 220, combatBonus: 280 }
+      },
+      {
+        id: "piaomiao",
+        name: "昆仑飘渺太上天",
+        minRealm: 23, // 化神初期
+        reqRoot: [],
+        desc: "直通天门之极道仙庭，俯瞰人间万古兴衰。每月赐无穷灵石，授混元道卷！",
+        salary: 800,
+        giftItem: ITEMS_DB.sword_yuanying,
+        tech: { name: "《混沌造化道卷》", grade: "仙级无上", desc: "吞吐天地太虚混元之精，每月吐纳修为+800，破境概率大增！", bonusExp: 800, combatBonus: 750, alchBonus: 25 }
       }
     ];
 
@@ -1590,7 +1821,11 @@
       { id: "perk_ancestor_sword", name: "祖传寒铁剑", cost: 15, desc: "出生时储物袋自带一件【寒铁青锋剑】与百两白银！" },
       { id: "perk_alchemy_god", name: "药尊遗鼎", cost: 25, desc: "出生时直接获得【青铜八卦炉】与基础丹方全解锁！" },
       { id: "perk_longevity", name: "彭祖长生相", cost: 20, desc: "各境界基础理论寿元永久 +30 岁！" },
-      { id: "perk_dao_heart", name: "金刚不坏道心", cost: 35, desc: "所有境界突破成功率永久 +15%，失败不受气血暗伤！" }
+      { id: "perk_dao_heart", name: "金刚不坏道心", cost: 35, desc: "所有境界突破成功率永久 +15%，失败不受气血暗伤！" },
+      // 高阶宿慧
+      { id: "perk_reincarnation_god", name: "仙帝转世宿慧", cost: 50, desc: "历劫不灭！出生即拥有 500 块灵石，突破成功率永久再+20%！" },
+      { id: "perk_dan_emperor", name: "丹圣地火本源", cost: 40, desc: "出生直接获赐四阶【九龙地心神火炉】，所有炼丹成功率额外+25%！" },
+      { id: "perk_immortal_body", name: "混沌鸿蒙圣体", cost: 60, desc: "肉身成圣！开局体魄神魂各+80，基础理论寿元暴涨整整 100 岁！" }
     ];
 
     /* ==========================================================================
@@ -1620,7 +1855,7 @@
     }
 
     /* ==========================================================================
-       阶段性目标任务链 (Quests)
+       阶段性目标任务链 (Quests 扩展至飞升真仙 12 阶段)
        ========================================================================== */
     const QUESTS = [
       {
@@ -1668,9 +1903,44 @@
       {
         id: "q7",
         title: "🎯 阶段七：凝结九品金丹",
-        desc: "逆天修行，成就【金丹真人】！超脱生死大限！",
+        desc: "逆天修行，成就【金丹初期】！超脱凡俗生死大限！",
         check: (g) => g.realmIndex >= 15,
-        reward: (g) => { g.stones += 1000; addItemToInv(ITEMS_DB.pot_purple, 1); META.karmaPoints += 150; saveMeta(); addLog("【天地共鸣 · 金丹大道】天地降甘霖！道心不朽，天命功德+150！", "breakthrough"); }
+        reward: (g) => { g.stones += 1000; addItemToInv(ITEMS_DB.pot_purple, 1); META.karmaPoints += 150; saveMeta(); addLog("【天地共鸣 · 金丹大道】天地降甘霖！道心不朽，获得紫金炼灵神鼎，天命功德+150！", "breakthrough"); }
+      },
+      {
+        id: "q8",
+        title: "🎯 阶段八：破丹成婴 · 寿享千载",
+        desc: "碎金丹聚元婴，突破至【元婴初期】！元神出窍，纵横万里！",
+        check: (g) => g.realmIndex >= 19,
+        reward: (g) => { g.stones += 3000; addItemToInv(ITEMS_DB.sword_yuanying, 1); META.karmaPoints += 300; saveMeta(); addLog("【天地共鸣 · 元婴出窍】紫府元神凝聚！获赐【诛仙青索灵宝剑】，天命功德+300！", "breakthrough"); }
+      },
+      {
+        id: "q9",
+        title: "🎯 阶段九：化神归真 · 法相通天",
+        desc: "突破至【化神初期】！神识聚天地法相，执掌乾坤！",
+        check: (g) => g.realmIndex >= 23,
+        reward: (g) => { g.stones += 10000; addItemToInv(ITEMS_DB.armor_taixu, 1); META.karmaPoints += 500; saveMeta(); addLog("【天地共鸣 · 化神至尊】天地法相凝聚！获赐【太虚九龙混元袍】，天命功德+500！", "breakthrough"); }
+      },
+      {
+        id: "q10",
+        title: "🎯 阶段十：炼虚入道 · 身神合一",
+        desc: "突破至【炼虚初期】或【合体期】！身融太虚法则！",
+        check: (g) => g.realmIndex >= 27,
+        reward: (g) => { g.stones += 30000; addItemToInv(ITEMS_DB.sword_tongtian, 1); META.karmaPoints += 800; saveMeta(); addLog("【天地共鸣 · 极道大能】太虚法则圆满！获赐【通天太虚斩神剑】，天命功德+800！", "breakthrough"); }
+      },
+      {
+        id: "q11",
+        title: "🎯 阶段十一：傲世大乘 · 渡劫辟雷",
+        desc: "历经无量劫数，晋升【渡劫期】！天道雷劫漫天垂落！",
+        check: (g) => g.realmIndex >= 32,
+        reward: (g) => { g.stones += 100000; addItemToInv(ITEMS_DB.armor_xian, 1); META.karmaPoints += 1500; saveMeta(); addLog("【天地共鸣 · 渡劫至尊】九天雷劫不侵！获赐【万劫不灭紫金仙铠】，天命功德+1500！", "breakthrough"); }
+      },
+      {
+        id: "q12",
+        title: "🎯 阶段十二：白日飞升 · 万古真仙",
+        desc: "引动三十三重天祥云接引，成就【飞升真仙】万古果位！",
+        check: (g) => g.realmIndex >= 33,
+        reward: (g) => { g.stones += 500000; addItemToInv(ITEMS_DB.sword_xian, 1); addItemToInv(ITEMS_DB.pot_xian, 1); META.karmaPoints += 3000; saveMeta(); addLog("【仙界敕封 · 万古真仙】仙乐齐鸣，金莲漫天！成就【飞升真仙】道果，天命功德+3000！", "breakthrough"); }
       }
     ];
 
@@ -1688,19 +1958,134 @@
       } catch (e) {}
     }
 
+    /* ==========================================================================
+       历史存档智能迁移与兼容系统 (Backwards Compatibility)
+       ========================================================================== */
+    function migrateSaveData(raw) {
+      if (!raw || typeof raw !== "object") return null;
+      let data = { ...raw };
+
+      // 1. 基础生灵标识
+      if (!data.name || typeof data.name !== "string") data.name = "无名散修";
+      if (!data.gender) data.gender = "乾道";
+
+      // 2. 境界平滑迁移与校对
+      if (typeof data.realmIndex !== "number" || isNaN(data.realmIndex)) {
+        if (data.realm && typeof data.realm === "string") {
+          // 若老版本直接存字符串境界名
+          const matchedIdx = REALMS.findIndex(r => r.name === data.realm || (data.realm.includes("金丹") && r.name.includes("金丹")));
+          data.realmIndex = matchedIdx >= 0 ? matchedIdx : 0;
+        } else {
+          data.realmIndex = 0;
+        }
+      }
+      // 保证合法境界范围 [0, REALMS.length - 1]
+      data.realmIndex = Math.max(0, Math.min(REALMS.length - 1, Math.floor(data.realmIndex)));
+
+      // 3. 基础时间与数值校正
+      data.ageYears = (typeof data.ageYears === "number" && !isNaN(data.ageYears)) ? Math.max(12, data.ageYears) : 18;
+      data.ageMonths = (typeof data.ageMonths === "number" && !isNaN(data.ageMonths)) ? Math.min(12, Math.max(1, data.ageMonths)) : 1;
+      data.year = (typeof data.year === "number" && !isNaN(data.year)) ? data.year : 9427;
+      data.exp = (typeof data.exp === "number" && !isNaN(data.exp)) ? Math.max(0, data.exp) : 0;
+      data.stones = (typeof data.stones === "number" && !isNaN(data.stones)) ? Math.max(0, data.stones) : 0;
+      data.silver = (typeof data.silver === "number" && !isNaN(data.silver)) ? Math.max(0, data.silver) : 0;
+
+      // 4. 寿元安全保障（根据新境界体系自动补足合理底线，防止老存档玩家因旧版寿元上限低而暴毙）
+      const curRealm = REALMS[data.realmIndex] || REALMS[0];
+      const minExpectedAge = 75 + (curRealm.lifeBonus || 0);
+      if (!data.maxAge || isNaN(data.maxAge) || data.maxAge < minExpectedAge) {
+        data.maxAge = Math.max(minExpectedAge, data.ageYears + 25);
+      }
+
+      // 5. 属性对象安全校验
+      if (!data.stats || typeof data.stats !== "object") {
+        data.stats = { phy: 40, soul: 40, com: 40, alchemyExp: 0, karma: 0, fortune: "紫气东来", reputation: 0 };
+      } else {
+        data.stats.phy = Number(data.stats.phy) || 40;
+        data.stats.soul = Number(data.stats.soul) || 40;
+        data.stats.com = Number(data.stats.com) || 40;
+        data.stats.alchemyExp = Number(data.stats.alchemyExp) || 0;
+        data.stats.reputation = Number(data.stats.reputation) || 0;
+        if (!data.stats.fortune) data.stats.fortune = "平淡无奇";
+      }
+
+      // 6. 装备槽位结构完整性
+      if (!data.equipped || typeof data.equipped !== "object") {
+        data.equipped = { weapon: null, armor: null, talisman: null, furnace: null };
+      } else {
+        if (data.equipped.weapon === undefined) data.equipped.weapon = null;
+        if (data.equipped.armor === undefined) data.equipped.armor = null;
+        if (data.equipped.talisman === undefined) data.equipped.talisman = null;
+        if (data.equipped.furnace === undefined) data.equipped.furnace = null;
+      }
+
+      // 7. 行囊包裹安全校正与物品引用升级
+      if (!Array.isArray(data.inventory)) {
+        data.inventory = [];
+      } else {
+        data.inventory = data.inventory.filter(it => it && it.id && it.count > 0).map(it => {
+          const dbItem = ITEMS_DB[it.id];
+          return dbItem ? { ...dbItem, count: it.count } : it;
+        });
+      }
+
+      // 8. 功法、宗门与地图
+      if (!data.technique || typeof data.technique !== "object") {
+        data.technique = { name: "《引气吐纳残卷》", grade: "黄级下品", bonusExp: 6, desc: "散修引灵入门吐纳法。" };
+      }
+      if (!data.sect || typeof data.sect !== "object") {
+        data.sect = { name: "散修", salary: 0 };
+      }
+      if (!data.currentMap) data.currentMap = "town";
+      if (!data.routine) data.routine = "cultivate";
+      if (typeof data.currentQuestIndex !== "number" || isNaN(data.currentQuestIndex)) {
+        data.currentQuestIndex = 0;
+      }
+      if (!Array.isArray(data.worldLogs)) data.worldLogs = [];
+      if (!Array.isArray(data.worldNews)) data.worldNews = [];
+      if (!Array.isArray(data.npcs)) data.npcs = [];
+
+      // 9. 气血与法力同步计算
+      const eqHpBonus = (data.equipped.armor && data.equipped.armor.maxHp) ? data.equipped.armor.maxHp : 0;
+      const eqMpBonus = (data.equipped.talisman && data.equipped.talisman.maxMp) ? data.equipped.talisman.maxMp : 0;
+      data.maxHp = curRealm.baseHp + data.stats.phy + eqHpBonus;
+      data.maxMp = curRealm.baseMp + eqMpBonus;
+      data.hp = (typeof data.hp === "number" && !isNaN(data.hp)) ? Math.min(data.maxHp, Math.max(10, data.hp)) : data.maxHp;
+      data.mp = (typeof data.mp === "number" && !isNaN(data.mp)) ? Math.min(data.maxMp, Math.max(0, data.mp)) : data.maxMp;
+
+      return data;
+    }
+
     function loadFromLocal() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        let raw = localStorage.getItem(STORAGE_KEY);
+        // 尝试自动寻找更早期的旧版本存储键名
+        if (!raw) raw = localStorage.getItem("XIUXIAN_WORLD_DATA_V1");
+        if (!raw) raw = localStorage.getItem("XIUXIAN_SIM_SAVE_V1");
+
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (parsed && parsed.name && parsed.realmIndex !== undefined) return parsed;
+          if (parsed) {
+            const migrated = migrateSaveData(parsed);
+            if (migrated && migrated.name) {
+              // 自动写回最新主存储键，完成无缝升级
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+              return migrated;
+            }
+          }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error("加载存档异常：", e);
+      }
       return null;
     }
 
     function clearLocalData() {
-      try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem("XIUXIAN_WORLD_DATA_V1");
+        localStorage.removeItem("XIUXIAN_SIM_SAVE_V1");
+      } catch (e) {}
     }
 
     /* ==========================================================================
@@ -1814,8 +2199,8 @@
           document.getElementById('btnClaimQuest').classList.remove('btn-gold');
         }
       } else {
-        document.getElementById('questTitle').textContent = "👑 仙道已成 · 遨游九天";
-        document.getElementById('questDesc').textContent = "诸般天命皆已修得圆满，静待金丹飞升！";
+        document.getElementById('questTitle').textContent = "👑 仙道大成 · 万古真仙";
+        document.getElementById('questDesc').textContent = "诸般天命皆已修得圆满，飞升真仙长生久视！";
         document.getElementById('btnClaimQuest').style.display = "none";
       }
     }
@@ -2036,8 +2421,13 @@
     }
 
     function getAlchLevelName(exp) {
-      if (exp >= 400) return "三阶丹圣";
-      if (exp >= 150) return "二阶丹道大师";
+      if (exp >= 10000) return "九天至尊丹圣";
+      if (exp >= 5000) return "八品通玄丹尊";
+      if (exp >= 2500) return "七品太虚宗师";
+      if (exp >= 1200) return "六品造化丹王";
+      if (exp >= 600) return "五品灵宝大丹师";
+      if (exp >= 300) return "四品金丹名家";
+      if (exp >= 150) return "三阶丹道大师";
       if (exp >= 50) return "一阶丹师";
       return "丹道学徒";
     }
@@ -2064,8 +2454,11 @@
       if (toCraft <= 0) return;
 
       sfx.alchemy();
+      loadMeta();
       const furnace = G.equipped && G.equipped.furnace ? G.equipped.furnace : ITEMS_DB.pot_clay;
-      const totalRate = Math.min(95, selectedRecipe.baseSuccess + (furnace.alchRate || 0) + (G.talent === '天生药体' ? 20 : 0) + Math.floor(G.stats.com * 0.2));
+      const sectAlchBonus = (G.technique && G.technique.alchBonus) ? G.technique.alchBonus : 0;
+      const perkAlchBonus = (META.unlockedPerks || []).includes("perk_dan_emperor") ? 25 : 0;
+      const totalRate = Math.min(98, selectedRecipe.baseSuccess + (furnace.alchRate || 0) + (G.talent === '天生药体' ? 20 : 0) + sectAlchBonus + perkAlchBonus + Math.floor(G.stats.com * 0.2));
 
       let successCount = 0;
       let failCount = 0;
@@ -2606,7 +2999,60 @@
         G.zhujiBuff = 50;
         item.count--;
         sfx.breakthrough();
-        addLog("吞服天元筑基丹！道基受药力天道护持，突破筑基把握大增！", "breakthrough");
+        addLog("吞服天元筑基丹！道基受药力天道护持，突破筑基把握大增 50%！", "breakthrough");
+      } else if (item.id === "pill_jindan") {
+        G.jindanBuff = 50;
+        item.count--;
+        sfx.breakthrough();
+        addLog("吞服四品降尘金丹！结丹成功率暴增 50%，保全紫府九品金丹！", "breakthrough");
+      } else if (item.id === "pill_wanshou_dan") {
+        G.maxAge += 100;
+        item.count--;
+        sfx.breakthrough();
+        addLog("吞服四品万寿延元丹！夺天地万寿造化，寿元暴涨整整 100 载！", "breakthrough");
+      } else if (item.id === "pill_yuanying") {
+        G.yuanyingBuff = 50;
+        item.count--;
+        sfx.breakthrough();
+        addLog("吞服五品九转结婴丹！碎丹成婴，元神出窍，化婴成功率暴涨 50%！", "breakthrough");
+      } else if (item.id === "pill_huashen") {
+        G.huashenBuff = 50;
+        item.count--;
+        sfx.breakthrough();
+        addLog("吞服六品化神定阳丹！神识聚天地法相，化神突破成功率暴涨 50%！", "breakthrough");
+      } else if (item.id === "pill_tiandao") {
+        G.stats.phy += 50;
+        G.stats.soul += 50;
+        G.stats.com += 50;
+        recalcPlayerStats();
+        item.count--;
+        sfx.breakthrough();
+        addLog("吞服六品天道感悟丹！感悟至高天理，体魄、神魂、悟性全属性各永久暴涨 50 点！", "breakthrough");
+      } else if (item.id === "pill_lianxu") {
+        G.lianxuBuff = 50;
+        item.count--;
+        sfx.breakthrough();
+        addLog("吞服七品太虚涅槃丹！肉身遁入太虚，炼虚突破成功率暴涨 50%！", "breakthrough");
+      } else if (item.id === "pill_heti") {
+        G.hetiBuff = 50;
+        item.count--;
+        sfx.breakthrough();
+        addLog("吞服八品两仪合体丹！身神合一，合体境界突破成功率大幅暴涨 50%！", "breakthrough");
+      } else if (item.id === "pill_dacheng") {
+        G.dachengBuff = 50;
+        item.count--;
+        sfx.breakthrough();
+        addLog("吞服九品造化大乘丹！傲世大乘，法则通天，大乘突破成功率暴增 50%！", "breakthrough");
+      } else if (item.id === "pill_dujie") {
+        G.dujieBuff = 50;
+        item.count--;
+        sfx.breakthrough();
+        addLog("吞服绝品九霄辟雷神丹！雷劫不侵，渡劫期突破成功率暴增 50%！", "breakthrough");
+      } else if (item.id === "pill_feisheng") {
+        G.feishengBuff = 50;
+        item.count--;
+        sfx.breakthrough();
+        addLog("吞服鸿蒙造化真仙丹！引动三十三重天祥云接引，飞升真仙成功率暴增 50%！", "breakthrough");
       } else if (item.id === "pill_life") {
         G.maxAge += 15;
         item.count--;
@@ -2650,6 +3096,49 @@
         item.count--;
         sfx.breakthrough();
         addLog("细细含化九叶寿元果，延寿 3 载！（若炼成养寿九转丸可延寿 15 载）", "fortune");
+      } else if (item.id === "herb_jiangchen") {
+        G.exp += 160;
+        item.count--;
+        sfx.breakthrough();
+        addLog("生食绛云朱果，温热纯厚，修为+160。（炼制四品降尘金丹绝佳主药）", "normal");
+      } else if (item.id === "herb_wanshou") {
+        G.maxAge += 15;
+        item.count--;
+        sfx.breakthrough();
+        addLog("嚼食万寿火灵芝，延寿 15 载！（炼成四品万寿延元丹可延寿 100 载）", "fortune");
+      } else if (item.id === "herb_ying") {
+        G.exp += 600;
+        if (G.maxMp > 0) G.mp = Math.min(G.maxMp, G.mp + 400);
+        item.count--;
+        sfx.breakthrough();
+        addLog("炼化九窍凝婴草，纯正婴气充盈，修为暴涨 600 点！（五品九转结婴丹主材）", "fortune");
+      } else if (item.id === "herb_soul_wood") {
+        G.stats.soul += 20;
+        recalcPlayerStats();
+        item.count--;
+        sfx.breakthrough();
+        addLog("温养万年养魂木灵力，识海稳固，神魂永久+20！（炼制化神定阳丹核心）", "breakthrough");
+      } else if (item.id === "herb_tianhua") {
+        G.exp += 2500;
+        item.count--;
+        sfx.breakthrough();
+        addLog("含服太虚造化果，感应周天虚空，修为暴涨 2500 点！（七品太虚涅槃丹主材）", "breakthrough");
+      } else if (item.id === "herb_xiancao") {
+        G.maxAge += 50;
+        G.stats.phy += 30;
+        recalcPlayerStats();
+        item.count--;
+        sfx.breakthrough();
+        addLog("含化九转涅槃仙草！涅槃法则洗身，延寿整整 50 载，体魄永久+30！", "breakthrough");
+      } else if (item.id === "herb_daoguo") {
+        G.stats.phy += 50;
+        G.stats.soul += 50;
+        G.stats.com += 50;
+        G.exp += 12000;
+        recalcPlayerStats();
+        item.count--;
+        sfx.breakthrough();
+        addLog("吞服混沌鸿蒙道果！诸天道韵灌顶，体魄、神魂、悟性各+50，修为暴涨 12000 点！", "breakthrough");
       }
       cleanZeroInv();
       saveToLocal();
@@ -2892,10 +3381,11 @@
 
     document.getElementById('btnCombatAttack').onclick = () => {
       sfx.slash();
+      const rPower = (REALMS[G.realmIndex] && REALMS[G.realmIndex].power) ? REALMS[G.realmIndex].power : 10;
       const wDmg = G.equipped && G.equipped.weapon ? G.equipped.weapon.power : 10;
-      const dmg = Math.floor(wDmg + (G.stats.phy * 0.35) + (Math.random() * 8));
+      const dmg = Math.floor(wDmg + (G.stats.phy * 0.35) + Math.floor(rPower * 0.08) + (Math.random() * 8));
       curEnemy.hp = Math.max(0, curEnemy.hp - dmg);
-      appendCombatLog(`你踏步劈斩，刀光破空，对敌人造成 <b>${dmg}</b> 点伤害！`);
+      appendCombatLog(`你踏步劈斩，刀光剑气纵横，对敌人造成 <b>${dmg}</b> 点伤害！`);
       checkCombatTurn();
     };
 
@@ -2903,8 +3393,9 @@
       if (G.mp < 15) { alert("丹田灵力不支，无法施展灵术！"); return; }
       sfx.spell();
       G.mp -= 15;
+      const rPower = (REALMS[G.realmIndex] && REALMS[G.realmIndex].power) ? REALMS[G.realmIndex].power : 10;
       const tBonus = G.technique.combatBonus || 0;
-      const dmg = Math.floor(30 + tBonus + (G.stats.soul * 0.45) + (Math.random() * 12));
+      const dmg = Math.floor(30 + tBonus + (G.stats.soul * 0.45) + Math.floor(rPower * 0.12) + (Math.random() * 12));
       curEnemy.hp = Math.max(0, curEnemy.hp - dmg);
       appendCombatLog(`你引气施法，一道灵芒锐啸而出，洞穿敌方防线造成 <b>${dmg}</b> 点重创！`);
       checkCombatTurn();
@@ -3126,22 +3617,35 @@
     /* ==========================================================================
        手动操作与突破
        ========================================================================== */
+    const BREAKTHROUGH_REQUISITES = {
+      10: { id: "pill_zhuji", name: "天元筑基丹", buffKey: "zhujiBuff", bonus: 50, log: "感应到筑基天劫阻滞，自动服下【天元筑基丹】以固道基！" },
+      14: { id: "pill_jindan", name: "四品降尘金丹", buffKey: "jindanBuff", bonus: 50, log: "感应到金丹大道天堑，自动服下【四品降尘金丹】铸造九品金丹！" },
+      18: { id: "pill_yuanying", name: "五品九转结婴丹", buffKey: "yuanyingBuff", bonus: 50, log: "紫府金丹异动，自动服下【五品九转结婴丹】碎丹化婴！" },
+      22: { id: "pill_huashen", name: "六品化神定阳丹", buffKey: "huashenBuff", bonus: 50, log: "神识沟通虚空，自动服下【六品化神定阳丹】凝练化神法相！" },
+      26: { id: "pill_lianxu", name: "七品太虚涅槃丹", buffKey: "lianxuBuff", bonus: 50, log: "肉身与天地合虚，自动服下【七品太虚涅槃丹】遁入太虚！" },
+      29: { id: "pill_heti", name: "八品两仪合体丹", buffKey: "hetiBuff", bonus: 50, log: "身神两仪合一，自动服下【八品两仪合体丹】直入合体至尊！" },
+      30: { id: "pill_dacheng", name: "九品造化大乘丹", buffKey: "dachengBuff", bonus: 50, log: "天地法则圆融，自动服下【九品造化大乘丹】冲击大乘极境！" },
+      31: { id: "pill_dujie", name: "绝品九霄辟雷神丹", buffKey: "dujieBuff", bonus: 50, log: "九天雷劫漫天垂落，自动服下【绝品九霄辟雷神丹】迎击雷劫！" },
+      32: { id: "pill_feisheng", name: "鸿蒙造化真仙丹", buffKey: "feishengBuff", bonus: 50, log: "南天神门金光大盛，自动服下【鸿蒙造化真仙丹】飞升真仙！" }
+    };
+
     function doBreakthrough(isAuto = false) {
       if (!G) return false;
       const curRealm = REALMS[G.realmIndex] || REALMS[0];
       if (G.realmIndex >= REALMS.length - 1) {
-        if (!isAuto) alert("已臻至现世推演极境！");
+        if (!isAuto) alert("已臻至万古飞升真仙极境！跳出三界，与天地同寿！");
         return false;
       }
 
       if (isAuto) {
-        if (G.realmIndex === 10) { // 炼气圆满 -> 筑基初期
-          const zhuji = G.inventory.find(i => i.id === "pill_zhuji" && i.count > 0);
-          if (zhuji && !G.zhujiBuff) {
-            zhuji.count--;
+        const req = BREAKTHROUGH_REQUISITES[G.realmIndex];
+        if (req) {
+          const pill = G.inventory.find(i => i.id === req.id && i.count > 0);
+          if (pill && !G[req.buffKey]) {
+            pill.count--;
             cleanZeroInv();
-            G.zhujiBuff = 50;
-            addLog("【自动破境】感应到筑基天劫阻滞，自动服下【天元筑基丹】以固道基！", "breakthrough");
+            G[req.buffKey] = req.bonus;
+            addLog(`【自动破境】${req.log}`, "breakthrough");
           }
         } else {
           const pBreak = G.inventory.find(i => i.id === "pill_break" && i.count > 0);
@@ -3159,7 +3663,16 @@
       if (G.exp >= curRealm.maxExp) chance = Math.min(92, chance + 25);
       if (G.breakthroughBuff) { chance = Math.min(98, chance + G.breakthroughBuff); G.breakthroughBuff = 0; }
       if (G.zhujiBuff) { chance = Math.min(98, chance + G.zhujiBuff); G.zhujiBuff = 0; }
+      if (G.jindanBuff) { chance = Math.min(98, chance + G.jindanBuff); G.jindanBuff = 0; }
+      if (G.yuanyingBuff) { chance = Math.min(98, chance + G.yuanyingBuff); G.yuanyingBuff = 0; }
+      if (G.huashenBuff) { chance = Math.min(98, chance + G.huashenBuff); G.huashenBuff = 0; }
+      if (G.lianxuBuff) { chance = Math.min(98, chance + G.lianxuBuff); G.lianxuBuff = 0; }
+      if (G.hetiBuff) { chance = Math.min(98, chance + G.hetiBuff); G.hetiBuff = 0; }
+      if (G.dachengBuff) { chance = Math.min(98, chance + G.dachengBuff); G.dachengBuff = 0; }
+      if (G.dujieBuff) { chance = Math.min(98, chance + G.dujieBuff); G.dujieBuff = 0; }
+      if (G.feishengBuff) { chance = Math.min(98, chance + G.feishengBuff); G.feishengBuff = 0; }
       if ((META.unlockedPerks || []).includes("perk_dao_heart")) chance = Math.min(98, chance + 15);
+      if ((META.unlockedPerks || []).includes("perk_reincarnation_god")) chance = Math.min(98, chance + 20);
 
       if (Math.random() * 100 < chance) {
         sfx.breakthrough();
@@ -3170,8 +3683,16 @@
         G.mp = G.maxMp;
         G.maxAge += nextRealm.lifeBonus;
         G.exp = 0;
-        G.stats.reputation += 10;
+        G.stats.reputation += 15;
         addLog(`【突破功成】引灵锻体！你成功突破桎梏晋升【${nextRealm.name}】！寿元威能激增！`, 'breakthrough');
+
+        if (G.realmIndex === REALMS.length - 1) { // 飞升真仙
+          META.karmaPoints += 3000;
+          saveMeta();
+          addLog("【九天共鸣 · 白日飞升】万丈仙光普照天地！道友终脱轮回樊笼，证得【飞升真仙】万古不灭大道！天命功德+3000！", "breakthrough");
+          if (!isAuto) alert("【🎉 白日飞升 · 功德圆满】\n恭喜道友历经凡人入道、结丹化婴、九死一生渡过九霄天劫，终登真仙果位！\n天地长存，与日月同寿！天命功德暴增 3000 点！");
+        }
+
         saveToLocal();
         renderUI();
         return true;
@@ -3273,6 +3794,18 @@
       if ((META.unlockedPerks || []).includes("perk_alchemy_god")) {
         eqFurnace = ITEMS_DB.pot_bronze;
         inv.push({ ...ITEMS_DB.pot_bronze, count: 1 });
+      }
+      if ((META.unlockedPerks || []).includes("perk_reincarnation_god")) {
+        startStones += 500;
+      }
+      if ((META.unlockedPerks || []).includes("perk_dan_emperor")) {
+        eqFurnace = ITEMS_DB.pot_jiulong;
+        inv.push({ ...ITEMS_DB.pot_jiulong, count: 1 });
+      }
+      if ((META.unlockedPerks || []).includes("perk_immortal_body")) {
+        basePhy += 80;
+        baseSoul += 80;
+        lifeBonus += 100;
       }
 
       if (origin === "scavenger") {
@@ -3430,14 +3963,15 @@
       if (!code) { alert("请先粘贴有效天机码！"); return; }
       try {
         const decoded = JSON.parse(decodeURIComponent(atob(code)));
-        if (decoded && decoded.name) {
-          G = decoded;
+        const migrated = migrateSaveData(decoded);
+        if (migrated && migrated.name) {
+          G = migrated;
           sfx.success();
           saveToLocal();
           renderUI();
           closeModal('modalSaveLoad');
           setTimeSpeed('paused');
-          alert(`成功恢复道友【${G.name}】之生命命格！`);
+          alert(`成功恢复并无缝升级道友【${G.name}】之生命命格！`);
         } else throw new Error("格式不合");
       } catch (e) {
         sfx.fail();
