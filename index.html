@@ -970,7 +970,7 @@
         <div class="info-block">
           <div class="info-block-title" style="display:flex; justify-content:space-between; align-items:center;">
             <span>🧭 宗门道途</span>
-            <button class="btn" style="padding:0.1rem 0.35rem; font-size:0.68rem;" onclick="openSectModalAndTab()">🏛️ 议事殿</button>
+            <button class="btn" id="btnSidebarSectModal" style="padding:0.1rem 0.35rem; font-size:0.68rem;" onclick="openSectModalAndTab()">🏛️ 议事殿</button>
           </div>
           <div style="font-size:0.78rem; margin-bottom:0.25rem; display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
             <span style="color:var(--text-muted);">宗门身份：</span>
@@ -1039,7 +1039,7 @@
           <button class="c-tab-btn active" data-ctab="ctabRoutine">🧘 修行方略</button>
           <button class="c-tab-btn" data-ctab="ctabAlchemy">🧪 丹道神鼎</button>
           <button class="c-tab-btn" data-ctab="ctabMap">🗺️ 四方大域</button>
-          <button class="c-tab-btn" data-ctab="ctabSect">🏛️ 宗门与市集</button>
+          <button class="c-tab-btn" data-ctab="ctabSect" id="tabBtnSect">🏛️ 宗门与市集</button>
         </div>
 
         <!-- 标签1：修行方略 -->
@@ -1418,6 +1418,22 @@
           </p>
           <div class="sect-hall" id="sectList"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模态框：宗门令谕 · 凯旋清册 -->
+  <div class="modal-overlay" id="modalDecreeReport">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <div class="modal-title" style="color:var(--gold-light);">📜 宗门令谕 · 凯旋功勋清册</div>
+        <button class="btn" style="padding:0.2rem 0.5rem;" onclick="closeModal('modalDecreeReport')">✕</button>
+      </div>
+      <div class="modal-body" id="decreeReportBody">
+        <!-- 动态生成战报与缴获清单 -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-gold" onclick="closeModal('modalDecreeReport')">收缴入库 · 论功行赏</button>
       </div>
     </div>
   </div>
@@ -2739,6 +2755,7 @@
         id: "qingyun",
         name: "青云剑宗",
         homeMap: "forest", // 云林大泽
+        baseDisciples: 600,
         minRealm: 3, // 炼气三层可入外门
         reqRoot: ["single", "double", "mutation"],
         desc: "东荒顶尖剑道大宗，以攻伐犀利著称。宗门月俸丰厚，赐《青元剑诀》。",
@@ -2750,6 +2767,7 @@
         id: "shennong",
         name: "神农百草门",
         homeMap: "valley", // 断魂迷涧
+        baseDisciples: 500,
         minRealm: 2, // 炼气二层
         reqRoot: ["three", "double", "five"],
         desc: "专精炼丹药道之仙门，药田广布。每月赐下灵草配方与青铜八卦炉。",
@@ -2761,6 +2779,7 @@
         id: "lu_clan",
         name: "苍梧陆氏仙族",
         homeMap: "city", // 凌霄仙城
+        baseDisciples: 350,
         minRealm: 1, // 炼气一层可为客卿
         reqRoot: [],
         desc: "盘踞栖霞一带的千年修真世家，规矩严明，重金礼聘各路客卿供奉。",
@@ -2773,6 +2792,7 @@
         id: "taiqing",
         name: "太清道德宗",
         homeMap: "tianxinghai", // 天星海
+        baseDisciples: 1500,
         minRealm: 15, // 金丹初期
         reqRoot: ["single", "double", "mutation"],
         desc: "苍梧大域正道执牛耳者，底蕴深不可测。月俸极厚，赐纯阳飞剑与地品玄功！",
@@ -2784,6 +2804,7 @@
         id: "leiyin",
         name: "九天雷音仙阁",
         homeMap: "tianyuan", // 天渊神冢
+        baseDisciples: 2200,
         minRealm: 19, // 元婴初期
         reqRoot: ["mutation", "single", "double"],
         desc: "避世不出的上古雷道圣地，代行天罚。月俸奢华，赐九龙火炉与至高神雷！",
@@ -2795,6 +2816,7 @@
         id: "piaomiao",
         name: "昆仑飘渺太上天",
         homeMap: "kunlun", // 九天昆仑
+        baseDisciples: 3800,
         minRealm: 23, // 化神初期
         reqRoot: [],
         desc: "直通天门之极道仙庭，俯瞰人间万古兴衰。每月赐无穷灵石，授混元道卷！",
@@ -2818,6 +2840,7 @@
         salaryMult: 1.0,
         monthlyContrib: 5,
         canIssueQuests: false,
+        maxDecrees: 0,
         desc: "初入仙门，修习吐纳粗浅法门，负责杂役与巡视，享基础月俸。"
       },
       {
@@ -2830,6 +2853,7 @@
         salaryMult: 2.0,
         monthlyContrib: 10,
         canIssueQuests: false,
+        maxDecrees: 0,
         desc: "登堂入室，得传本门上乘心法，月俸翻倍，受同门敬重。"
       },
       {
@@ -2842,6 +2866,7 @@
         salaryMult: 4.5,
         monthlyContrib: 20,
         canIssueQuests: false,
+        maxDecrees: 0,
         desc: "掌门与长老亲传，宗门未来栋梁，赐真传法剑，月俸激增。"
       },
       {
@@ -2854,6 +2879,7 @@
         salaryMult: 10.0,
         monthlyContrib: 40,
         canIssueQuests: true,
+        maxDecrees: 1,
         desc: "执掌宗门要职，开辟专属灵峰洞府！尊享十倍月俸，可颁布宗门令谕派遣弟子采药剿魔！"
       },
       {
@@ -2866,6 +2892,7 @@
         salaryMult: 20.0,
         monthlyContrib: 80,
         canIssueQuests: true,
+        maxDecrees: 2,
         desc: "总揽全宗道统传承，位列长生之尊。可开启丹房督造令，号令门下丹徒炼制宝丹！"
       },
       {
@@ -2878,6 +2905,7 @@
         salaryMult: 40.0,
         monthlyContrib: 160,
         canIssueQuests: true,
+        maxDecrees: 3,
         desc: "宗门底蕴巨擘，避世潜修。坐享太上无极洞府，可颁布极道荡魔令征战大域！"
       },
       {
@@ -2890,6 +2918,7 @@
         salaryMult: 80.0,
         monthlyContrib: 300,
         canIssueQuests: true,
+        maxDecrees: 4,
         desc: "全宗独尊，号令三千道友！言出法随，掌最高生杀大权，享天下名门四方朝拜！"
       }
     ];
@@ -2921,6 +2950,77 @@
       if (playerRealmIndex >= 11) return 1;
       return 0;
     }
+
+    /* ==========================================================================
+       宗门令谕法令定义库 (Sect Decrees Definitions)
+       ========================================================================== */
+    const SECT_DECREES_DEF = [
+      {
+        key: "gather",
+        title: "搜山采药令",
+        icon: "🌿",
+        minRankKey: "elder",
+        minRankName: "执事长老",
+        reqDisciples: 40,
+        durationMonths: 3,
+        costContrib: 80,
+        costStones: 150,
+        desc: "调派四十名外门与杂役弟子进驻名山秘境，拉网式采撷奇珍灵草与地脉药引。",
+        rewardDesc: "高阶灵草 3~5 份、宗门威望 +10"
+      },
+      {
+        key: "patrol",
+        title: "妖煞荡涤令",
+        icon: "⚔️",
+        minRankKey: "elder",
+        minRankName: "执事长老",
+        reqDisciples: 80,
+        durationMonths: 4,
+        costContrib: 120,
+        costStones: 250,
+        desc: "调遣战堂内门精锐修士八十名结阵出巡，清剿周边妖窟地煞，驱除魔祸。",
+        rewardDesc: "灵石 500~900 块、四阶天青妖丹×1、宗门威望 +25"
+      },
+      {
+        key: "recruit",
+        title: "广纳仙苗令",
+        icon: "✨",
+        minRankKey: "elder",
+        minRankName: "执事长老",
+        reqDisciples: 25,
+        durationMonths: 3,
+        costContrib: 100,
+        costStones: 100,
+        desc: "遣使前往凡尘仙镇设立法台，接引有缘仙苗，为宗门广纳门徒壮大人才底蕴。",
+        rewardDesc: "新晋门人 +35~60 名、门派威望 +40、反哺自身修为经验 +4000"
+      },
+      {
+        key: "alchemy",
+        title: "太上开炉督造令",
+        icon: "🔥",
+        minRankKey: "grand_elder",
+        minRankName: "传功长老",
+        reqDisciples: 35,
+        durationMonths: 6,
+        costContrib: 200,
+        costStones: 500,
+        desc: "号令百草丹堂三阶以上全部丹师开炉，合力为你督造专属护道渡劫大丹。",
+        rewardDesc: "绝品破境宝丹（降尘丹/结婴丹/定阳丹）×1、炼丹心得 +50"
+      },
+      {
+        key: "crusade",
+        title: "太上极道征伐令",
+        icon: "⚡",
+        minRankKey: "supreme_elder",
+        minRankName: "太上长老",
+        reqDisciples: 300,
+        durationMonths: 12,
+        costContrib: 400,
+        costStones: 1000,
+        desc: "敲响九霄荡魔神钟，太上长老亲授征伐大旗，号令全宗三千飞剑跨域征讨外道魔宗！",
+        rewardDesc: "缴获巨款 2000~3500 灵石、七品太虚涅槃丹×1、宗门威望 +80"
+      }
+    ];
 
     /* ==========================================================================
        天命轮回殿特质 (Meta-Progression Perks)
@@ -3174,6 +3274,8 @@
           data.sect.rankName = "散修";
           data.sect.contrib = 0;
           data.sect.totalContrib = 0;
+          data.sect.disciples = null;
+          data.sect.activeDecrees = [];
         } else {
           const matchedSect = SECTS_DB.find(s => s.id === data.sect.id || s.name === data.sect.name);
           if (matchedSect) {
@@ -3196,6 +3298,19 @@
             }
             data.sect.salary = calcSectSalary(matchedSect, data.sect.rankKey);
 
+            // 宗门门人人力底蕴与活跃令谕自愈
+            const baseDisciples = matchedSect.baseDisciples || 1000;
+            if (!data.sect.disciples || typeof data.sect.disciples !== 'object') {
+              data.sect.disciples = { total: baseDisciples, idle: baseDisciples, dispatched: 0 };
+            } else {
+              data.sect.disciples.total = Math.max(100, Number(data.sect.disciples.total) || baseDisciples);
+              data.sect.disciples.dispatched = Math.max(0, Number(data.sect.disciples.dispatched) || 0);
+              data.sect.disciples.idle = Math.max(0, data.sect.disciples.total - data.sect.disciples.dispatched);
+            }
+            if (!Array.isArray(data.sect.activeDecrees)) {
+              data.sect.activeDecrees = [];
+            }
+
             // 所在地自动自愈：若已拜入高阶仙宗但先前因Bug滞留在新手镇，自动归位至宗门山门所在大域
             if (matchedSect.homeMap && (!data.currentMap || data.currentMap === "town")) {
               data.currentMap = matchedSect.homeMap;
@@ -3208,6 +3323,12 @@
             data.sect.rankName = data.sect.rankName || "外门弟子";
             data.sect.contrib = Number(data.sect.contrib) || 0;
             data.sect.totalContrib = Number(data.sect.totalContrib) || 0;
+            if (!data.sect.disciples || typeof data.sect.disciples !== 'object') {
+              data.sect.disciples = { total: 500, idle: 500, dispatched: 0 };
+            }
+            if (!Array.isArray(data.sect.activeDecrees)) {
+              data.sect.activeDecrees = [];
+            }
           }
         }
       }
@@ -3841,7 +3962,11 @@
     function openSectModalAndTab(tabId) {
       sfx.click();
       const hasSect = G.sect && G.sect.id && G.sect.name !== "散修";
-      const targetTab = tabId || (hasSect ? 'stabOverview' : 'stabJoin');
+      let defaultTab = hasSect ? 'stabOverview' : 'stabJoin';
+      if (hasSect && !tabId && Array.isArray(G.sect.activeDecrees) && G.sect.activeDecrees.some(d => d.status === 'completed')) {
+        defaultTab = 'stabDecrees';
+      }
+      const targetTab = tabId || defaultTab;
       switchSectTab(targetTab);
       openModal('modalSectSelect');
     }
@@ -3871,15 +3996,33 @@
       const homeMapName = homeMap ? homeMap.name : "未知灵域";
       const isAtHome = hasSect && homeMap && (G.currentMap === curSectDb.homeMap);
 
+      if (hasSect) {
+        if (!G.sect.disciples || typeof G.sect.disciples !== 'object') {
+          const baseCount = curSectDb ? (curSectDb.baseDisciples || 1000) : 1000;
+          G.sect.disciples = { total: baseCount, idle: baseCount, dispatched: 0 };
+        }
+        if (!Array.isArray(G.sect.activeDecrees)) {
+          G.sect.activeDecrees = [];
+        }
+      }
+
       // 模态框标题
       const titleEl = document.getElementById('sectModalTitle');
       if (titleEl) {
         titleEl.textContent = hasSect ? `🏛️ 宗门仙府 · 【${G.sect.name}】议事大殿` : `🏛️ 仙门大选 · 天下名门道统`;
       }
 
+      // 统计凯旋待领法令
+      const completedDecreesCount = hasSect ? G.sect.activeDecrees.filter(d => d.status === 'completed').length : 0;
+      const decreesTabBtn = document.getElementById('btnStabDecrees');
+      if (decreesTabBtn) {
+        decreesTabBtn.innerHTML = `👑 长老议事堂${completedDecreesCount > 0 ? ` <span style="background:var(--gold-light); color:#000; padding:0.05rem 0.35rem; border-radius:10px; font-size:0.65rem; font-weight:bold;">${completedDecreesCount}待领</span>` : ''}`;
+      }
+
       // 顶置身份卡片
       if (statusBox) {
         if (hasSect) {
+          const disciples = G.sect.disciples;
           statusBox.innerHTML = `
             <div style="flex:1; min-width:240px;">
               <div style="font-size:0.95rem; font-weight:700; color:var(--gold-light); display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
@@ -3890,6 +4033,7 @@
               <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem; display:flex; gap:0.75rem; flex-wrap:wrap;">
                 <span>宗门功勋：<b style="color:var(--gold-light);">${G.sect.contrib || 0}</b> 点</span>
                 <span>宗门月俸：<b style="color:var(--jade-green);">${G.sect.salary || 0}</b> 灵石</span>
+                <span>门人待命：<b style="color:var(--jade-green);">${disciples.idle}</b> / ${disciples.total} 人</span>
                 <span>山门祖庭：<b style="color:var(--ethereal-blue);">${homeMapName}</b></span>
               </div>
             </div>
@@ -3919,12 +4063,13 @@
               <div style="font-size:2.2rem; margin-bottom:0.4rem;">🏔️</div>
               <div style="font-size:1.05rem; color:var(--gold-light); font-weight:600; margin-bottom:0.3rem;">未拜名门 · 独步仙途</div>
               <div style="font-size:0.8rem; color:var(--text-muted); max-width:440px; margin:0 auto 1.2rem auto; line-height:1.6;">
-                道友目前为闲云散修。修真界各大宗门底蕴宏大，加入后可享受灵脉洞府、每月丰厚月俸、镇宗传承玄功与长老大权。
+                道友目前为闲云散修。修真界各大宗门底蕴宏大，加入后可享受灵脉洞府、每月丰厚月俸、镇宗传承玄功与号令三千门生之尊荣。
               </div>
               <button class="btn btn-gold" onclick="switchSectTab('stabJoin')">⛩️ 前往仙门大选挑选道统</button>
             </div>
           `;
         } else {
+          const disciples = G.sect.disciples;
           overviewPane.innerHTML = `
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.65rem; margin-bottom:0.75rem;">
               <div style="background:#0d141e; border:1px solid var(--border-subtle); border-radius:6px; padding:0.75rem;">
@@ -3940,24 +4085,24 @@
               </div>
 
               <div style="background:#0d141e; border:1px solid var(--border-subtle); border-radius:6px; padding:0.75rem;">
-                <div style="font-size:0.82rem; font-weight:600; color:var(--gold-light); margin-bottom:0.4rem;">📜 镇宗秘典与待遇</div>
+                <div style="font-size:0.82rem; font-weight:600; color:var(--gold-light); margin-bottom:0.4rem;">👥 宗门门人与待遇</div>
                 <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.65;">
-                  <div>传承心法：<span style="color:var(--purple-rare); font-weight:600;">${G.technique ? G.technique.name : '镇宗心法'}</span></div>
+                  <div>门人生力军：<b style="color:var(--text-main);">${disciples.total}</b> 人 (待命:<b style="color:var(--jade-green);">${disciples.idle}</b> | 执勤:<b style="color:var(--ethereal-blue);">${disciples.dispatched}</b>)</div>
                   <div>阶位待遇：<span style="color:var(--gold-light); font-weight:600;">${curRank.name} (月俸×${curRank.salaryMult})</span></div>
                   <div>奉献积累：<span style="color:var(--text-main);">+${curRank.monthlyContrib} 功勋/月 (累计: ${G.sect.totalContrib || 0})</span></div>
                 </div>
                 <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.4rem; line-height:1.4;">
-                  ${curRank.canIssueQuests ? '👑 <span style="color:var(--gold-primary); font-weight:600;">尊享长老令谕大权，可号令门下弟子采药剿魔！</span>' : '🔰 尚居弟子之位，可在任务堂积攒功勋，以备晋升！'}
+                  ${curRank.canIssueQuests ? `👑 <span style="color:var(--gold-primary); font-weight:600;">尊享长老令谕大权，当前督办槽位上限：${curRank.maxDecrees || 1} 道！</span>` : '🔰 尚居弟子之位，可在任务堂积攒功勋，以备晋升长老！'}
                 </div>
               </div>
             </div>
 
             <div style="background:#0d141e; border:1px solid var(--border-subtle); border-radius:6px; padding:0.75rem;">
-              <div style="font-size:0.82rem; font-weight:600; color:var(--gold-light); margin-bottom:0.4rem;">🏛️ 仙府殿宇玩法语录</div>
+              <div style="font-size:0.82rem; font-weight:600; color:var(--gold-light); margin-bottom:0.4rem;">🏛️ 宗门玩法指引</div>
               <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.75;">
-                • <b>身份晋升</b>：从外门弟子一步步登临真传、执事长老、传功长老、太上长老至太上大长老，解锁翻倍月俸与极品护道宝丹！<br>
-                • <b>弟子任务堂</b>：采药供奉、灵丹上贡、巡山剿魔、藏经演武，可源源不断累积宗门功勋与丰厚酬劳！<br>
-                • <b>长老议事堂</b>：位列长老后执掌调度玉符，可下达【搜山采药令】、【妖煞荡涤令】、【广纳仙苗令】等大令谕，号令全宗！
+                • <b>身份晋升</b>：从外门逐步晋升至长老、太上长老与太上大长老，解锁翻倍月俸、更多令谕督办槽位与极品突破神丹！<br>
+                • <b>弟子任务堂</b>：采药供奉、灵丹上贡、巡山剿魔、藏经演武，消耗光阴历练，快速累积宗门功勋与酬劳！<br>
+                • <b>长老议事堂</b>：位列长老后执掌调度玉符，调派宗门门人出巡搜山、荡魔或纳引仙苗！法令需历经数月光阴流转，凯旋后更可呈阅战报、收缴海量天材地宝！
               </div>
             </div>
           `;
@@ -3994,6 +4139,7 @@
                   <span>需【${REALMS[r.minRealm].name}】</span> | 
                   <span>功勋:${r.reqContrib}</span> | 
                   <span style="color:var(--jade-green); font-weight:600;">月俸×${r.salaryMult}</span>
+                  ${r.maxDecrees > 0 ? ` | <span style="color:var(--gold-light);">令谕槽:${r.maxDecrees}</span>` : ''}
                 </div>
               </div>
             `;
@@ -4026,7 +4172,7 @@
                 <div style="font-size:0.75rem; line-height:1.8; margin-bottom:0.65rem; background:rgba(0,0,0,0.25); padding:0.5rem 0.7rem; border-radius:4px;">
                   <div>• 最低境界：【${REALMS[nextRank.minRealm].name}】 ${meetsRealm ? '<span style="color:var(--jade-green); font-weight:bold;">✓ 已达成</span>' : `<span style="color:var(--cinnabar); font-weight:bold;">✗ 未达成 (当前${curRealm.name})</span>`}</div>
                   <div>• 所需功勋：${nextRank.reqContrib} 点 ${meetsContrib ? `<span style="color:var(--jade-green); font-weight:bold;">✓ 已达成 (${G.sect.contrib || 0}/${nextRank.reqContrib})</span>` : `<span style="color:var(--cinnabar); font-weight:bold;">✗ 尚缺 ${nextRank.reqContrib - (G.sect.contrib || 0)} 点 (当前${G.sect.contrib || 0})</span>`}</div>
-                  <div style="color:var(--gold-light);">• 晋升赐礼：赐对应破境护道神丹、大量灵石${nextRank.canIssueQuests && !curRank.canIssueQuests ? '、<b>执掌长老调度玉符</b>' : ''}！</div>
+                  <div style="color:var(--gold-light);">• 晋升特权：赐对应破境护道神丹、大量灵石${nextRank.maxDecrees > (curRank.maxDecrees || 0) ? `、<b>督办令谕槽位增至 ${nextRank.maxDecrees} 支队伍</b>` : ''}！</div>
                 </div>
                 <button class="btn ${canPromote ? 'btn-gold' : ''}" style="width:100%; padding:0.45rem;" ${canPromote ? '' : 'disabled'} onclick="doSectPromotion('${nextRank.key}')">
                   ${canPromote ? `🎊 举行全宗大典 · 晋升为【${nextRank.name}】` : `壁障未破 (功勋或境界未达标)`}
@@ -4051,14 +4197,14 @@
         } else {
           questsPane.innerHTML = `
             <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.65rem;">
-              全宗门人皆可在此领受差事，赚取宗门功勋与丰厚灵石酬劳，助益道行成长：
+              全宗门人皆可在此领受差事，赚取宗门功勋与丰厚灵石酬劳，执行任务将耗费光阴并同步推进外派令谕进程：
             </div>
 
             <div class="sect-quest-card">
               <div style="flex:1;">
                 <div style="font-weight:600; color:var(--gold-light); font-size:0.85rem;">🌿 采药供奉 · 深入后山药圃</div>
                 <div style="font-size:0.73rem; color:var(--text-muted); margin:0.2rem 0;">受命采集百草堂所需药引，山路崎岖，需施展御风身法。</div>
-                <div style="font-size:0.71rem; color:var(--jade-green);">消耗：2个月光阴、15点灵力 | 奖励：宗门功勋+35、灵石+60</div>
+                <div style="font-size:0.71rem; color:var(--jade-green);">耗时：2个月光阴、15点灵力 | 奖励：宗门功勋+35、灵石+60</div>
               </div>
               <button class="btn btn-gold" style="font-size:0.75rem; padding:0.32rem 0.65rem;" onclick="doSectQuest('gather')">领命采药</button>
             </div>
@@ -4067,7 +4213,7 @@
               <div style="flex:1;">
                 <div style="font-weight:600; color:var(--gold-light); font-size:0.85rem;">🧪 灵丹上贡 · 丹房支应</div>
                 <div style="font-size:0.73rem; color:var(--text-muted); margin:0.2rem 0;">上缴随身携带的一颗修炼丹药（若储物袋无丹则消耗60灵石代缴）。</div>
-                <div style="font-size:0.71rem; color:var(--jade-green);">消耗：丹药1颗或60灵石、1个月 | 奖励：宗门功勋+60、炼丹心得+20、声望+5</div>
+                <div style="font-size:0.71rem; color:var(--jade-green);">耗时：1个月光阴、丹药1颗或60灵石 | 奖励：宗门功勋+60、炼丹心得+20、声望+5</div>
               </div>
               <button class="btn btn-gold" style="font-size:0.75rem; padding:0.32rem 0.65rem;" onclick="doSectQuest('alchemy')">上贡灵丹</button>
             </div>
@@ -4076,7 +4222,7 @@
               <div style="flex:1;">
                 <div style="font-weight:600; color:var(--gold-light); font-size:0.85rem;">⚔️ 巡山剿魔 · 护持灵脉</div>
                 <div style="font-size:0.73rem; color:var(--text-muted); margin:0.2rem 0;">执剑巡查山门外围矿脉，驱逐妖兽与越界魔修。</div>
-                <div style="font-size:0.71rem; color:var(--jade-green);">消耗：3个月光阴、30点气血 | 奖励：宗门功勋+80、灵石+120、修为经验+1500</div>
+                <div style="font-size:0.71rem; color:var(--jade-green);">耗时：3个月光阴、30点气血 | 奖励：宗门功勋+80、灵石+120、修为经验+1500</div>
               </div>
               <button class="btn btn-gold" style="font-size:0.75rem; padding:0.32rem 0.65rem;" onclick="doSectQuest('patrol')">执剑巡山</button>
             </div>
@@ -4085,7 +4231,7 @@
               <div style="flex:1;">
                 <div style="font-weight:600; color:var(--gold-light); font-size:0.85rem;">📖 藏经演武 · 推演残篇</div>
                 <div style="font-size:0.73rem; color:var(--text-muted); margin:0.2rem 0;">前往藏经宝阁协助传功堂推演古谱阵法，需聚精会神。</div>
-                <div style="font-size:0.71rem; color:var(--jade-green);">消耗：2个月光阴、25点灵力 | 奖励：宗门功勋+50、顿悟修为+2500</div>
+                <div style="font-size:0.71rem; color:var(--jade-green);">耗时：2个月光阴、25点灵力 | 奖励：宗门功勋+50、顿悟修为+2500</div>
               </div>
               <button class="btn btn-gold" style="font-size:0.75rem; padding:0.32rem 0.65rem;" onclick="doSectQuest('sutra')">推演演武</button>
             </div>
@@ -4093,7 +4239,7 @@
         }
       }
 
-      // 标签4：长老议事堂 · 发布令谕
+      // 标签4：长老议事堂 · 发布令谕与督导
       const decreesPane = document.getElementById('stabDecrees');
       if (decreesPane) {
         if (!hasSect) {
@@ -4104,83 +4250,162 @@
               <div style="font-size:2.2rem; margin-bottom:0.5rem;">🔒</div>
               <div style="font-size:1.05rem; color:var(--cinnabar-light); font-weight:700; margin-bottom:0.4rem;">长老议事堂 · 唯长老尊位方可升座</div>
               <div style="font-size:0.8rem; color:var(--text-muted); line-height:1.6; max-width:440px; margin:0 auto 1.2rem auto;">
-                道友目前阶位为【${curRank.name}】。宗门法令森严，唯有突破至【元婴期】并累积1200点功勋晋升为【执事长老】后，方可执掌长老玉符，在此开坛发布令谕，号令门下三千弟子搜寻天下灵草、荡涤魔窟！
+                道友目前阶位为【${curRank.name}】。宗门法令森严，唯有突破至【元婴期】并累积1200点功勋晋升为【执事长老】后，方可执掌长老玉符，在此开坛发布令谕，号令门下弟子搜寻天下灵草、荡涤魔窟！
               </div>
               <button class="btn btn-gold" onclick="switchSectTab('stabPromote')">🌟 查看晋升条件与天梯</button>
             </div>
           `;
         } else {
-          const rIdx = SECT_RANKS.findIndex(r => r.key === G.sect.rankKey);
+          G.sect.activeDecrees = G.sect.activeDecrees || [];
+          if (!G.sect.disciples) {
+            G.sect.disciples = { total: 1000, idle: 1000, dispatched: 0 };
+          }
+          const disciples = G.sect.disciples;
+          const maxSlots = curRank.maxDecrees || 1;
+          const activeCount = G.sect.activeDecrees.length;
+          const curRankIdx = SECT_RANKS.findIndex(r => r.key === G.sect.rankKey);
+
+          // 1. 活跃中的令谕卡片 HTML
+          let activeHtml = "";
+          if (G.sect.activeDecrees.length === 0) {
+            activeHtml = `
+              <div style="text-align:center; padding:0.9rem; background:rgba(0,0,0,0.25); border:1px dashed var(--border-subtle); border-radius:6px; color:var(--text-muted); font-size:0.76rem;">
+                暂无出巡外派中的令谕。可从下方法令大典选派门生出巡。
+              </div>
+            `;
+          } else {
+            activeHtml = G.sect.activeDecrees.map(dec => {
+              const isDone = dec.status === 'completed';
+              const progressPct = isDone ? 100 : Math.min(99, Math.round(((dec.totalMonths - dec.remainingMonths) / dec.totalMonths) * 100));
+
+              return `
+                <div style="background: ${isDone ? 'linear-gradient(135deg, rgba(212,160,23,0.18), rgba(16,21,33,0.95))' : '#0d141e'}; border: 1px solid ${isDone ? 'var(--gold-light)' : 'var(--border-subtle)'}; border-radius:6px; padding:0.65rem 0.85rem; margin-bottom:0.5rem; ${isDone ? 'box-shadow: 0 0 10px rgba(212,160,23,0.25);' : ''}">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem; flex-wrap:wrap; gap:0.4rem;">
+                    <div style="font-weight:700; color:${isDone ? 'var(--gold-light)' : 'var(--text-main)'}; font-size:0.85rem; display:flex; align-items:center; gap:0.4rem;">
+                      <span>${dec.icon}</span>
+                      <span>${dec.title}</span>
+                      <span style="font-size:0.68rem; background:rgba(52,152,219,0.15); color:var(--ethereal-blue); padding:0.1rem 0.35rem; border-radius:3px;">调派 ${dec.assignedDisciples} 人</span>
+                    </div>
+                    <div>
+                      ${isDone 
+                        ? `<span style="color:var(--jade-green); font-size:0.75rem; font-weight:700;">🎉 凯旋归宗 · 候旨呈报</span>` 
+                        : `<span style="color:var(--gold-light); font-size:0.75rem;">⏳ 执勤中 (还需 ${dec.remainingMonths} 个月)</span>`
+                      }
+                    </div>
+                  </div>
+
+                  <!-- 进度条 -->
+                  <div style="width:100%; height:6px; background:#1a2332; border-radius:3px; overflow:hidden; margin-bottom:0.45rem;">
+                    <div style="width:${progressPct}%; height:100%; background:${isDone ? 'var(--jade-green)' : 'linear-gradient(90deg, #3498db, #d4a017)'}; transition: width 0.3s;"></div>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">
+                    <div style="font-size:0.72rem; color:var(--text-muted);">
+                      ${isDone 
+                        ? `门生历经 ${dec.totalMonths} 个月斩获甚丰，已在议事大殿外候旨！` 
+                        : `天元${dec.startedYear}年${dec.startedMonth}月出征，推进光阴岁月将自动倒计时`
+                      }
+                    </div>
+                    <div>
+                      ${isDone 
+                        ? `<button class="btn btn-gold" style="font-size:0.75rem; padding:0.25rem 0.65rem; font-weight:700;" onclick="claimSectDecree('${dec.id}')">🎁 论功行赏 · 领受战报与缴获</button>` 
+                        : `<button class="btn" disabled style="font-size:0.72rem; padding:0.25rem 0.55rem; opacity:0.6;">⏳ 门生在外历练中</button>`
+                      }
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+
+          // 2. 可颁布令谕列表
+          let decreeListHtml = SECT_DECREES_DEF.map(dec => {
+            const reqRankIdx = SECT_RANKS.findIndex(r => r.key === dec.minRankKey);
+            const meetsRank = curRankIdx >= reqRankIdx;
+            const isAlreadyRunning = G.sect.activeDecrees.some(d => d.type === dec.key);
+            const isSlotsFull = G.sect.activeDecrees.length >= maxSlots;
+            const hasEnoughDisciples = disciples.idle >= dec.reqDisciples;
+            const hasEnoughContrib = (G.sect.contrib || 0) >= dec.costContrib;
+            const hasEnoughStones = G.stones >= dec.costStones;
+
+            let btnText = "📜 调兵遣将 · 颁布此令";
+            let btnDisabled = false;
+            let btnClass = "btn btn-gold";
+
+            if (!meetsRank) {
+              btnText = `需【${dec.minRankName}】`;
+              btnDisabled = true;
+              btnClass = "btn";
+            } else if (isAlreadyRunning) {
+              btnText = "🚩 执勤出巡中";
+              btnDisabled = true;
+              btnClass = "btn";
+            } else if (isSlotsFull) {
+              btnText = `督办槽位已满 (${activeCount}/${maxSlots})`;
+              btnDisabled = true;
+              btnClass = "btn";
+            } else if (!hasEnoughDisciples) {
+              btnText = `待命门生不足 (${disciples.idle}/${dec.reqDisciples})`;
+              btnDisabled = true;
+              btnClass = "btn";
+            } else if (!hasEnoughContrib) {
+              btnText = `功勋不足 (需${dec.costContrib})`;
+              btnDisabled = true;
+              btnClass = "btn";
+            } else if (!hasEnoughStones) {
+              btnText = `灵石不足 (需${dec.costStones})`;
+              btnDisabled = true;
+              btnClass = "btn";
+            }
+
+            return `
+              <div class="sect-decree-card" style="${!meetsRank ? 'opacity:0.5;' : ''}">
+                <div style="flex:1;">
+                  <div style="font-weight:700; color:var(--gold-light); font-size:0.88rem; display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                    <span>${dec.icon}</span>
+                    <span>${dec.title}</span>
+                    <span class="item-tier-badge ${SECT_RANKS[reqRankIdx].badge}" style="font-size:0.62rem;">${dec.minRankName}</span>
+                    <span style="font-size:0.7rem; color:var(--ethereal-blue); background:rgba(52,152,219,0.15); padding:0.1rem 0.35rem; border-radius:3px;">需 ${dec.reqDisciples} 人</span>
+                    <span style="font-size:0.7rem; color:var(--text-muted); background:rgba(255,255,255,0.06); padding:0.1rem 0.35rem; border-radius:3px;">耗时 ${dec.durationMonths} 个月</span>
+                  </div>
+                  <div style="font-size:0.73rem; color:var(--text-muted); margin:0.25rem 0;">${dec.desc}</div>
+                  <div style="font-size:0.71rem; color:var(--jade-green);">消耗：${dec.costContrib} 功勋、${dec.costStones} 灵石 | 战果预估：${dec.rewardDesc}</div>
+                </div>
+                <button class="${btnClass}" ${btnDisabled ? 'disabled' : ''} style="font-size:0.75rem; padding:0.35rem 0.65rem;" onclick="issueSectDecree('${dec.key}')">
+                  ${btnText}
+                </button>
+              </div>
+            `;
+          }).join('');
+
           decreesPane.innerHTML = `
-            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.65rem;">
-              长老升座！你手握宗门调度玉符，言出法随，可号令宗门内外门众弟子执行专属法令：
+            <!-- 顶部调度看板 -->
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#0d141e; border:1px solid var(--border-subtle); border-radius:6px; padding:0.55rem 0.85rem; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.4rem;">
+              <div style="font-size:0.78rem; color:var(--text-muted);">
+                👥 门人体量：总计 <b style="color:var(--text-main);">${disciples.total}</b> 人 | 
+                待命：<b style="color:var(--jade-green);">${disciples.idle}</b> 人 | 
+                执勤：<b style="color:var(--ethereal-blue);">${disciples.dispatched}</b> 人
+              </div>
+              <div style="font-size:0.78rem; color:var(--gold-light); font-weight:600;">
+                📜 督办法令：${activeCount} / ${maxSlots} 槽位
+              </div>
             </div>
 
-            <!-- 令谕1：搜山采药 -->
-            <div class="sect-decree-card">
-              <div style="flex:1;">
-                <div style="font-weight:700; color:var(--gold-light); font-size:0.88rem; display:flex; align-items:center; gap:0.4rem;">
-                  <span>🌿 搜山采药令</span>
-                  <span class="item-tier-badge badge-yuanying" style="font-size:0.62rem;">执事长老</span>
-                </div>
-                <div style="font-size:0.73rem; color:var(--text-muted); margin:0.25rem 0;">调遣三十名内外门弟子全面搜罗百里灵山，采集奇珍药材。</div>
-                <div style="font-size:0.71rem; color:var(--jade-green);">法令消耗：80 宗门功勋、150 灵石 | 缴获：随机 3~5 份高阶灵药入库</div>
-              </div>
-              <button class="btn btn-gold" style="font-size:0.75rem; padding:0.35rem 0.75rem;" onclick="issueSectDecree('gather')">颁布法令</button>
+            <!-- 当前督导中的令谕 -->
+            <div style="font-size:0.8rem; font-weight:700; color:var(--gold-light); margin-bottom:0.4rem; display:flex; justify-content:space-between; align-items:center;">
+              <span>🚩 督导中的宗门令谕</span>
+              <span style="font-size:0.7rem; color:var(--text-muted); font-weight:normal;">推进光阴岁月将自动倒计时</span>
+            </div>
+            <div style="margin-bottom:0.85rem;">
+              ${activeHtml}
             </div>
 
-            <!-- 令谕2：妖煞荡涤 -->
-            <div class="sect-decree-card">
-              <div style="flex:1;">
-                <div style="font-weight:700; color:var(--gold-light); font-size:0.88rem; display:flex; align-items:center; gap:0.4rem;">
-                  <span>⚔️ 妖煞荡涤令</span>
-                  <span class="item-tier-badge badge-yuanying" style="font-size:0.62rem;">执事长老</span>
-                </div>
-                <div style="font-size:0.73rem; color:var(--text-muted); margin:0.25rem 0;">调遣战堂精锐修士进剿周边妖窟巢穴，扬我宗门浩然正气。</div>
-                <div style="font-size:0.71rem; color:var(--jade-green);">法令消耗：120 宗门功勋、250 灵石 | 缴获：500~900 灵石、四阶大妖妖丹、威望+25</div>
-              </div>
-              <button class="btn btn-gold" style="font-size:0.75rem; padding:0.35rem 0.75rem;" onclick="issueSectDecree('patrol')">颁布法令</button>
+            <!-- 宗门法令大典 -->
+            <div style="font-size:0.8rem; font-weight:700; color:var(--gold-light); margin-bottom:0.4rem;">
+              📜 宗门法令大典 (选派门生出巡)
             </div>
-
-            <!-- 令谕3：广纳仙苗 -->
-            <div class="sect-decree-card">
-              <div style="flex:1;">
-                <div style="font-weight:700; color:var(--gold-light); font-size:0.88rem; display:flex; align-items:center; gap:0.4rem;">
-                  <span>✨ 广纳仙苗令</span>
-                  <span class="item-tier-badge badge-yuanying" style="font-size:0.62rem;">执事长老</span>
-                </div>
-                <div style="font-size:0.73rem; color:var(--text-muted); margin:0.25rem 0;">升座法坛，亲自为全宗新晋三千仙苗讲道传法，洗涤凡尘。</div>
-                <div style="font-size:0.71rem; color:var(--jade-green);">法令消耗：100 宗门功勋 | 收益：宗门声望+40、反哺自身修为经验+4000</div>
-              </div>
-              <button class="btn btn-gold" style="font-size:0.75rem; padding:0.35rem 0.75rem;" onclick="issueSectDecree('recruit')">颁布法令</button>
-            </div>
-
-            <!-- 令谕4：太上开炉督造令 (需传功长老 rIdx >= 4) -->
-            <div class="sect-decree-card" style="${rIdx < 4 ? 'opacity:0.6;' : ''}">
-              <div style="flex:1;">
-                <div style="font-weight:700; color:var(--gold-light); font-size:0.88rem; display:flex; align-items:center; gap:0.4rem;">
-                  <span>🔥 太上开炉督造令</span>
-                  <span class="item-tier-badge badge-huashen" style="font-size:0.62rem;">传功长老</span>
-                  ${rIdx < 4 ? '<span style="color:var(--cinnabar); font-size:0.68rem;">(需化神期·传功长老)</span>' : ''}
-                </div>
-                <div style="font-size:0.73rem; color:var(--text-muted); margin:0.25rem 0;">号令百草丹堂全部炼丹大师开炉，合力为你督造专属护道大丹！</div>
-                <div style="font-size:0.71rem; color:var(--jade-green);">法令消耗：200 宗门功勋、500 灵石 | 赐宝：极品降尘/破障/化神定阳丹×1、炼丹心得+50</div>
-              </div>
-              <button class="btn ${rIdx >= 4 ? 'btn-gold' : ''}" ${rIdx >= 4 ? '' : 'disabled'} style="font-size:0.75rem; padding:0.35rem 0.75rem;" onclick="issueSectDecree('alchemy')">开炉督造</button>
-            </div>
-
-            <!-- 令谕5：太上极道征伐令 (需太上长老 rIdx >= 5) -->
-            <div class="sect-decree-card" style="${rIdx < 5 ? 'opacity:0.6;' : ''}">
-              <div style="flex:1;">
-                <div style="font-weight:700; color:var(--gold-light); font-size:0.88rem; display:flex; align-items:center; gap:0.4rem;">
-                  <span>⚡ 太上极道征伐令</span>
-                  <span class="item-tier-badge badge-xian" style="font-size:0.62rem;">太上长老</span>
-                  ${rIdx < 5 ? '<span style="color:var(--cinnabar); font-size:0.68rem;">(需炼虚期·太上长老)</span>' : ''}
-                </div>
-                <div style="font-size:0.73rem; color:var(--text-muted); margin:0.25rem 0;">敲响九霄荡魔神钟，号令全宗三千飞剑跨域征伐域外魔窟！</div>
-                <div style="font-size:0.71rem; color:var(--jade-green);">法令消耗：400 宗门功勋、1000 灵石 | 战果：灵石2000~3500、七品太虚涅槃丹、威望+80</div>
-              </div>
-              <button class="btn ${rIdx >= 5 ? 'btn-gold' : ''}" ${rIdx >= 5 ? '' : 'disabled'} style="font-size:0.75rem; padding:0.35rem 0.75rem;" onclick="issueSectDecree('crusade')">至尊征伐</button>
+            <div>
+              ${decreeListHtml}
             </div>
           `;
         }
@@ -4238,6 +4463,7 @@
               <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
                 <span style="font-weight:600; color:var(--gold-light);">${sect.name}</span>
                 <span style="font-size:0.68rem; color:var(--ethereal-blue); background:rgba(52,152,219,0.15); padding:0.1rem 0.35rem; border-radius:3px;">祖庭：${homeMapName}</span>
+                <span style="font-size:0.68rem; color:var(--text-muted); background:rgba(255,255,255,0.06); padding:0.1rem 0.35rem; border-radius:3px;">门生：${sect.baseDisciples || 1000} 人</span>
                 ${isCurrentSect ? '<span style="font-size:0.68rem; background:rgba(46,204,113,0.2); color:var(--jade-green); padding:0.1rem 0.35rem; border-radius:3px;">修习中</span>' : ''}
                 ${isHigherSect ? '<span style="font-size:0.68rem; background:rgba(212,160,23,0.2); color:var(--gold-light); padding:0.1rem 0.35rem; border-radius:3px;">更高道统</span>' : ''}
               </div>
@@ -4281,6 +4507,7 @@
       const rIdx = getInitialRankIndex(sect, G.realmIndex);
       const startingRank = SECT_RANKS[rIdx];
       const salary = calcSectSalary(sect, startingRank.key);
+      const baseDisciples = sect.baseDisciples || 1000;
 
       G.sect = {
         id: sect.id,
@@ -4290,7 +4517,13 @@
         rankKey: startingRank.key,
         rankName: startingRank.name,
         contrib: Math.max(Number(G.sect && G.sect.contrib) || 0, startingRank.reqContrib),
-        totalContrib: Math.max(Number(G.sect && G.sect.totalContrib) || 0, startingRank.reqContrib)
+        totalContrib: Math.max(Number(G.sect && G.sect.totalContrib) || 0, startingRank.reqContrib),
+        disciples: {
+          total: baseDisciples,
+          idle: baseDisciples,
+          dispatched: 0
+        },
+        activeDecrees: []
       };
 
       // 所在地同步迁往宗门山门所在大域
@@ -4333,8 +4566,8 @@
       sfx.click();
       const sectName = G.sect.name;
       const rankTitle = G.sect.rankName || "门人";
-      if (confirm(`【脱离门庭】确定要辞去【${sectName}】${rankTitle}身份，重归散修自由之身吗？\n\n• 失去每月宗门俸禄 (${G.sect.salary || 0} 灵石)\n• 失去宗门身份特权与未用功勋\n• 恢复散修身份，可自由择定其他同阶仙门拜入\n• 扣除 15 点修真界威望`)) {
-        G.sect = { id: null, name: "散修", salary: 0, minRealm: 0, rankKey: "outer", rankName: "散修", contrib: 0, totalContrib: 0 };
+      if (confirm(`【脱离门庭】确定要辞去【${sectName}】${rankTitle}身份，重归散修自由之身吗？\n\n• 失去每月宗门俸禄 (${G.sect.salary || 0} 灵石)\n• 失去宗门身份特权、未领令谕与未用功勋\n• 恢复散修身份，可自由择定其他同阶仙门拜入\n• 扣除 15 点修真界威望`)) {
+        G.sect = { id: null, name: "散修", salary: 0, minRealm: 0, rankKey: "outer", rankName: "散修", contrib: 0, totalContrib: 0, disciples: null, activeDecrees: [] };
         G.stats.reputation = Math.max(0, (G.stats.reputation || 0) - 15);
         sfx.alert();
         addLog(`【重归闲散】你向【${sectName}】奉还宗门玉符，辞去${rankTitle}尊位，解除羁绊，重回散修之身！`, "normal");
@@ -4381,19 +4614,19 @@
       } else if (nextRank.key === "elder") {
         addItemToInv(ITEMS_DB.pill_yuanying, 1);
         G.stones += 800;
-        rewardText = "执掌长老调度玉符！开辟灵峰洞府，获赐【五品九转结婴丹】×1、灵石 800 块，解锁【长老议事堂】";
+        rewardText = "执掌长老调度玉符！开辟灵峰洞府，获赐【五品九转结婴丹】×1、灵石 800 块，解锁【长老议事堂】发布令谕大权";
       } else if (nextRank.key === "grand_elder") {
         addItemToInv(ITEMS_DB.pill_huashen, 1);
         G.stones += 2000;
-        rewardText = "总揽全宗道统！获赐【六品化神定阳丹】×1、灵石 2000 块，开启【太上开炉督造令】";
+        rewardText = "总揽全宗道统！获赐【六品化神定阳丹】×1、灵石 2000 块，开启【太上开炉督造令】，令谕槽位增至 2 支队伍";
       } else if (nextRank.key === "supreme_elder") {
         addItemToInv(ITEMS_DB.pill_lianxu, 1);
         G.stones += 5000;
-        rewardText = "位列太上巨擘！获赐【七品太虚涅槃丹】×1、灵石 5000 块，开启【太上极道征伐令】";
+        rewardText = "位列太上巨擘！获赐【七品太虚涅槃丹】×1、灵石 5000 块，开启【太上极道征伐令】，令谕槽位增至 3 支队伍";
       } else if (nextRank.key === "supreme_patriarch") {
         addItemToInv(ITEMS_DB.pill_feisheng, 1);
         G.stones += 10000;
-        rewardText = "尊为全宗大长老！获赐【鸿蒙造化真仙丹】×1、灵石 10000 块，万古仙门唯我独尊";
+        rewardText = "尊为全宗大长老！获赐【鸿蒙造化真仙丹】×1、灵石 10000 块，令谕槽位增至 4 支队伍，万古仙门唯我独尊";
       }
 
       addLog(`🎊【宗门晋升大典】全宗九响天钟！道友荣升为【${G.sect.name}】之【${nextRank.name}】！${rewardText}！月俸激增至 ${G.sect.salary} 灵石！`, "breakthrough");
@@ -4464,7 +4697,7 @@
         G.stones += addStones;
         G.exp += addExp;
         sfx.slash();
-        addLog(`【宗门任务】你仗剑巡视山门灵脉，斩杀三头窜扰的赤目妖狼！获赐宗门功勋 +${addContrib} 点，灵石 +${addStones} 块，磨砺战意修为 +${addExp} 点！`, "normal");
+        addLog(`【宗门任务】你仗剑巡视山门灵脉，斩杀三头窜扰的赤目妖狼！耗时三月，获赐宗门功勋 +${addContrib} 点，灵石 +${addStones} 块，磨砺战意修为 +${addExp} 点！`, "normal");
       } else if (questKey === 'sutra') {
         if (G.mp < 25) {
           alert("法力不足，无法静心参悟藏经阁阵法！");
@@ -4479,7 +4712,7 @@
         G.sect.totalContrib = (G.sect.totalContrib || 0) + addContrib;
         G.exp += addExp;
         sfx.spell();
-        addLog(`【宗门任务】你在藏经阁协助传功堂推演道法残篇，福至心灵！宗门功勋 +${addContrib} 点，顿悟灵息修为 +${addExp} 点！`, "normal");
+        addLog(`【宗门任务】你在藏经阁协助传功堂推演道法残篇，福至心灵！耗时两月，宗门功勋 +${addContrib} 点，顿悟灵息修为 +${addExp} 点！`, "normal");
       }
 
       saveToLocal();
@@ -4498,13 +4731,113 @@
         return;
       }
 
-      if (decreeKey === 'gather') {
-        if ((G.sect.contrib || 0) < 80) { alert("宗门功勋不足 80 点！"); return; }
-        if (G.stones < 150) { alert("调派弟子所需赏金不足 150 灵石！"); return; }
-        G.sect.contrib -= 80;
-        G.stones -= 150;
-        sfx.click();
+      const decDef = SECT_DECREES_DEF.find(d => d.key === decreeKey);
+      if (!decDef) return;
 
+      const curRankIdx = SECT_RANKS.findIndex(r => r.key === G.sect.rankKey);
+      const reqRankIdx = SECT_RANKS.findIndex(r => r.key === decDef.minRankKey);
+      if (curRankIdx < reqRankIdx) {
+        alert(`此令谕唯有【${decDef.minRankName}】及以上尊位方可升座颁布！`);
+        return;
+      }
+
+      G.sect.activeDecrees = G.sect.activeDecrees || [];
+      const maxSlots = curRank.maxDecrees || 1;
+      if (G.sect.activeDecrees.length >= maxSlots) {
+        alert(`当前督办法令已达你职位上限（最多同时督办 ${maxSlots} 道）！\n请等待外出弟子凯旋归宗后再行遣使。`);
+        return;
+      }
+
+      const isAlreadyRunning = G.sect.activeDecrees.some(d => d.type === decreeKey);
+      if (isAlreadyRunning) {
+        alert(`【${decDef.title}】已有一支队伍在外执行中，不可重复调派！`);
+        return;
+      }
+
+      if (!G.sect.disciples) {
+        const baseCount = 1000;
+        G.sect.disciples = { total: baseCount, idle: baseCount, dispatched: 0 };
+      }
+
+      if (G.sect.disciples.idle < decDef.reqDisciples) {
+        alert(`宗门待命门人不足！当前空闲待命 ${G.sect.disciples.idle} 人，需调派 ${decDef.reqDisciples} 人。\n请等待外出弟子归宗，或颁布【广纳仙苗令】扩充门生！`);
+        return;
+      }
+
+      if ((G.sect.contrib || 0) < decDef.costContrib) {
+        alert(`宗门功勋不足！当前功勋 ${G.sect.contrib || 0} 点，颁发此令需 ${decDef.costContrib} 点。`);
+        return;
+      }
+
+      if (G.stones < decDef.costStones) {
+        alert(`所需赏金与军费灵石不足！当前灵石 ${G.stones} 块，需 ${decDef.costStones} 块。`);
+        return;
+      }
+
+      // 扣除资源与调遣弟子
+      G.sect.contrib -= decDef.costContrib;
+      G.stones -= decDef.costStones;
+      G.sect.disciples.idle -= decDef.reqDisciples;
+      G.sect.disciples.dispatched = (G.sect.disciples.dispatched || 0) + decDef.reqDisciples;
+
+      const newDecree = {
+        id: "dec_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+        type: decreeKey,
+        title: decDef.title,
+        icon: decDef.icon,
+        assignedDisciples: decDef.reqDisciples,
+        totalMonths: decDef.durationMonths,
+        remainingMonths: decDef.durationMonths,
+        startedYear: G.year || 9427,
+        startedMonth: G.ageMonths,
+        status: "running"
+      };
+      G.sect.activeDecrees.push(newDecree);
+
+      sfx.spell();
+      addLog(`👑【法令颁发 · 调兵遣将】你升座议事大殿，掷下【${decDef.title}】金箭！调派 ${decDef.reqDisciples} 名精锐门生领命出巡，预计历时 ${decDef.durationMonths} 个月！剩余待命弟子 ${G.sect.disciples.idle} 人。`, "breakthrough");
+
+      saveToLocal();
+      renderUI();
+      renderSectModal();
+    }
+
+    function advanceSectDecrees() {
+      if (!G || !G.sect || !Array.isArray(G.sect.activeDecrees)) return;
+      let completedCount = 0;
+      G.sect.activeDecrees.forEach(dec => {
+        if (dec.status === 'running') {
+          dec.remainingMonths--;
+          if (dec.remainingMonths <= 0) {
+            dec.remainingMonths = 0;
+            dec.status = 'completed';
+            completedCount++;
+            addLog(`👑【令谕凯旋】你此前下达的【${dec.title}】已功成归宗！${dec.assignedDisciples}名门生携战利品在议事殿前候旨，速往大殿论功行赏！`, "fortune");
+          }
+        }
+      });
+      if (completedCount > 0) {
+        sfx.breakthrough();
+      }
+    }
+
+    function claimSectDecree(decreeId) {
+      if (!G.sect || !Array.isArray(G.sect.activeDecrees)) return;
+      const dec = G.sect.activeDecrees.find(d => d.id === decreeId);
+      if (!dec || dec.status !== 'completed') return;
+
+      sfx.breakthrough();
+
+      // 归还外派弟子至待命池
+      if (G.sect.disciples) {
+        G.sect.disciples.dispatched = Math.max(0, (G.sect.disciples.dispatched || 0) - dec.assignedDisciples);
+        G.sect.disciples.idle = Math.min(G.sect.disciples.total, (G.sect.disciples.idle || 0) + dec.assignedDisciples);
+      }
+
+      let spoilsHtml = "";
+      let summaryText = "";
+
+      if (dec.type === 'gather') {
         const HERB_POOL = [
           ITEMS_DB.herb_longevity,
           ITEMS_DB.herb_jiangchen,
@@ -4512,48 +4845,65 @@
           ITEMS_DB.herb_ying,
           ITEMS_DB.herb_soul_wood
         ];
-        let gotNames = [];
-        const count = 3 + Math.floor(Math.random() * 3); // 3~5个
+        let gotItems = [];
+        const count = 3 + Math.floor(Math.random() * 3); // 3~5份
         for (let i = 0; i < count; i++) {
           const herb = HERB_POOL[Math.floor(Math.random() * HERB_POOL.length)];
           addItemToInv(herb, 1);
-          gotNames.push(herb.name);
+          gotItems.push(herb);
         }
-        sfx.spell();
-        addLog(`👑【长老令谕 · 搜山采药】你祭出长老玉符，调派三十名门人搜寻名山大川！众弟子恭敬呈递药材：获得【${gotNames.join('、')}】！`, "breakthrough");
+        G.stats.reputation = (G.stats.reputation || 0) + 10;
 
-      } else if (decreeKey === 'patrol') {
-        if ((G.sect.contrib || 0) < 120) { alert("宗门功勋不足 120 点！"); return; }
-        if (G.stones < 250) { alert("调遣战堂军需不足 250 灵石！"); return; }
-        G.sect.contrib -= 120;
-        G.stones -= 250;
+        summaryText = `四十名外门弟子不负所托，深入群山绝壑采得灵草归宗！`;
+        spoilsHtml = `
+          <div style="font-size:0.8rem; line-height:1.8; color:var(--text-main);">
+            <div>• <b>带回天材地宝</b>：${gotItems.map(it => `<span class="${it.quality}">${it.name}</span>`).join('、')}</div>
+            <div>• <b>修真界威望</b>：+10 点</div>
+            <div>• <b>弟子归队</b>：${dec.assignedDisciples} 名外门门人安然回山待命</div>
+          </div>
+        `;
+        addLog(`👑【令谕战报 · 搜山采药】外门四十名门人历经三月采药凯旋！呈缴【${gotItems.map(it => it.name).join('、')}】，威望+10！`, "breakthrough");
+
+      } else if (dec.type === 'patrol') {
         const rewardStones = 500 + Math.floor(Math.random() * 400); // 500~900
         G.stones += rewardStones;
+        const yaodan = { id: "loot_yaodan_4", name: "四阶天青妖丹", type: "material", tier: "yuanying", quality: "orange", desc: "高阶大妖内丹，蕴含澎湃妖煞之力", price: 300 };
+        addItemToInv(yaodan, 1);
         G.stats.reputation = (G.stats.reputation || 0) + 25;
-        addItemToInv({ id: "loot_yaodan_4", name: "四阶天青妖丹", type: "material", tier: "yuanying", quality: "orange", desc: "高阶大妖内丹，蕴含澎湃妖煞之力", price: 300 }, 1);
-        sfx.slash();
-        addLog(`👑【长老令谕 · 妖煞荡涤】战堂精锐领你法令，直捣百里黑风妖窟，大获全胜！缴获灵石 +${rewardStones} 块、斩获【四阶天青妖丹】×1，修真界威望 +25！`, "breakthrough");
 
-      } else if (decreeKey === 'recruit') {
-        if ((G.sect.contrib || 0) < 100) { alert("宗门功勋不足 100 点！"); return; }
-        G.sect.contrib -= 100;
+        summaryText = `战堂八十名精锐执剑荡涤百里妖窟，斩灭双头炎狼与赤目妖蟒，战意冲霄！`;
+        spoilsHtml = `
+          <div style="font-size:0.8rem; line-height:1.8; color:var(--text-main);">
+            <div>• <b>缴获战备灵石</b>：<b style="color:var(--gold-light);">+${rewardStones} 块</b></div>
+            <div>• <b>斩获极品战利</b>：<span class="orange">${yaodan.name}</span> ×1</div>
+            <div>• <b>修真界威望</b>：+25 点（震慑八荒妖煞）</div>
+            <div>• <b>弟子归队</b>：${dec.assignedDisciples} 名战堂门人尽数回宗！</div>
+          </div>
+        `;
+        addLog(`👑【令谕战报 · 妖煞荡涤】战堂大捷！缴获灵石 +${rewardStones} 块、斩获【${yaodan.name}】×1，宗门威望+25！`, "breakthrough");
+
+      } else if (dec.type === 'recruit') {
+        const recruits = 35 + Math.floor(Math.random() * 26); // 35~60人
+        if (G.sect.disciples) {
+          G.sect.disciples.total += recruits;
+          G.sect.disciples.idle += recruits;
+        }
         G.stats.reputation = (G.stats.reputation || 0) + 40;
         const addExp = 4000;
         G.exp += addExp;
-        sfx.spell();
-        addLog(`👑【长老令谕 · 广纳仙苗】你登临传法高台，开坛为三千新晋仙苗讲授长生真意，祥云缭绕！门人无不心折，宗门声望 +40，道心顿悟修为 +${addExp} 点！`, "breakthrough");
 
-      } else if (decreeKey === 'alchemy') {
-        const rIdx = SECT_RANKS.findIndex(r => r.key === G.sect.rankKey);
-        if (rIdx < 4) {
-          alert("此令谕唯有【传功长老】及以上尊位方可开炉颁布！");
-          return;
-        }
-        if ((G.sect.contrib || 0) < 200) { alert("宗门功勋不足 200 点！"); return; }
-        if (G.stones < 500) { alert("开炉地火与名贵耗材不足 500 灵石！"); return; }
-        G.sect.contrib -= 200;
-        G.stones -= 500;
+        summaryText = `接引执事在凡尘各城设立通天灵柱，测定仙缘，引得天下英才汇聚山门！`;
+        spoilsHtml = `
+          <div style="font-size:0.8rem; line-height:1.8; color:var(--text-main);">
+            <div>• <b>新纳宗门仙苗</b>：<b style="color:var(--jade-green);">+${recruits} 名新晋弟子</b>（充盈宗门底蕴）</div>
+            <div>• <b>名门四方敬仰</b>：修真界威望 +40 点</div>
+            <div>• <b>长老道心顿悟</b>：反哺自身修为经验 <b style="color:var(--gold-light);">+${addExp} 点</b></div>
+            <div>• <b>弟子归队</b>：${dec.assignedDisciples} 名接引门生回宗交差！</div>
+          </div>
+        `;
+        addLog(`👑【令谕战报 · 广纳仙苗】全宗接引大典圆满！新纳门生 +${recruits} 人，自身修为 +${addExp} 点，门威远扬！`, "breakthrough");
 
+      } else if (dec.type === 'alchemy') {
         const PILL_REWARDS = [
           ITEMS_DB.pill_jindan,
           ITEMS_DB.pill_yuanying,
@@ -4562,26 +4912,58 @@
         const pill = PILL_REWARDS[Math.floor(Math.random() * PILL_REWARDS.length)];
         addItemToInv(pill, 1);
         G.stats.alchemyExp = (G.stats.alchemyExp || 0) + 50;
-        sfx.alchemy();
-        addLog(`👑【长老令谕 · 太上开炉】全宗百草丹房七尊巨炉齐开，三日三夜霞光满天！为你督造出绝品护道丹【${pill.name}】送至洞府！炼丹心得 +50！`, "breakthrough");
 
-      } else if (decreeKey === 'crusade') {
-        const rIdx = SECT_RANKS.findIndex(r => r.key === G.sect.rankKey);
-        if (rIdx < 5) {
-          alert("此令谕唯有【太上长老】及以上巨擘方可号令全宗发动征伐！");
-          return;
-        }
-        if ((G.sect.contrib || 0) < 400) { alert("宗门功勋不足 400 点！"); return; }
-        if (G.stones < 1000) { alert("全宗出征灵舟仙剑所需供给不足 1000 灵石！"); return; }
-        G.sect.contrib -= 400;
-        G.stones -= 1000;
+        summaryText = `丹房三十五尊玄火鼎炉夜以继日淬炼六载，丹香漫溢九霄，引动天地紫气！`;
+        spoilsHtml = `
+          <div style="font-size:0.8rem; line-height:1.8; color:var(--text-main);">
+            <div>• <b>督造出炉宝丹</b>：<span class="${pill.quality}">${pill.name}</span> ×1（极品护道之用）</div>
+            <div>• <b>丹道传承心得</b>：炼丹经验 +50 点</div>
+            <div>• <b>丹徒出关归队</b>：${dec.assignedDisciples} 名丹堂弟子圆满出关！</div>
+          </div>
+        `;
+        addLog(`👑【令谕战报 · 太上开炉】丹堂合力督造极品大丹【${pill.name}】出炉送至洞府！炼丹造诣大增！`, "breakthrough");
 
-        const prizeStones = 2000 + Math.floor(Math.random() * 1500);
+      } else if (dec.type === 'crusade') {
+        const prizeStones = 2000 + Math.floor(Math.random() * 1500); // 2000~3500
         G.stones += prizeStones;
+        const pillLianxu = ITEMS_DB.pill_lianxu;
+        addItemToInv(pillLianxu, 1);
         G.stats.reputation = (G.stats.reputation || 0) + 80;
-        addItemToInv(ITEMS_DB.pill_lianxu, 1);
-        sfx.breakthrough();
-        addLog(`👑【长老令谕 · 太上极道征伐】太上荡魔神钟九震！全宗三千飞剑如遮天蔽日出巡，踏平天外魔宗分舵！缴获灵石 +${prizeStones} 块，战利品【${ITEMS_DB.pill_lianxu.name}】×1，宗门威望 +80，名震四海！`, "breakthrough");
+
+        summaryText = `全宗三千飞剑如雷霆万钧跨域平叛，荡平域外九幽魔煞，缴获魔宗千年积蓄！`;
+        spoilsHtml = `
+          <div style="font-size:0.8rem; line-height:1.8; color:var(--text-main);">
+            <div>• <b>破阵缴获巨款</b>：<b style="color:var(--gold-light);">+${prizeStones} 灵石</b></div>
+            <div>• <b>斩获渡劫神丹</b>：<span class="${pillLianxu.quality}">${pillLianxu.name}</span> ×1</div>
+            <div>• <b>修真界至高威望</b>：+80 点（威震天下正魔两道）</div>
+            <div>• <b>全宗精锐凯旋</b>：${dec.assignedDisciples} 名飞剑修士荣耀凯旋！</div>
+          </div>
+        `;
+        addLog(`👑【令谕战报 · 太上极道征伐】太上荡魔神钟九震！远征全胜凯旋！缴获灵石 +${prizeStones} 块、斩获【${pillLianxu.name}】×1，名震四海！`, "breakthrough");
+      }
+
+      // 从 activeDecrees 中移除该法令
+      G.sect.activeDecrees = G.sect.activeDecrees.filter(d => d.id !== decreeId);
+
+      // 弹出胜利战报
+      const reportBody = document.getElementById('decreeReportBody');
+      if (reportBody) {
+        reportBody.innerHTML = `
+          <div style="background:linear-gradient(135deg, rgba(212,160,23,0.15), rgba(16,21,33,0.95)); border:1px solid rgba(212,160,23,0.4); border-radius:8px; padding:1rem; margin-bottom:0.75rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
+              <span style="font-size:1.4rem;">${dec.icon}</span>
+              <span style="font-size:1.1rem; font-weight:700; color:var(--gold-light);">【${dec.title} · 凯旋功勋清册】</span>
+            </div>
+            <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.6; margin-bottom:0.6rem; font-style:italic;">
+              “${summaryText}”
+            </div>
+            <div style="background:rgba(0,0,0,0.3); border-radius:6px; padding:0.65rem 0.85rem; border:1px solid var(--border-subtle);">
+              <div style="font-size:0.82rem; font-weight:600; color:var(--gold-primary); margin-bottom:0.35rem;">🎁 战利品与功勋呈报：</div>
+              ${spoilsHtml}
+            </div>
+          </div>
+        `;
+        openModal('modalDecreeReport');
       }
 
       saveToLocal();
@@ -5040,12 +5422,56 @@
         document.getElementById('sectSalaryTag').textContent = `月俸：${G.sect ? G.sect.salary : 0} 灵石`;
       }
 
+      const completedDecreesCount = (hasSect && Array.isArray(G.sect.activeDecrees))
+        ? G.sect.activeDecrees.filter(d => d.status === 'completed').length
+        : 0;
+      const runningDecreesCount = (hasSect && Array.isArray(G.sect.activeDecrees))
+        ? G.sect.activeDecrees.filter(d => d.status === 'running').length
+        : 0;
+
+      const sidebarSectBtn = document.getElementById('btnSidebarSectModal');
+      if (sidebarSectBtn) {
+        if (completedDecreesCount > 0) {
+          sidebarSectBtn.innerHTML = `🏛️ 议事殿 <span style="background:#e74c3c; color:#fff; padding:0.05rem 0.3rem; border-radius:8px; font-size:0.62rem; font-weight:bold;">${completedDecreesCount}凯旋</span>`;
+          sidebarSectBtn.className = "btn btn-gold";
+          sidebarSectBtn.style.boxShadow = "0 0 8px rgba(230,126,34,0.6)";
+        } else if (runningDecreesCount > 0) {
+          sidebarSectBtn.innerHTML = `🏛️ 议事殿 <span style="color:var(--ethereal-blue); font-size:0.62rem;">(${runningDecreesCount}令)</span>`;
+          sidebarSectBtn.className = "btn";
+          sidebarSectBtn.style.boxShadow = "";
+        } else {
+          sidebarSectBtn.innerHTML = `🏛️ 议事殿`;
+          sidebarSectBtn.className = "btn";
+          sidebarSectBtn.style.boxShadow = "";
+        }
+      }
+
+      const tabBtnSect = document.getElementById('tabBtnSect');
+      if (tabBtnSect) {
+        if (completedDecreesCount > 0) {
+          tabBtnSect.innerHTML = `🏛️ 宗门与市集 <span style="background:#e74c3c; color:#fff; border-radius:10px; padding:0.05rem 0.35rem; font-size:0.65rem; font-weight:bold;">${completedDecreesCount}令凯旋</span>`;
+        } else {
+          tabBtnSect.innerHTML = `🏛️ 宗门与市集`;
+        }
+      }
+
       const sectInfoText = document.getElementById('sectInfoText');
       const sectActionBox = document.getElementById('sectActionBox');
       if (sectInfoText && sectActionBox) {
         if (hasSect) {
-          sectInfoText.innerHTML = `道统：<b style="color:var(--gold-light);">${G.sect.name}</b> · 身份：<span class="item-tier-badge ${curRank.badge}">${curRank.name}</span><br>功勋：<b style="color:var(--gold-light);">${G.sect.contrib || 0}</b> 点 | 月俸：<b style="color:var(--jade-green);">${G.sect.salary || 0}</b> 灵石`;
-          sectActionBox.innerHTML = `<button class="btn btn-gold" style="width:100%;" onclick="openSectModalAndTab('stabOverview')">🏛️ 步入宗门大殿 · 议事与晋升</button>`;
+          let disciplesText = "";
+          if (curRank.canIssueQuests && G.sect.disciples) {
+            disciplesText = ` | 待命门生：<b style="color:var(--jade-green);">${G.sect.disciples.idle}</b>人`;
+          }
+          sectInfoText.innerHTML = `道统：<b style="color:var(--gold-light);">${G.sect.name}</b> · 身份：<span class="item-tier-badge ${curRank.badge}">${curRank.name}</span><br>功勋：<b style="color:var(--gold-light);">${G.sect.contrib || 0}</b> 点 | 月俸：<b style="color:var(--jade-green);">${G.sect.salary || 0}</b> 灵石${disciplesText}`;
+          
+          if (completedDecreesCount > 0) {
+            sectActionBox.innerHTML = `<button class="btn btn-gold" style="width:100%; border:1px solid #f39c12; box-shadow:0 0 10px rgba(243,156,18,0.5); font-weight:bold;" onclick="openSectModalAndTab('stabDecrees')">🎁 宗门大殿 · ${completedDecreesCount}道令谕凯旋候旨！(速去领赏)</button>`;
+          } else if (runningDecreesCount > 0) {
+            sectActionBox.innerHTML = `<button class="btn btn-gold" style="width:100%;" onclick="openSectModalAndTab('stabDecrees')">🏛️ 步入宗门大殿 · 督导中(${runningDecreesCount}道令谕)</button>`;
+          } else {
+            sectActionBox.innerHTML = `<button class="btn btn-gold" style="width:100%;" onclick="openSectModalAndTab('stabOverview')">🏛️ 步入宗门大殿 · 议事与晋升</button>`;
+          }
         } else {
           sectInfoText.textContent = "当前为一介散修，无宗无派。可前往符合条件的宗门参加升仙大选考核！";
           sectActionBox.innerHTML = `<button class="btn btn-purple" id="btnJoinSectModal" style="width:100%;" onclick="openSectModalAndTab('stabJoin')">📜 参与宗门收徒大选</button>`;
@@ -5839,6 +6265,11 @@
         G.year = (G.year || 9427) + 1;
         addLog(`岁月悠悠，又是一载冬去春来。骨龄已达 ${G.ageYears} 岁。`, 'normal');
         checkNpcLifespans(G, true);
+        if (G.sect && G.sect.id && G.sect.disciples) {
+          const naturalRecruits = 5 + Math.floor(Math.random() * 8);
+          G.sect.disciples.total += naturalRecruits;
+          G.sect.disciples.idle += naturalRecruits;
+        }
       }
 
       if (G.ageYears >= G.maxAge) {
@@ -5854,6 +6285,9 @@
           addLog("【经脉平复】经过数月调元温养，此前冲关反噬受损的经脉暗伤彻底痊愈，气机稳固，已可再次凝聚心神冲击关隘！", "fortune");
         }
       }
+
+      // 推进宗门活跃令谕
+      advanceSectDecrees();
 
       if (G.maxMp > 0) G.mp = Math.min(G.maxMp, G.mp + 15);
       evolveWorld();
