@@ -7344,6 +7344,7 @@
       let startIdentity = "市井散修";
       let startRealmIdx = 0;
       let bonusExp = 6;
+      let lifeBonus = 75;
 
       if (rootVal === "double") { rootDesc = "水木双灵根 (奇才)"; baseCom += 8; startRealmIdx = 1; }
       else if (rootVal === "four") { rootDesc = "四灵根杂品 (凡资)"; basePhy += 6; }
@@ -7410,7 +7411,6 @@
       else if (talentVal === "calm") { talentDesc = "心如止水"; baseSoul += 10; baseCom += 5; }
       else if (talentVal === "alchemy_born") { talentDesc = "天生药体"; baseCom += 8; }
 
-      let lifeBonus = 75;
       if ((META.unlockedPerks || []).includes("perk_longevity")) lifeBonus += 30;
 
       const realm = REALMS[startRealmIdx];
