@@ -554,7 +554,7 @@
     .map-name { font-weight: 600; font-family: var(--font-serif); font-size: 0.92rem; color: var(--gold-light); }
     .map-req { font-size: 0.7rem; color: var(--cinnabar); }
 
-    /* 宗门大殿 */
+    /* 宗门大殿与阶位体系 */
     .sect-hall { display: flex; flex-direction: column; gap: 0.75rem; }
     .sect-item {
       background: #0d141e;
@@ -564,6 +564,64 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+    .btn-tab-sect {
+      padding: 0.32rem 0.65rem;
+      font-size: 0.76rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .btn-tab-sect:hover {
+      background: rgba(212,160,23,0.1);
+      color: var(--text-main);
+    }
+    .btn-tab-sect.active {
+      background: rgba(212,160,23,0.22);
+      border-color: var(--gold-light);
+      color: var(--gold-light);
+      font-weight: 600;
+    }
+    .sect-quest-card {
+      background: #0d141e;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 0.65rem 0.75rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .sect-decree-card {
+      background: linear-gradient(135deg, rgba(26, 24, 40, 0.8), rgba(16, 21, 33, 0.8));
+      border: 1px solid rgba(192, 132, 252, 0.35);
+      border-radius: 6px;
+      padding: 0.75rem 0.85rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .sect-ladder-step {
+      background: #0d141e;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 0.6rem 0.75rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .sect-ladder-step.current {
+      border: 1px solid rgba(52, 211, 153, 0.55);
+      background: rgba(52, 211, 153, 0.07);
     }
 
     /* 右侧标签面板 */
@@ -910,9 +968,19 @@
 
         <!-- 宗门与声名 -->
         <div class="info-block">
-          <div class="info-block-title"><span>🧭 宗门道途</span></div>
-          <div style="font-size:0.78rem; margin-bottom:0.15rem;">宗门身份：<span id="sectName" style="color:var(--purple-rare);">散修</span></div>
-          <div style="font-size:0.78rem; color:var(--text-muted);">所在地域：<span id="locName">栖霞古镇</span></div>
+          <div class="info-block-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>🧭 宗门道途</span>
+            <button class="btn" style="padding:0.1rem 0.35rem; font-size:0.68rem;" onclick="openSectModalAndTab()">🏛️ 议事殿</button>
+          </div>
+          <div style="font-size:0.78rem; margin-bottom:0.25rem; display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
+            <span style="color:var(--text-muted);">宗门身份：</span>
+            <span id="sectName" style="color:var(--gold-light); font-weight:600;">散修</span>
+            <span id="sectRankBadge" class="item-tier-badge badge-fan" style="display:none;">外门弟子</span>
+          </div>
+          <div style="font-size:0.78rem; color:var(--text-muted); display:flex; align-items:center; justify-content:space-between;">
+            <div>所在地域：<span id="locName" style="color:var(--ethereal-blue); font-weight:600;">苍梧边陲 · 栖霞古镇</span></div>
+            <button class="btn" style="padding:0.1rem 0.35rem; font-size:0.68rem; margin-left:4px;" onclick="document.querySelector('[data-ctab=\'ctabMap\']').click()">御风大图</button>
+          </div>
         </div>
 
       </div>
@@ -1312,19 +1380,44 @@
     </div>
   </div>
 
-  <!-- 模态框：宗门大选与考核 -->
+  <!-- 模态框：宗门仙府 · 议事大殿 -->
   <div class="modal-overlay" id="modalSectSelect">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 660px;">
       <div class="modal-header">
-        <div class="modal-title">🏛️ 苍梧大域 · 升仙大选招募</div>
+        <div class="modal-title" id="sectModalTitle">🏛️ 宗门仙府 · 议事大殿</div>
         <button class="btn" style="padding:0.2rem 0.5rem;" onclick="closeModal('modalSectSelect')">✕</button>
       </div>
       <div class="modal-body">
-        <div id="sectCurrentStatus" style="margin-bottom:0.85rem; padding:0.6rem 0.85rem; background:rgba(212,160,23,0.08); border:1px solid rgba(212,160,23,0.25); border-radius:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;"></div>
-        <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.85rem;">
-          大仙门每隔数年开山门收徒，各宗道统所求资历不同。一旦拜入，每月可领宗门月俸并研读独门古经：
-        </p>
-        <div class="sect-hall" id="sectList"></div>
+        <div id="sectCurrentStatus" style="margin-bottom:0.75rem; padding:0.65rem 0.85rem; background:rgba(212,160,23,0.08); border:1px solid rgba(212,160,23,0.25); border-radius:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;"></div>
+
+        <!-- 宗门大殿导航栏 -->
+        <div class="sect-tabs-nav" style="display:flex; gap:0.4rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.5rem; margin-bottom:0.75rem; overflow-x:auto;">
+          <button class="btn btn-tab-sect active" id="btnStabOverview" data-stab="stabOverview" onclick="switchSectTab('stabOverview')">🏮 宗门概况</button>
+          <button class="btn btn-tab-sect" id="btnStabPromote" data-stab="stabPromote" onclick="switchSectTab('stabPromote')">🌟 身份晋升</button>
+          <button class="btn btn-tab-sect" id="btnStabQuests" data-stab="stabQuests" onclick="switchSectTab('stabQuests')">📜 弟子任务堂</button>
+          <button class="btn btn-tab-sect" id="btnStabDecrees" data-stab="stabDecrees" onclick="switchSectTab('stabDecrees')">👑 长老议事堂</button>
+          <button class="btn btn-tab-sect" id="btnStabJoin" data-stab="stabJoin" onclick="switchSectTab('stabJoin')">⛩️ 仙门大选</button>
+        </div>
+
+        <!-- 标签1：宗门概况 -->
+        <div class="sect-tab-pane" id="stabOverview"></div>
+
+        <!-- 标签2：身份晋升 -->
+        <div class="sect-tab-pane" id="stabPromote" style="display:none;"></div>
+
+        <!-- 标签3：弟子任务堂 -->
+        <div class="sect-tab-pane" id="stabQuests" style="display:none;"></div>
+
+        <!-- 标签4：长老议事堂 · 发布令谕 -->
+        <div class="sect-tab-pane" id="stabDecrees" style="display:none;"></div>
+
+        <!-- 标签5：仙门大选 -->
+        <div class="sect-tab-pane" id="stabJoin" style="display:none;">
+          <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.75rem;">
+            大仙门每隔数年开山门收徒，各宗道统所求资历不同。凡达门槛者皆可参选，道法通玄者更可受上位仙宗破格提拔：
+          </p>
+          <div class="sect-hall" id="sectList"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -2645,16 +2738,18 @@
       {
         id: "qingyun",
         name: "青云剑宗",
+        homeMap: "forest", // 云林大泽
         minRealm: 3, // 炼气三层可入外门
         reqRoot: ["single", "double", "mutation"],
         desc: "东荒顶尖剑道大宗，以攻伐犀利著称。宗门月俸丰厚，赐《青元剑诀》。",
-        salary: 4, // 每月灵石
+        salary: 4, // 基础每月灵石
         giftItem: ITEMS_DB.sword_steel,
         tech: { name: "《青元剑诀残篇》", grade: "玄级下品", desc: "剑气如虹，攻击杀伤暴涨，每月吐纳修为+14。", bonusExp: 14, combatBonus: 20 }
       },
       {
         id: "shennong",
         name: "神农百草门",
+        homeMap: "valley", // 断魂迷涧
         minRealm: 2, // 炼气二层
         reqRoot: ["three", "double", "five"],
         desc: "专精炼丹药道之仙门，药田广布。每月赐下灵草配方与青铜八卦炉。",
@@ -2665,6 +2760,7 @@
       {
         id: "lu_clan",
         name: "苍梧陆氏仙族",
+        homeMap: "city", // 凌霄仙城
         minRealm: 1, // 炼气一层可为客卿
         reqRoot: [],
         desc: "盘踞栖霞一带的千年修真世家，规矩严明，重金礼聘各路客卿供奉。",
@@ -2676,6 +2772,7 @@
       {
         id: "taiqing",
         name: "太清道德宗",
+        homeMap: "tianxinghai", // 天星海
         minRealm: 15, // 金丹初期
         reqRoot: ["single", "double", "mutation"],
         desc: "苍梧大域正道执牛耳者，底蕴深不可测。月俸极厚，赐纯阳飞剑与地品玄功！",
@@ -2686,6 +2783,7 @@
       {
         id: "leiyin",
         name: "九天雷音仙阁",
+        homeMap: "tianyuan", // 天渊神冢
         minRealm: 19, // 元婴初期
         reqRoot: ["mutation", "single", "double"],
         desc: "避世不出的上古雷道圣地，代行天罚。月俸奢华，赐九龙火炉与至高神雷！",
@@ -2696,6 +2794,7 @@
       {
         id: "piaomiao",
         name: "昆仑飘渺太上天",
+        homeMap: "kunlun", // 九天昆仑
         minRealm: 23, // 化神初期
         reqRoot: [],
         desc: "直通天门之极道仙庭，俯瞰人间万古兴衰。每月赐无穷灵石，授混元道卷！",
@@ -2704,6 +2803,124 @@
         tech: { name: "《混沌造化道卷》", grade: "仙级无上", desc: "吞吐天地太虚混元之精，每月吐纳修为+800，破境概率大增！", bonusExp: 800, combatBonus: 750, alchBonus: 25 }
       }
     ];
+
+    /* ==========================================================================
+       宗门身份阶位体系（外门至太上大长老）
+       ========================================================================== */
+    const SECT_RANKS = [
+      {
+        key: "outer",
+        name: "外门弟子",
+        badge: "badge-lianqi",
+        qClass: "q-lianqi",
+        minRealm: 0,
+        reqContrib: 0,
+        salaryMult: 1.0,
+        monthlyContrib: 5,
+        canIssueQuests: false,
+        desc: "初入仙门，修习吐纳粗浅法门，负责杂役与巡视，享基础月俸。"
+      },
+      {
+        key: "inner",
+        name: "内门弟子",
+        badge: "badge-zhuji",
+        qClass: "q-zhuji",
+        minRealm: 11, // 筑基初期
+        reqContrib: 150,
+        salaryMult: 2.0,
+        monthlyContrib: 10,
+        canIssueQuests: false,
+        desc: "登堂入室，得传本门上乘心法，月俸翻倍，受同门敬重。"
+      },
+      {
+        key: "core",
+        name: "真传弟子",
+        badge: "badge-jindan",
+        qClass: "q-jindan",
+        minRealm: 15, // 金丹初期
+        reqContrib: 450,
+        salaryMult: 4.5,
+        monthlyContrib: 20,
+        canIssueQuests: false,
+        desc: "掌门与长老亲传，宗门未来栋梁，赐真传法剑，月俸激增。"
+      },
+      {
+        key: "elder",
+        name: "执事长老",
+        badge: "badge-yuanying",
+        qClass: "q-yuanying",
+        minRealm: 19, // 元婴初期
+        reqContrib: 1200,
+        salaryMult: 10.0,
+        monthlyContrib: 40,
+        canIssueQuests: true,
+        desc: "执掌宗门要职，开辟专属灵峰洞府！尊享十倍月俸，可颁布宗门令谕派遣弟子采药剿魔！"
+      },
+      {
+        key: "grand_elder",
+        name: "传功长老",
+        badge: "badge-huashen",
+        qClass: "q-huashen",
+        minRealm: 23, // 化神初期
+        reqContrib: 2800,
+        salaryMult: 20.0,
+        monthlyContrib: 80,
+        canIssueQuests: true,
+        desc: "总揽全宗道统传承，位列长生之尊。可开启丹房督造令，号令门下丹徒炼制宝丹！"
+      },
+      {
+        key: "supreme_elder",
+        name: "太上长老",
+        badge: "badge-lianxu",
+        qClass: "q-lianxu",
+        minRealm: 27, // 炼虚初期
+        reqContrib: 6000,
+        salaryMult: 40.0,
+        monthlyContrib: 160,
+        canIssueQuests: true,
+        desc: "宗门底蕴巨擘，避世潜修。坐享太上无极洞府，可颁布极道荡魔令征战大域！"
+      },
+      {
+        key: "supreme_patriarch",
+        name: "太上大长老",
+        badge: "badge-xian",
+        qClass: "q-xian",
+        minRealm: 30, // 合体期及以上
+        reqContrib: 12000,
+        salaryMult: 80.0,
+        monthlyContrib: 300,
+        canIssueQuests: true,
+        desc: "全宗独尊，号令三千道友！言出法随，掌最高生杀大权，享天下名门四方朝拜！"
+      }
+    ];
+
+    function getSectRankInfo(rankKey) {
+      return SECT_RANKS.find(r => r.key === rankKey) || SECT_RANKS[0];
+    }
+
+    function getNextSectRank(curKey) {
+      const idx = SECT_RANKS.findIndex(r => r.key === curKey);
+      if (idx >= 0 && idx < SECT_RANKS.length - 1) {
+        return SECT_RANKS[idx + 1];
+      }
+      return null;
+    }
+
+    function calcSectSalary(sectDb, rankKey) {
+      if (!sectDb || !sectDb.salary) return 0;
+      const rank = getSectRankInfo(rankKey);
+      return Math.floor(sectDb.salary * (rank.salaryMult || 1.0));
+    }
+
+    function getInitialRankIndex(sect, playerRealmIndex) {
+      if (playerRealmIndex >= 30) return 6;
+      if (playerRealmIndex >= 27) return 5;
+      if (playerRealmIndex >= 23) return 4;
+      if (playerRealmIndex >= 19) return 3;
+      if (playerRealmIndex >= 15) return 2;
+      if (playerRealmIndex >= 11) return 1;
+      return 0;
+    }
 
     /* ==========================================================================
        天命轮回殿特质 (Meta-Progression Perks)
@@ -2946,24 +3163,51 @@
         data.technique = { name: "《引气吐纳残卷》", grade: "黄级下品", bonusExp: 6, desc: "散修引灵入门吐纳法。" };
       }
       if (!data.sect || typeof data.sect !== "object") {
-        data.sect = { id: null, name: "散修", salary: 0, minRealm: 0 };
+        data.sect = { id: null, name: "散修", salary: 0, minRealm: 0, rankKey: "outer", rankName: "散修", contrib: 0, totalContrib: 0 };
       } else {
         if (!data.sect.name) data.sect.name = "散修";
         if (data.sect.name === "散修") {
           data.sect.id = null;
           data.sect.salary = 0;
           data.sect.minRealm = 0;
+          data.sect.rankKey = "outer";
+          data.sect.rankName = "散修";
+          data.sect.contrib = 0;
+          data.sect.totalContrib = 0;
         } else {
           const matchedSect = SECTS_DB.find(s => s.id === data.sect.id || s.name === data.sect.name);
           if (matchedSect) {
             data.sect.id = matchedSect.id;
             data.sect.name = matchedSect.name;
-            data.sect.salary = matchedSect.salary;
             data.sect.minRealm = matchedSect.minRealm;
+            // 历史存档职位智能定阶：根据境界自愈匹配对应的宗门身份与功勋
+            if (!data.sect.rankKey || data.sect.rankKey === "outer") {
+              const rIdx = getInitialRankIndex(matchedSect, data.realmIndex);
+              const rankInfo = SECT_RANKS[rIdx];
+              data.sect.rankKey = rankInfo.key;
+              data.sect.rankName = rankInfo.name;
+              data.sect.contrib = Math.max(Number(data.sect.contrib) || 0, rankInfo.reqContrib);
+              data.sect.totalContrib = Math.max(Number(data.sect.totalContrib) || 0, rankInfo.reqContrib);
+            } else {
+              const rankInfo = getSectRankInfo(data.sect.rankKey);
+              data.sect.rankName = rankInfo.name;
+              data.sect.contrib = Number(data.sect.contrib) || 0;
+              data.sect.totalContrib = Number(data.sect.totalContrib) || data.sect.contrib;
+            }
+            data.sect.salary = calcSectSalary(matchedSect, data.sect.rankKey);
+
+            // 所在地自动自愈：若已拜入高阶仙宗但先前因Bug滞留在新手镇，自动归位至宗门山门所在大域
+            if (matchedSect.homeMap && (!data.currentMap || data.currentMap === "town")) {
+              data.currentMap = matchedSect.homeMap;
+            }
           } else {
             data.sect.id = data.sect.id || "custom_sect";
             data.sect.salary = Number(data.sect.salary) || 0;
             data.sect.minRealm = Number(data.sect.minRealm) || 0;
+            data.sect.rankKey = data.sect.rankKey || "outer";
+            data.sect.rankName = data.sect.rankName || "外门弟子";
+            data.sect.contrib = Number(data.sect.contrib) || 0;
+            data.sect.totalContrib = Number(data.sect.totalContrib) || 0;
           }
         }
       }
@@ -3087,9 +3331,15 @@
       // 执行当月主修方略
       executeCurrentRoutine();
 
-      // 宗门月俸结算
-      if (G.sect && G.sect.salary > 0) {
-        G.stones += G.sect.salary;
+      // 宗门月俸与功勋奉献结算
+      if (G.sect && G.sect.id && G.sect.name !== "散修") {
+        if (G.sect.salary > 0) {
+          G.stones += G.sect.salary;
+        }
+        const rankInfo = getSectRankInfo(G.sect.rankKey);
+        const addContrib = rankInfo.monthlyContrib || 5;
+        G.sect.contrib = (G.sect.contrib || 0) + addContrib;
+        G.sect.totalContrib = (G.sect.totalContrib || 0) + addContrib;
       }
 
       // 时间步进
@@ -3567,107 +3817,443 @@
     }
 
     /* ==========================================================================
-       宗门大选系统 (Sect Selection)
+       宗门仙府 · 议事大殿与令谕系统 (Sect Progression & Decrees)
        ========================================================================== */
-    document.getElementById('btnJoinSectModal').onclick = () => {
-      sfx.click();
+    let currentSectTab = 'stabOverview';
+
+    const btnJoinSectEl = document.getElementById('btnJoinSectModal');
+    if (btnJoinSectEl) {
+      btnJoinSectEl.onclick = () => openSectModalAndTab();
+    }
+
+    function switchSectTab(tabId) {
+      currentSectTab = tabId;
+      document.querySelectorAll('.btn-tab-sect').forEach(b => {
+        if (b.getAttribute('data-stab') === tabId) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+      document.querySelectorAll('.sect-tab-pane').forEach(p => {
+        p.style.display = (p.id === tabId) ? 'block' : 'none';
+      });
       renderSectModal();
+    }
+
+    function openSectModalAndTab(tabId) {
+      sfx.click();
+      const hasSect = G.sect && G.sect.id && G.sect.name !== "散修";
+      const targetTab = tabId || (hasSect ? 'stabOverview' : 'stabJoin');
+      switchSectTab(targetTab);
       openModal('modalSectSelect');
-    };
+    }
+
+    function teleportToSectHome() {
+      if (!G.sect || !G.sect.id || G.sect.name === "散修") return;
+      const sectDb = SECTS_DB.find(s => s.id === G.sect.id || s.name === G.sect.name);
+      if (!sectDb || !sectDb.homeMap) return;
+      const targetMap = MAPS_DB.find(m => m.id === sectDb.homeMap);
+      if (!targetMap) return;
+      sfx.click();
+      G.currentMap = targetMap.id;
+      G.location = targetMap.name;
+      syncNpcsForCurrentState(G, true);
+      addLog(`你运转宗门信物，御风归返本门祖庭【${targetMap.name}】灵脉！`, "normal");
+      saveToLocal();
+      renderUI();
+      renderSectModal();
+    }
 
     function renderSectModal() {
       const statusBox = document.getElementById('sectCurrentStatus');
-      const list = document.getElementById('sectList');
-      list.innerHTML = '';
-
       const hasSect = G.sect && G.sect.id && G.sect.name !== "散修";
-      const curSectName = G.sect ? G.sect.name : "散修";
-      const curSalary = G.sect ? (G.sect.salary || 0) : 0;
-      const curTechName = G.technique ? G.technique.name : "《引气吐纳残卷》";
+      const curRank = getSectRankInfo(G.sect ? G.sect.rankKey : 'outer');
+      const curSectDb = hasSect ? SECTS_DB.find(s => s.id === G.sect.id || s.name === G.sect.name) : null;
+      const homeMap = curSectDb ? MAPS_DB.find(m => m.id === curSectDb.homeMap) : null;
+      const homeMapName = homeMap ? homeMap.name : "未知灵域";
+      const isAtHome = hasSect && homeMap && (G.currentMap === curSectDb.homeMap);
 
+      // 模态框标题
+      const titleEl = document.getElementById('sectModalTitle');
+      if (titleEl) {
+        titleEl.textContent = hasSect ? `🏛️ 宗门仙府 · 【${G.sect.name}】议事大殿` : `🏛️ 仙门大选 · 天下名门道统`;
+      }
+
+      // 顶置身份卡片
       if (statusBox) {
         if (hasSect) {
           statusBox.innerHTML = `
-            <div>
-              <div style="font-size:0.85rem; font-weight:600; color:var(--gold-light);">当前道统：【${curSectName}】</div>
-              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;">享有宗门月俸 ${curSalary} 灵石，研习独门心法 ${curTechName}</div>
+            <div style="flex:1; min-width:240px;">
+              <div style="font-size:0.95rem; font-weight:700; color:var(--gold-light); display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                <span>【${G.sect.name}】</span>
+                <span class="item-tier-badge ${curRank.badge}">${curRank.name}</span>
+                ${curRank.canIssueQuests ? '<span style="font-size:0.68rem; background:rgba(212,160,23,0.2); color:var(--gold-light); padding:0.1rem 0.35rem; border-radius:3px;">👑 长老尊位</span>' : ''}
+              </div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem; display:flex; gap:0.75rem; flex-wrap:wrap;">
+                <span>宗门功勋：<b style="color:var(--gold-light);">${G.sect.contrib || 0}</b> 点</span>
+                <span>宗门月俸：<b style="color:var(--jade-green);">${G.sect.salary || 0}</b> 灵石</span>
+                <span>山门祖庭：<b style="color:var(--ethereal-blue);">${homeMapName}</b></span>
+              </div>
             </div>
             <div>
-              <button class="btn" style="background:rgba(231,76,60,0.15); border:1px solid #e74c3c; color:#e74c3c; font-size:0.75rem; padding:0.3rem 0.65rem;" onclick="leaveSect()">🚪 脱离门庭 (重归散修)</button>
+              <button class="btn" style="background:rgba(231,76,60,0.15); border:1px solid #e74c3c; color:#e74c3c; font-size:0.75rem; padding:0.3rem 0.65rem;" onclick="leaveSect()">🚪 脱离门庭</button>
             </div>
           `;
         } else {
           statusBox.innerHTML = `
+            <div style="flex:1;">
+              <div style="font-size:0.9rem; font-weight:600; color:var(--text-muted);">当前身份：【闲云散修】</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;">游历天地，暂无宗派羁绊。凡达门槛者皆可择一名门拜入，享月俸与传功！</div>
+            </div>
             <div>
-              <div style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">当前身份：【闲云散修】</div>
-              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;">无拘无束，亦无仙门月俸与道统护持。凡达各派门槛者皆可自由择一拜入。</div>
+              <button class="btn btn-gold" style="font-size:0.75rem; padding:0.3rem 0.65rem;" onclick="switchSectTab('stabJoin')">⛩️ 查阅仙门大选</button>
             </div>
           `;
         }
       }
 
-      // 寻找当前宗门在数据库中的境界线
-      const curSectDb = hasSect ? SECTS_DB.find(s => s.id === G.sect.id || s.name === G.sect.name) : null;
-      const curSectMinRealm = curSectDb ? curSectDb.minRealm : 0;
-
-      SECTS_DB.forEach(sect => {
-        const isCurrentSect = hasSect && (G.sect.id === sect.id || G.sect.name === sect.name);
-        const meetsRealm = G.realmIndex >= sect.minRealm;
-        const isHigherSect = hasSect && (sect.minRealm > curSectMinRealm);
-        const isLowerOrEqual = hasSect && !isCurrentSect && (sect.minRealm <= curSectMinRealm);
-
-        let btnLabel = "";
-        let btnDisabled = false;
-        let btnClass = "btn btn-gold";
-        let btnAction = `joinSect('${sect.id}')`;
-        let tipText = "";
-
-        if (isCurrentSect) {
-          btnLabel = "📍 已在门中";
-          btnDisabled = true;
-          btnClass = "btn";
-          tipText = "当前本命道统，每月享受月俸";
-        } else if (!meetsRealm) {
-          btnLabel = `需【${REALMS[sect.minRealm].name}】`;
-          btnDisabled = true;
-          btnClass = "btn";
-        } else if (isHigherSect) {
-          btnLabel = "🌟 破格晋升高门";
-          btnClass = "btn btn-gold";
-          tipText = "道法精进，可受上位仙宗破格提拔拜入！";
-        } else if (isLowerOrEqual) {
-          btnLabel = "已有同级道统";
-          btnDisabled = true;
-          btnClass = "btn";
-          tipText = "修真界恪守道约，不可转投平级或下位宗门；需先脱离当前门庭";
-        } else {
-          // 散修自由拜入
-          btnLabel = "拜入仙门";
-          btnClass = "btn btn-gold";
-        }
-
-        const div = document.createElement('div');
-        div.className = `sect-item ${isCurrentSect ? 'active' : ''}`;
-        div.style.cssText = isCurrentSect ? 'border:1px solid rgba(46,204,113,0.4); background:rgba(46,204,113,0.05);' : '';
-        div.innerHTML = `
-          <div style="flex:1; margin-right:0.8rem;">
-            <div style="display:flex; align-items:center; gap:0.5rem;">
-              <span style="font-weight:600; color:var(--gold-light);">${sect.name}</span>
-              ${isCurrentSect ? '<span style="font-size:0.68rem; background:rgba(46,204,113,0.2); color:var(--jade-green); padding:0.1rem 0.35rem; border-radius:3px;">修习中</span>' : ''}
-              ${isHigherSect ? '<span style="font-size:0.68rem; background:rgba(212,160,23,0.2); color:var(--gold-light); padding:0.1rem 0.35rem; border-radius:3px;">更高道统</span>' : ''}
+      // 标签1：宗门概况
+      const overviewPane = document.getElementById('stabOverview');
+      if (overviewPane) {
+        if (!hasSect) {
+          overviewPane.innerHTML = `
+            <div style="text-align:center; padding:2rem 1rem; background:#0d141e; border-radius:6px; border:1px solid var(--border-subtle);">
+              <div style="font-size:2.2rem; margin-bottom:0.4rem;">🏔️</div>
+              <div style="font-size:1.05rem; color:var(--gold-light); font-weight:600; margin-bottom:0.3rem;">未拜名门 · 独步仙途</div>
+              <div style="font-size:0.8rem; color:var(--text-muted); max-width:440px; margin:0 auto 1.2rem auto; line-height:1.6;">
+                道友目前为闲云散修。修真界各大宗门底蕴宏大，加入后可享受灵脉洞府、每月丰厚月俸、镇宗传承玄功与长老大权。
+              </div>
+              <button class="btn btn-gold" onclick="switchSectTab('stabJoin')">⛩️ 前往仙门大选挑选道统</button>
             </div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin:0.25rem 0;">${sect.desc}</div>
-            <div style="font-size:0.72rem; color:var(--jade-green);">入门赠礼：${sect.giftItem.name} | 月俸：${sect.salary} 灵石 | 传授：${sect.tech.name}</div>
-            ${tipText ? `<div style="font-size:0.7rem; color:var(--cinnabar); margin-top:0.2rem;">${tipText}</div>` : ''}
-          </div>
-          <div>
-            <button class="${btnClass}" ${btnDisabled ? 'disabled' : ''} onclick="${btnAction}">
-              ${btnLabel}
-            </button>
-          </div>
-        `;
-        list.appendChild(div);
-      });
+          `;
+        } else {
+          overviewPane.innerHTML = `
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.65rem; margin-bottom:0.75rem;">
+              <div style="background:#0d141e; border:1px solid var(--border-subtle); border-radius:6px; padding:0.75rem;">
+                <div style="font-size:0.82rem; font-weight:600; color:var(--gold-light); margin-bottom:0.4rem;">🏔️ 宗门祖庭与灵脉</div>
+                <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.65;">
+                  <div>名山驻地：<span style="color:var(--ethereal-blue); font-weight:600;">${homeMapName}</span></div>
+                  <div>天地灵气：<span style="color:var(--jade-green);">${homeMap ? homeMap.densityText : '凡尘'} (吐纳×${homeMap ? homeMap.expMult : 1.0})</span></div>
+                  <div>当前行止：<span style="color:${isAtHome ? 'var(--jade-green)' : 'var(--cinnabar-light)'}; font-weight:600;">${isAtHome ? '📍 已在宗门山门灵脉洞府' : '🚶 游历于外域'}</span></div>
+                </div>
+                <div style="margin-top:0.5rem;">
+                  ${!isAtHome ? `<button class="btn btn-gold" style="width:100%; font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="teleportToSectHome()">🕊️ 御风归返山门洞府</button>` : `<span style="font-size:0.72rem; color:var(--jade-green);">✨ 正在山门洞府吸纳浩瀚灵气</span>`}
+                </div>
+              </div>
+
+              <div style="background:#0d141e; border:1px solid var(--border-subtle); border-radius:6px; padding:0.75rem;">
+                <div style="font-size:0.82rem; font-weight:600; color:var(--gold-light); margin-bottom:0.4rem;">📜 镇宗秘典与待遇</div>
+                <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.65;">
+                  <div>传承心法：<span style="color:var(--purple-rare); font-weight:600;">${G.technique ? G.technique.name : '镇宗心法'}</span></div>
+                  <div>阶位待遇：<span style="color:var(--gold-light); font-weight:600;">${curRank.name} (月俸×${curRank.salaryMult})</span></div>
+                  <div>奉献积累：<span style="color:var(--text-main);">+${curRank.monthlyContrib} 功勋/月 (累计: ${G.sect.totalContrib || 0})</span></div>
+                </div>
+                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.4rem; line-height:1.4;">
+                  ${curRank.canIssueQuests ? '👑 <span style="color:var(--gold-primary); font-weight:600;">尊享长老令谕大权，可号令门下弟子采药剿魔！</span>' : '🔰 尚居弟子之位，可在任务堂积攒功勋，以备晋升！'}
+                </div>
+              </div>
+            </div>
+
+            <div style="background:#0d141e; border:1px solid var(--border-subtle); border-radius:6px; padding:0.75rem;">
+              <div style="font-size:0.82rem; font-weight:600; color:var(--gold-light); margin-bottom:0.4rem;">🏛️ 仙府殿宇玩法语录</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.75;">
+                • <b>身份晋升</b>：从外门弟子一步步登临真传、执事长老、传功长老、太上长老至太上大长老，解锁翻倍月俸与极品护道宝丹！<br>
+                • <b>弟子任务堂</b>：采药供奉、灵丹上贡、巡山剿魔、藏经演武，可源源不断累积宗门功勋与丰厚酬劳！<br>
+                • <b>长老议事堂</b>：位列长老后执掌调度玉符，可下达【搜山采药令】、【妖煞荡涤令】、【广纳仙苗令】等大令谕，号令全宗！
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      // 标签2：身份晋升
+      const promotePane = document.getElementById('stabPromote');
+      if (promotePane) {
+        if (!hasSect) {
+          promotePane.innerHTML = `<div style="text-align:center; padding:2.5rem; color:var(--text-muted);">散修无宗派品阶晋升，请先参选拜入仙门。</div>`;
+        } else {
+          const nextRank = getNextSectRank(G.sect.rankKey);
+          const curIdx = SECT_RANKS.findIndex(r => r.key === G.sect.rankKey);
+          const curRealm = REALMS[G.realmIndex] || REALMS[0];
+
+          let ladderHtml = SECT_RANKS.map((r, idx) => {
+            const isPassed = idx < curIdx;
+            const isCurrent = idx === curIdx;
+            const isNext = idx === curIdx + 1;
+            let statusBadge = "";
+            if (isCurrent) statusBadge = `<span class="item-tier-badge ${r.badge}" style="font-size:0.65rem;">📍 当前阶位</span>`;
+            else if (isPassed) statusBadge = `<span style="color:var(--jade-green); font-size:0.72rem; font-weight:600;">✓ 已历练</span>`;
+            else if (isNext) statusBadge = `<span style="color:var(--gold-light); font-size:0.72rem; font-weight:600;">⭐ 下一目标</span>`;
+            else statusBadge = `<span style="color:var(--text-muted); font-size:0.7rem;">🔒 未达阶位</span>`;
+
+            return `
+              <div class="sect-ladder-step ${isCurrent ? 'current' : ''}">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <span style="font-size:0.85rem; font-weight:700; color:${isCurrent ? 'var(--gold-light)' : 'var(--text-main)'};">${idx + 1}. ${r.name}</span>
+                  ${statusBadge}
+                </div>
+                <div style="font-size:0.73rem; color:var(--text-muted); text-align:right;">
+                  <span>需【${REALMS[r.minRealm].name}】</span> | 
+                  <span>功勋:${r.reqContrib}</span> | 
+                  <span style="color:var(--jade-green); font-weight:600;">月俸×${r.salaryMult}</span>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          let nextActionHtml = "";
+          if (!nextRank) {
+            nextActionHtml = `
+              <div class="sect-decree-card" style="text-align:center; padding:1.2rem; margin-top:0.75rem;">
+                <div style="font-size:1.1rem; color:var(--gold-light); font-weight:700;">👑 仙道通神 · 全宗独尊</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.35rem;">道友已位列全宗最高尊位【太上大长老】，掌最高生杀令谕，万仙长揖朝拜！</div>
+              </div>
+            `;
+          } else {
+            const meetsRealm = G.realmIndex >= nextRank.minRealm;
+            const meetsContrib = (G.sect.contrib || 0) >= nextRank.reqContrib;
+            const canPromote = meetsRealm && meetsContrib;
+
+            nextActionHtml = `
+              <div style="background:linear-gradient(135deg, rgba(212,160,23,0.1), rgba(16,21,33,0.9)); border:1px solid rgba(212,160,23,0.35); border-radius:6px; padding:0.85rem; margin-top:0.85rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                  <div style="font-size:0.92rem; font-weight:700; color:var(--gold-light);">
+                    🌟 晋升目标：【${nextRank.name}】
+                  </div>
+                  <span class="item-tier-badge ${nextRank.badge}">${nextRank.name}</span>
+                </div>
+                <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:0.6rem; line-height:1.5;">
+                  ${nextRank.desc}
+                </div>
+                <div style="font-size:0.75rem; line-height:1.8; margin-bottom:0.65rem; background:rgba(0,0,0,0.25); padding:0.5rem 0.7rem; border-radius:4px;">
+                  <div>• 最低境界：【${REALMS[nextRank.minRealm].name}】 ${meetsRealm ? '<span style="color:var(--jade-green); font-weight:bold;">✓ 已达成</span>' : `<span style="color:var(--cinnabar); font-weight:bold;">✗ 未达成 (当前${curRealm.name})</span>`}</div>
+                  <div>• 所需功勋：${nextRank.reqContrib} 点 ${meetsContrib ? `<span style="color:var(--jade-green); font-weight:bold;">✓ 已达成 (${G.sect.contrib || 0}/${nextRank.reqContrib})</span>` : `<span style="color:var(--cinnabar); font-weight:bold;">✗ 尚缺 ${nextRank.reqContrib - (G.sect.contrib || 0)} 点 (当前${G.sect.contrib || 0})</span>`}</div>
+                  <div style="color:var(--gold-light);">• 晋升赐礼：赐对应破境护道神丹、大量灵石${nextRank.canIssueQuests && !curRank.canIssueQuests ? '、<b>执掌长老调度玉符</b>' : ''}！</div>
+                </div>
+                <button class="btn ${canPromote ? 'btn-gold' : ''}" style="width:100%; padding:0.45rem;" ${canPromote ? '' : 'disabled'} onclick="doSectPromotion('${nextRank.key}')">
+                  ${canPromote ? `🎊 举行全宗大典 · 晋升为【${nextRank.name}】` : `壁障未破 (功勋或境界未达标)`}
+                </button>
+              </div>
+            `;
+          }
+
+          promotePane.innerHTML = `
+            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.6rem;">宗门七重天梯阶位，功勋卓著与道行通玄者可受全宗推举晋升：</div>
+            <div>${ladderHtml}</div>
+            ${nextActionHtml}
+          `;
+        }
+      }
+
+      // 标签3：弟子任务堂
+      const questsPane = document.getElementById('stabQuests');
+      if (questsPane) {
+        if (!hasSect) {
+          questsPane.innerHTML = `<div style="text-align:center; padding:2.5rem; color:var(--text-muted);">散修无宗门任务，请先拜入仙门。</div>`;
+        } else {
+          questsPane.innerHTML = `
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.65rem;">
+              全宗门人皆可在此领受差事，赚取宗门功勋与丰厚灵石酬劳，助益道行成长：
+            </div>
+
+            <div class="sect-quest-card">
+              <div style="flex:1;">
+                <div style="font-weight:600; color:var(--gold-light); font-size:0.85rem;">🌿 采药供奉 · 深入后山药圃</div>
+                <div style="font-size:0.73rem; color:var(--text-muted); margin:0.2rem 0;">受命采集百草堂所需药引，山路崎岖，需施展御风身法。</div>
+                <div style="font-size:0.71rem; color:var(--jade-green);">消耗：2个月光阴、15点灵力 | 奖励：宗门功勋+35、灵石+60</div>
+              </div>
+              <button class="btn btn-gold" style="font-size:0.75rem; padding:0.32rem 0.65rem;" onclick="doSectQuest('gather')">领命采药</button>
+            </div>
+
+            <div class="sect-quest-card">
+              <div style="flex:1;">
+                <div style="font-weight:600; color:var(--gold-light); font-size:0.85rem;">🧪 灵丹上贡 · 丹房支应</div>
+                <div style="font-size:0.73rem; color:var(--text-muted); margin:0.2rem 0;">上缴随身携带的一颗修炼丹药（若储物袋无丹则消耗60灵石代缴）。</div>
+                <div style="font-size:0.71rem; color:var(--jade-green);">消耗：丹药1颗或60灵石、1个月 | 奖励：宗门功勋+60、炼丹心得+20、声望+5</div>
+              </div>
+              <button class="btn btn-gold" style="font-size:0.75rem; padding:0.32rem 0.65rem;" onclick="doSectQuest('alchemy')">上贡灵丹</button>
+            </div>
+
+            <div class="sect-quest-card">
+              <div style="flex:1;">
+                <div style="font-weight:600; color:var(--gold-light); font-size:0.85rem;">⚔️ 巡山剿魔 · 护持灵脉</div>
+                <div style="font-size:0.73rem; color:var(--text-muted); margin:0.2rem 0;">执剑巡查山门外围矿脉，驱逐妖兽与越界魔修。</div>
+                <div style="font-size:0.71rem; color:var(--jade-green);">消耗：3个月光阴、30点气血 | 奖励：宗门功勋+80、灵石+120、修为经验+1500</div>
+              </div>
+              <button class="btn btn-gold" style="font-size:0.75rem; padding:0.32rem 0.65rem;" onclick="doSectQuest('patrol')">执剑巡山</button>
+            </div>
+
+            <div class="sect-quest-card">
+              <div style="flex:1;">
+                <div style="font-weight:600; color:var(--gold-light); font-size:0.85rem;">📖 藏经演武 · 推演残篇</div>
+                <div style="font-size:0.73rem; color:var(--text-muted); margin:0.2rem 0;">前往藏经宝阁协助传功堂推演古谱阵法，需聚精会神。</div>
+                <div style="font-size:0.71rem; color:var(--jade-green);">消耗：2个月光阴、25点灵力 | 奖励：宗门功勋+50、顿悟修为+2500</div>
+              </div>
+              <button class="btn btn-gold" style="font-size:0.75rem; padding:0.32rem 0.65rem;" onclick="doSectQuest('sutra')">推演演武</button>
+            </div>
+          `;
+        }
+      }
+
+      // 标签4：长老议事堂 · 发布令谕
+      const decreesPane = document.getElementById('stabDecrees');
+      if (decreesPane) {
+        if (!hasSect) {
+          decreesPane.innerHTML = `<div style="text-align:center; padding:2.5rem; color:var(--text-muted);">散修无权发布令谕。</div>`;
+        } else if (!curRank.canIssueQuests) {
+          decreesPane.innerHTML = `
+            <div style="text-align:center; padding:2.5rem 1.5rem; background:#0d141e; border:1px solid rgba(231,76,60,0.3); border-radius:6px;">
+              <div style="font-size:2.2rem; margin-bottom:0.5rem;">🔒</div>
+              <div style="font-size:1.05rem; color:var(--cinnabar-light); font-weight:700; margin-bottom:0.4rem;">长老议事堂 · 唯长老尊位方可升座</div>
+              <div style="font-size:0.8rem; color:var(--text-muted); line-height:1.6; max-width:440px; margin:0 auto 1.2rem auto;">
+                道友目前阶位为【${curRank.name}】。宗门法令森严，唯有突破至【元婴期】并累积1200点功勋晋升为【执事长老】后，方可执掌长老玉符，在此开坛发布令谕，号令门下三千弟子搜寻天下灵草、荡涤魔窟！
+              </div>
+              <button class="btn btn-gold" onclick="switchSectTab('stabPromote')">🌟 查看晋升条件与天梯</button>
+            </div>
+          `;
+        } else {
+          const rIdx = SECT_RANKS.findIndex(r => r.key === G.sect.rankKey);
+          decreesPane.innerHTML = `
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.65rem;">
+              长老升座！你手握宗门调度玉符，言出法随，可号令宗门内外门众弟子执行专属法令：
+            </div>
+
+            <!-- 令谕1：搜山采药 -->
+            <div class="sect-decree-card">
+              <div style="flex:1;">
+                <div style="font-weight:700; color:var(--gold-light); font-size:0.88rem; display:flex; align-items:center; gap:0.4rem;">
+                  <span>🌿 搜山采药令</span>
+                  <span class="item-tier-badge badge-yuanying" style="font-size:0.62rem;">执事长老</span>
+                </div>
+                <div style="font-size:0.73rem; color:var(--text-muted); margin:0.25rem 0;">调遣三十名内外门弟子全面搜罗百里灵山，采集奇珍药材。</div>
+                <div style="font-size:0.71rem; color:var(--jade-green);">法令消耗：80 宗门功勋、150 灵石 | 缴获：随机 3~5 份高阶灵药入库</div>
+              </div>
+              <button class="btn btn-gold" style="font-size:0.75rem; padding:0.35rem 0.75rem;" onclick="issueSectDecree('gather')">颁布法令</button>
+            </div>
+
+            <!-- 令谕2：妖煞荡涤 -->
+            <div class="sect-decree-card">
+              <div style="flex:1;">
+                <div style="font-weight:700; color:var(--gold-light); font-size:0.88rem; display:flex; align-items:center; gap:0.4rem;">
+                  <span>⚔️ 妖煞荡涤令</span>
+                  <span class="item-tier-badge badge-yuanying" style="font-size:0.62rem;">执事长老</span>
+                </div>
+                <div style="font-size:0.73rem; color:var(--text-muted); margin:0.25rem 0;">调遣战堂精锐修士进剿周边妖窟巢穴，扬我宗门浩然正气。</div>
+                <div style="font-size:0.71rem; color:var(--jade-green);">法令消耗：120 宗门功勋、250 灵石 | 缴获：500~900 灵石、四阶大妖妖丹、威望+25</div>
+              </div>
+              <button class="btn btn-gold" style="font-size:0.75rem; padding:0.35rem 0.75rem;" onclick="issueSectDecree('patrol')">颁布法令</button>
+            </div>
+
+            <!-- 令谕3：广纳仙苗 -->
+            <div class="sect-decree-card">
+              <div style="flex:1;">
+                <div style="font-weight:700; color:var(--gold-light); font-size:0.88rem; display:flex; align-items:center; gap:0.4rem;">
+                  <span>✨ 广纳仙苗令</span>
+                  <span class="item-tier-badge badge-yuanying" style="font-size:0.62rem;">执事长老</span>
+                </div>
+                <div style="font-size:0.73rem; color:var(--text-muted); margin:0.25rem 0;">升座法坛，亲自为全宗新晋三千仙苗讲道传法，洗涤凡尘。</div>
+                <div style="font-size:0.71rem; color:var(--jade-green);">法令消耗：100 宗门功勋 | 收益：宗门声望+40、反哺自身修为经验+4000</div>
+              </div>
+              <button class="btn btn-gold" style="font-size:0.75rem; padding:0.35rem 0.75rem;" onclick="issueSectDecree('recruit')">颁布法令</button>
+            </div>
+
+            <!-- 令谕4：太上开炉督造令 (需传功长老 rIdx >= 4) -->
+            <div class="sect-decree-card" style="${rIdx < 4 ? 'opacity:0.6;' : ''}">
+              <div style="flex:1;">
+                <div style="font-weight:700; color:var(--gold-light); font-size:0.88rem; display:flex; align-items:center; gap:0.4rem;">
+                  <span>🔥 太上开炉督造令</span>
+                  <span class="item-tier-badge badge-huashen" style="font-size:0.62rem;">传功长老</span>
+                  ${rIdx < 4 ? '<span style="color:var(--cinnabar); font-size:0.68rem;">(需化神期·传功长老)</span>' : ''}
+                </div>
+                <div style="font-size:0.73rem; color:var(--text-muted); margin:0.25rem 0;">号令百草丹堂全部炼丹大师开炉，合力为你督造专属护道大丹！</div>
+                <div style="font-size:0.71rem; color:var(--jade-green);">法令消耗：200 宗门功勋、500 灵石 | 赐宝：极品降尘/破障/化神定阳丹×1、炼丹心得+50</div>
+              </div>
+              <button class="btn ${rIdx >= 4 ? 'btn-gold' : ''}" ${rIdx >= 4 ? '' : 'disabled'} style="font-size:0.75rem; padding:0.35rem 0.75rem;" onclick="issueSectDecree('alchemy')">开炉督造</button>
+            </div>
+
+            <!-- 令谕5：太上极道征伐令 (需太上长老 rIdx >= 5) -->
+            <div class="sect-decree-card" style="${rIdx < 5 ? 'opacity:0.6;' : ''}">
+              <div style="flex:1;">
+                <div style="font-weight:700; color:var(--gold-light); font-size:0.88rem; display:flex; align-items:center; gap:0.4rem;">
+                  <span>⚡ 太上极道征伐令</span>
+                  <span class="item-tier-badge badge-xian" style="font-size:0.62rem;">太上长老</span>
+                  ${rIdx < 5 ? '<span style="color:var(--cinnabar); font-size:0.68rem;">(需炼虚期·太上长老)</span>' : ''}
+                </div>
+                <div style="font-size:0.73rem; color:var(--text-muted); margin:0.25rem 0;">敲响九霄荡魔神钟，号令全宗三千飞剑跨域征伐域外魔窟！</div>
+                <div style="font-size:0.71rem; color:var(--jade-green);">法令消耗：400 宗门功勋、1000 灵石 | 战果：灵石2000~3500、七品太虚涅槃丹、威望+80</div>
+              </div>
+              <button class="btn ${rIdx >= 5 ? 'btn-gold' : ''}" ${rIdx >= 5 ? '' : 'disabled'} style="font-size:0.75rem; padding:0.35rem 0.75rem;" onclick="issueSectDecree('crusade')">至尊征伐</button>
+            </div>
+          `;
+        }
+      }
+
+      // 标签5：仙门大选
+      const list = document.getElementById('sectList');
+      if (list) {
+        list.innerHTML = '';
+        const curSectDb = hasSect ? SECTS_DB.find(s => s.id === G.sect.id || s.name === G.sect.name) : null;
+        const curSectMinRealm = curSectDb ? curSectDb.minRealm : 0;
+
+        SECTS_DB.forEach(sect => {
+          const isCurrentSect = hasSect && (G.sect.id === sect.id || G.sect.name === sect.name);
+          const meetsRealm = G.realmIndex >= sect.minRealm;
+          const isHigherSect = hasSect && (sect.minRealm > curSectMinRealm);
+          const isLowerOrEqual = hasSect && !isCurrentSect && (sect.minRealm <= curSectMinRealm);
+          const homeMap = MAPS_DB.find(m => m.id === sect.homeMap);
+          const homeMapName = homeMap ? homeMap.name : "未知灵域";
+
+          let btnLabel = "";
+          let btnDisabled = false;
+          let btnClass = "btn btn-gold";
+          let btnAction = `joinSect('${sect.id}')`;
+          let tipText = "";
+
+          if (isCurrentSect) {
+            btnLabel = "📍 已在门中";
+            btnDisabled = true;
+            btnClass = "btn";
+            tipText = `本门当前道统，位列【${curRank.name}】，每月享受俸禄`;
+          } else if (!meetsRealm) {
+            btnLabel = `需【${REALMS[sect.minRealm].name}】`;
+            btnDisabled = true;
+            btnClass = "btn";
+          } else if (isHigherSect) {
+            btnLabel = "🌟 破格晋升高门";
+            btnClass = "btn btn-gold";
+            tipText = "道法精进，可受上位仙宗破格提拔拜入，并根据修为直接定阶！";
+          } else if (isLowerOrEqual) {
+            btnLabel = "已有同级道统";
+            btnDisabled = true;
+            btnClass = "btn";
+            tipText = "修真界恪守道约，不可转投平级或下位宗门；需先脱离当前门庭";
+          } else {
+            btnLabel = "拜入仙门";
+            btnClass = "btn btn-gold";
+          }
+
+          const div = document.createElement('div');
+          div.className = `sect-item ${isCurrentSect ? 'active' : ''}`;
+          div.style.cssText = isCurrentSect ? 'border:1px solid rgba(46,204,113,0.4); background:rgba(46,204,113,0.05);' : '';
+          div.innerHTML = `
+            <div style="flex:1; margin-right:0.8rem;">
+              <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                <span style="font-weight:600; color:var(--gold-light);">${sect.name}</span>
+                <span style="font-size:0.68rem; color:var(--ethereal-blue); background:rgba(52,152,219,0.15); padding:0.1rem 0.35rem; border-radius:3px;">祖庭：${homeMapName}</span>
+                ${isCurrentSect ? '<span style="font-size:0.68rem; background:rgba(46,204,113,0.2); color:var(--jade-green); padding:0.1rem 0.35rem; border-radius:3px;">修习中</span>' : ''}
+                ${isHigherSect ? '<span style="font-size:0.68rem; background:rgba(212,160,23,0.2); color:var(--gold-light); padding:0.1rem 0.35rem; border-radius:3px;">更高道统</span>' : ''}
+              </div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin:0.25rem 0;">${sect.desc}</div>
+              <div style="font-size:0.72rem; color:var(--jade-green);">基础月俸：${sect.salary} 灵石 | 镇宗心法：${sect.tech ? sect.tech.name : '独门心法'} | 礼器：${sect.giftItem ? sect.giftItem.name : '入门宝器'}</div>
+              ${tipText ? `<div style="font-size:0.7rem; color:var(--cinnabar); margin-top:0.2rem;">${tipText}</div>` : ''}
+            </div>
+            <div>
+              <button class="${btnClass}" ${btnDisabled ? 'disabled' : ''} onclick="${btnAction}">
+                ${btnLabel}
+              </button>
+            </div>
+          `;
+          list.appendChild(div);
+        });
+      }
     }
 
     function joinSect(sectId) {
@@ -3690,9 +4276,34 @@
 
       sfx.breakthrough();
       const oldSectName = hasSect ? G.sect.name : null;
-      G.sect = { id: sect.id, name: sect.name, salary: sect.salary, minRealm: sect.minRealm };
-      G.sectGiftClaimed = G.sectGiftClaimed || {};
 
+      // 智能定阶与计算对应职级的俸禄与初始功勋
+      const rIdx = getInitialRankIndex(sect, G.realmIndex);
+      const startingRank = SECT_RANKS[rIdx];
+      const salary = calcSectSalary(sect, startingRank.key);
+
+      G.sect = {
+        id: sect.id,
+        name: sect.name,
+        salary: salary,
+        minRealm: sect.minRealm,
+        rankKey: startingRank.key,
+        rankName: startingRank.name,
+        contrib: Math.max(Number(G.sect && G.sect.contrib) || 0, startingRank.reqContrib),
+        totalContrib: Math.max(Number(G.sect && G.sect.totalContrib) || 0, startingRank.reqContrib)
+      };
+
+      // 所在地同步迁往宗门山门所在大域
+      if (sect.homeMap) {
+        const targetMap = MAPS_DB.find(m => m.id === sect.homeMap);
+        if (targetMap) {
+          G.currentMap = targetMap.id;
+          G.location = targetMap.name;
+          syncNpcsForCurrentState(G, true);
+        }
+      }
+
+      G.sectGiftClaimed = G.sectGiftClaimed || {};
       let giftLog = "";
       if (!G.sectGiftClaimed[sect.id]) {
         G.sectGiftClaimed[sect.id] = true;
@@ -3707,29 +4318,275 @@
       if (sect.tech) G.technique = sect.tech;
 
       if (oldSectName) {
-        addLog(`【名门擢升】道友修为精深，告别【${oldSectName}】，破格拜入上位仙宗【${sect.name}】${giftLog}！得传《${sect.tech ? sect.tech.name : '镇宗秘典'}》！`, "breakthrough");
+        addLog(`【名门擢升】道友修为精深，告别【${oldSectName}】，破格拜入上位仙宗【${sect.name}】！因修为通玄，直接定阶为【${startingRank.name}】${giftLog}！得传《${sect.tech ? sect.tech.name : '镇宗秘典'}》！移步山门【${G.location}】！`, "breakthrough");
       } else {
-        addLog(`【升仙大选】你通过重重考核，正式拜入【${sect.name}】${giftLog}！得传镇宗秘典！`, "breakthrough");
+        addLog(`【升仙大选】你通过重重考核，正式拜入【${sect.name}】，定阶为【${startingRank.name}】${giftLog}！得传镇宗秘典！移步山门【${G.location}】！`, "breakthrough");
       }
 
-      closeModal('modalSectSelect');
       saveToLocal();
       renderUI();
+      switchSectTab('stabOverview');
     }
 
     function leaveSect() {
       if (!G.sect || !G.sect.id || G.sect.name === "散修") return;
       sfx.click();
       const sectName = G.sect.name;
-      if (confirm(`【脱离门庭】确定要辞去【${sectName}】弟子身份，重归散修自由之身吗？\n\n• 失去每月宗门俸禄 (${G.sect.salary || 0} 灵石)\n• 恢复散修身份，可自由择定其他同阶仙门拜入\n• 扣除 10 点修真界威望`)) {
-        G.sect = { id: null, name: "散修", salary: 0, minRealm: 0 };
-        G.stats.reputation = Math.max(0, (G.stats.reputation || 0) - 10);
+      const rankTitle = G.sect.rankName || "门人";
+      if (confirm(`【脱离门庭】确定要辞去【${sectName}】${rankTitle}身份，重归散修自由之身吗？\n\n• 失去每月宗门俸禄 (${G.sect.salary || 0} 灵石)\n• 失去宗门身份特权与未用功勋\n• 恢复散修身份，可自由择定其他同阶仙门拜入\n• 扣除 15 点修真界威望`)) {
+        G.sect = { id: null, name: "散修", salary: 0, minRealm: 0, rankKey: "outer", rankName: "散修", contrib: 0, totalContrib: 0 };
+        G.stats.reputation = Math.max(0, (G.stats.reputation || 0) - 15);
         sfx.alert();
-        addLog(`【重归闲散】你向【${sectName}】奉还宗门腰牌，解除羁绊，重回散修之身！`, "normal");
+        addLog(`【重归闲散】你向【${sectName}】奉还宗门玉符，辞去${rankTitle}尊位，解除羁绊，重回散修之身！`, "normal");
         saveToLocal();
         renderUI();
-        renderSectModal();
+        switchSectTab('stabOverview');
       }
+    }
+
+    function doSectPromotion(nextKey) {
+      if (!G.sect || !G.sect.id || G.sect.name === "散修") return;
+      const nextRank = getSectRankInfo(nextKey);
+      if (!nextRank) return;
+
+      if (G.realmIndex < nextRank.minRealm) {
+        alert(`晋升失败：道友当前境界为【${REALMS[G.realmIndex].name}】，尚未达到【${nextRank.name}】所需最低境界【${REALMS[nextRank.minRealm].name}】！`);
+        return;
+      }
+      if ((G.sect.contrib || 0) < nextRank.reqContrib) {
+        alert(`晋升失败：宗门功勋不足！当前功勋 ${G.sect.contrib || 0} 点，所需功勋 ${nextRank.reqContrib} 点。请前往【弟子任务堂】完成任务累积功勋！`);
+        return;
+      }
+
+      // 晋升门槛达成，消耗部分功勋（50%），保留 totalContrib 累计
+      const contribCost = Math.floor(nextRank.reqContrib * 0.5);
+      G.sect.contrib = Math.max(0, (G.sect.contrib || 0) - contribCost);
+      G.sect.rankKey = nextRank.key;
+      G.sect.rankName = nextRank.name;
+
+      const sectDb = SECTS_DB.find(s => s.id === G.sect.id || s.name === G.sect.name);
+      G.sect.salary = calcSectSalary(sectDb, nextRank.key);
+
+      sfx.breakthrough();
+
+      let rewardText = "";
+      if (nextRank.key === "inner") {
+        addItemToInv(ITEMS_DB.pill_zhuji, 1);
+        G.stones += 100;
+        rewardText = "获赐【天元筑基丹】×1、灵石 100 块";
+      } else if (nextRank.key === "core") {
+        addItemToInv(ITEMS_DB.pill_jindan, 1);
+        G.stones += 300;
+        rewardText = "获赐【四品降尘金丹】×1、灵石 300 块，掌门亲授真传剑令";
+      } else if (nextRank.key === "elder") {
+        addItemToInv(ITEMS_DB.pill_yuanying, 1);
+        G.stones += 800;
+        rewardText = "执掌长老调度玉符！开辟灵峰洞府，获赐【五品九转结婴丹】×1、灵石 800 块，解锁【长老议事堂】";
+      } else if (nextRank.key === "grand_elder") {
+        addItemToInv(ITEMS_DB.pill_huashen, 1);
+        G.stones += 2000;
+        rewardText = "总揽全宗道统！获赐【六品化神定阳丹】×1、灵石 2000 块，开启【太上开炉督造令】";
+      } else if (nextRank.key === "supreme_elder") {
+        addItemToInv(ITEMS_DB.pill_lianxu, 1);
+        G.stones += 5000;
+        rewardText = "位列太上巨擘！获赐【七品太虚涅槃丹】×1、灵石 5000 块，开启【太上极道征伐令】";
+      } else if (nextRank.key === "supreme_patriarch") {
+        addItemToInv(ITEMS_DB.pill_feisheng, 1);
+        G.stones += 10000;
+        rewardText = "尊为全宗大长老！获赐【鸿蒙造化真仙丹】×1、灵石 10000 块，万古仙门唯我独尊";
+      }
+
+      addLog(`🎊【宗门晋升大典】全宗九响天钟！道友荣升为【${G.sect.name}】之【${nextRank.name}】！${rewardText}！月俸激增至 ${G.sect.salary} 灵石！`, "breakthrough");
+      saveToLocal();
+      renderUI();
+      renderSectModal();
+    }
+
+    function doSectQuest(questKey) {
+      if (!G.sect || !G.sect.id || G.sect.name === "散修") {
+        alert("只有加入宗门的弟子方可在任务堂承接任务！");
+        return;
+      }
+      sfx.click();
+
+      if (questKey === 'gather') {
+        if (G.mp < 15) {
+          alert("灵力不足，先打坐恢复灵力后再去采药！");
+          return;
+        }
+        G.mp -= 15;
+        advanceMonth();
+        advanceMonth();
+        const addContrib = 35;
+        const addStones = 60;
+        G.sect.contrib = (G.sect.contrib || 0) + addContrib;
+        G.sect.totalContrib = (G.sect.totalContrib || 0) + addContrib;
+        G.stones += addStones;
+        sfx.spell();
+        addLog(`【宗门任务】你受命深入山麓药园采集灵药，耗时两月。交付百草堂后获赐功勋 +${addContrib} 点，灵石 +${addStones} 块！`, "normal");
+      } else if (questKey === 'alchemy') {
+        const pillIdx = G.inventory.findIndex(it => it && it.type === "pill");
+        if (pillIdx >= 0) {
+          const pillName = G.inventory[pillIdx].name;
+          G.inventory[pillIdx].count--;
+          cleanZeroInv();
+          addLog(`【宗门任务】你向宗门丹房上贡了随身炼制的【${pillName}】！`, "normal");
+        } else {
+          if (G.stones < 60) {
+            alert("你储物袋中无修炼丹药，且身上灵石不足60块，无法折抵上贡！");
+            return;
+          }
+          G.stones -= 60;
+          addLog(`【宗门任务】你暂无现成丹药，自掏 60 灵石在山下采办灵药代缴入库！`, "normal");
+        }
+        advanceMonth();
+        const addContrib = 60;
+        G.sect.contrib = (G.sect.contrib || 0) + addContrib;
+        G.sect.totalContrib = (G.sect.totalContrib || 0) + addContrib;
+        G.stats.alchemyExp = (G.stats.alchemyExp || 0) + 20;
+        G.stats.reputation = (G.stats.reputation || 0) + 5;
+        sfx.alchemy();
+        addLog(`【宗门任务】丹房执事对你的贡品赞赏有加，赐予宗门功勋 +${addContrib} 点，炼丹心得 +20 点，宗门声望 +5！`, "normal");
+      } else if (questKey === 'patrol') {
+        if (G.hp < 40) {
+          alert("气血亏虚，后山妖兽凶险，先服丹疗伤后再去巡山！");
+          return;
+        }
+        G.hp -= 30;
+        advanceMonth();
+        advanceMonth();
+        advanceMonth();
+        const addContrib = 80;
+        const addStones = 120;
+        const addExp = 1500;
+        G.sect.contrib = (G.sect.contrib || 0) + addContrib;
+        G.sect.totalContrib = (G.sect.totalContrib || 0) + addContrib;
+        G.stones += addStones;
+        G.exp += addExp;
+        sfx.slash();
+        addLog(`【宗门任务】你仗剑巡视山门灵脉，斩杀三头窜扰的赤目妖狼！获赐宗门功勋 +${addContrib} 点，灵石 +${addStones} 块，磨砺战意修为 +${addExp} 点！`, "normal");
+      } else if (questKey === 'sutra') {
+        if (G.mp < 25) {
+          alert("法力不足，无法静心参悟藏经阁阵法！");
+          return;
+        }
+        G.mp -= 25;
+        advanceMonth();
+        advanceMonth();
+        const addContrib = 50;
+        const addExp = 2500;
+        G.sect.contrib = (G.sect.contrib || 0) + addContrib;
+        G.sect.totalContrib = (G.sect.totalContrib || 0) + addContrib;
+        G.exp += addExp;
+        sfx.spell();
+        addLog(`【宗门任务】你在藏经阁协助传功堂推演道法残篇，福至心灵！宗门功勋 +${addContrib} 点，顿悟灵息修为 +${addExp} 点！`, "normal");
+      }
+
+      saveToLocal();
+      renderUI();
+      renderSectModal();
+    }
+
+    function issueSectDecree(decreeKey) {
+      if (!G.sect || !G.sect.id || G.sect.name === "散修") {
+        alert("散修无法发布宗门令谕！");
+        return;
+      }
+      const curRank = getSectRankInfo(G.sect.rankKey);
+      if (!curRank.canIssueQuests) {
+        alert("尊位未及长老，无权调动宗门弟子发布令谕！");
+        return;
+      }
+
+      if (decreeKey === 'gather') {
+        if ((G.sect.contrib || 0) < 80) { alert("宗门功勋不足 80 点！"); return; }
+        if (G.stones < 150) { alert("调派弟子所需赏金不足 150 灵石！"); return; }
+        G.sect.contrib -= 80;
+        G.stones -= 150;
+        sfx.click();
+
+        const HERB_POOL = [
+          ITEMS_DB.herb_longevity,
+          ITEMS_DB.herb_jiangchen,
+          ITEMS_DB.herb_wanshou,
+          ITEMS_DB.herb_ying,
+          ITEMS_DB.herb_soul_wood
+        ];
+        let gotNames = [];
+        const count = 3 + Math.floor(Math.random() * 3); // 3~5个
+        for (let i = 0; i < count; i++) {
+          const herb = HERB_POOL[Math.floor(Math.random() * HERB_POOL.length)];
+          addItemToInv(herb, 1);
+          gotNames.push(herb.name);
+        }
+        sfx.spell();
+        addLog(`👑【长老令谕 · 搜山采药】你祭出长老玉符，调派三十名门人搜寻名山大川！众弟子恭敬呈递药材：获得【${gotNames.join('、')}】！`, "breakthrough");
+
+      } else if (decreeKey === 'patrol') {
+        if ((G.sect.contrib || 0) < 120) { alert("宗门功勋不足 120 点！"); return; }
+        if (G.stones < 250) { alert("调遣战堂军需不足 250 灵石！"); return; }
+        G.sect.contrib -= 120;
+        G.stones -= 250;
+        const rewardStones = 500 + Math.floor(Math.random() * 400); // 500~900
+        G.stones += rewardStones;
+        G.stats.reputation = (G.stats.reputation || 0) + 25;
+        addItemToInv({ id: "loot_yaodan_4", name: "四阶天青妖丹", type: "material", tier: "yuanying", quality: "orange", desc: "高阶大妖内丹，蕴含澎湃妖煞之力", price: 300 }, 1);
+        sfx.slash();
+        addLog(`👑【长老令谕 · 妖煞荡涤】战堂精锐领你法令，直捣百里黑风妖窟，大获全胜！缴获灵石 +${rewardStones} 块、斩获【四阶天青妖丹】×1，修真界威望 +25！`, "breakthrough");
+
+      } else if (decreeKey === 'recruit') {
+        if ((G.sect.contrib || 0) < 100) { alert("宗门功勋不足 100 点！"); return; }
+        G.sect.contrib -= 100;
+        G.stats.reputation = (G.stats.reputation || 0) + 40;
+        const addExp = 4000;
+        G.exp += addExp;
+        sfx.spell();
+        addLog(`👑【长老令谕 · 广纳仙苗】你登临传法高台，开坛为三千新晋仙苗讲授长生真意，祥云缭绕！门人无不心折，宗门声望 +40，道心顿悟修为 +${addExp} 点！`, "breakthrough");
+
+      } else if (decreeKey === 'alchemy') {
+        const rIdx = SECT_RANKS.findIndex(r => r.key === G.sect.rankKey);
+        if (rIdx < 4) {
+          alert("此令谕唯有【传功长老】及以上尊位方可开炉颁布！");
+          return;
+        }
+        if ((G.sect.contrib || 0) < 200) { alert("宗门功勋不足 200 点！"); return; }
+        if (G.stones < 500) { alert("开炉地火与名贵耗材不足 500 灵石！"); return; }
+        G.sect.contrib -= 200;
+        G.stones -= 500;
+
+        const PILL_REWARDS = [
+          ITEMS_DB.pill_jindan,
+          ITEMS_DB.pill_yuanying,
+          ITEMS_DB.pill_huashen
+        ];
+        const pill = PILL_REWARDS[Math.floor(Math.random() * PILL_REWARDS.length)];
+        addItemToInv(pill, 1);
+        G.stats.alchemyExp = (G.stats.alchemyExp || 0) + 50;
+        sfx.alchemy();
+        addLog(`👑【长老令谕 · 太上开炉】全宗百草丹房七尊巨炉齐开，三日三夜霞光满天！为你督造出绝品护道丹【${pill.name}】送至洞府！炼丹心得 +50！`, "breakthrough");
+
+      } else if (decreeKey === 'crusade') {
+        const rIdx = SECT_RANKS.findIndex(r => r.key === G.sect.rankKey);
+        if (rIdx < 5) {
+          alert("此令谕唯有【太上长老】及以上巨擘方可号令全宗发动征伐！");
+          return;
+        }
+        if ((G.sect.contrib || 0) < 400) { alert("宗门功勋不足 400 点！"); return; }
+        if (G.stones < 1000) { alert("全宗出征灵舟仙剑所需供给不足 1000 灵石！"); return; }
+        G.sect.contrib -= 400;
+        G.stones -= 1000;
+
+        const prizeStones = 2000 + Math.floor(Math.random() * 1500);
+        G.stones += prizeStones;
+        G.stats.reputation = (G.stats.reputation || 0) + 80;
+        addItemToInv(ITEMS_DB.pill_lianxu, 1);
+        sfx.breakthrough();
+        addLog(`👑【长老令谕 · 太上极道征伐】太上荡魔神钟九震！全宗三千飞剑如遮天蔽日出巡，踏平天外魔宗分舵！缴获灵石 +${prizeStones} 块，战利品【${ITEMS_DB.pill_lianxu.name}】×1，宗门威望 +80，名震四海！`, "breakthrough");
+      }
+
+      saveToLocal();
+      renderUI();
+      renderSectModal();
     }
 
     /* ==========================================================================
@@ -4150,10 +5007,50 @@
       document.getElementById('techGrade').textContent = G.technique.grade;
       document.getElementById('techName').textContent = G.technique.name;
       document.getElementById('techDesc').textContent = G.technique.desc;
-      document.getElementById('sectName').textContent = G.sect ? G.sect.name : "散修";
+
+      const hasSect = G.sect && G.sect.id && G.sect.name !== "散修";
+      const curRank = getSectRankInfo(G.sect ? G.sect.rankKey : 'outer');
+
+      const sectNameEl = document.getElementById('sectName');
+      if (sectNameEl) sectNameEl.textContent = hasSect ? G.sect.name : "散修";
+
+      const badgeEl = document.getElementById('sectRankBadge');
+      if (badgeEl) {
+        if (hasSect && G.sect.rankKey) {
+          badgeEl.textContent = curRank.name;
+          badgeEl.className = `item-tier-badge ${curRank.badge}`;
+          badgeEl.style.display = "inline-block";
+        } else {
+          badgeEl.style.display = "none";
+        }
+      }
+
+      if (document.getElementById('badgeSect')) {
+        document.getElementById('badgeSect').textContent = hasSect ? `${G.sect.name} · ${curRank.name}` : "散修";
+      }
+
       const curMap = MAPS_DB.find(m => m.id === (G.currentMap || "town")) || MAPS_DB[0];
-      document.getElementById('currentLocTag').textContent = `📍 所在：${G.location} (灵气:${curMap.densityText || "凡尘"})`;
-      document.getElementById('sectSalaryTag').textContent = `月俸：${G.sect ? G.sect.salary : 0} 灵石`;
+      if (document.getElementById('locName')) {
+        document.getElementById('locName').textContent = curMap.name;
+      }
+      if (document.getElementById('currentLocTag')) {
+        document.getElementById('currentLocTag').textContent = `📍 所在：${curMap.name} (灵气:${curMap.densityText || "凡尘"})`;
+      }
+      if (document.getElementById('sectSalaryTag')) {
+        document.getElementById('sectSalaryTag').textContent = `月俸：${G.sect ? G.sect.salary : 0} 灵石`;
+      }
+
+      const sectInfoText = document.getElementById('sectInfoText');
+      const sectActionBox = document.getElementById('sectActionBox');
+      if (sectInfoText && sectActionBox) {
+        if (hasSect) {
+          sectInfoText.innerHTML = `道统：<b style="color:var(--gold-light);">${G.sect.name}</b> · 身份：<span class="item-tier-badge ${curRank.badge}">${curRank.name}</span><br>功勋：<b style="color:var(--gold-light);">${G.sect.contrib || 0}</b> 点 | 月俸：<b style="color:var(--jade-green);">${G.sect.salary || 0}</b> 灵石`;
+          sectActionBox.innerHTML = `<button class="btn btn-gold" style="width:100%;" onclick="openSectModalAndTab('stabOverview')">🏛️ 步入宗门大殿 · 议事与晋升</button>`;
+        } else {
+          sectInfoText.textContent = "当前为一介散修，无宗无派。可前往符合条件的宗门参加升仙大选考核！";
+          sectActionBox.innerHTML = `<button class="btn btn-purple" id="btnJoinSectModal" style="width:100%;" onclick="openSectModalAndTab('stabJoin')">📜 参与宗门收徒大选</button>`;
+        }
+      }
 
       // 主修方略选中高亮
       document.querySelectorAll('.routine-card').forEach(c => {
