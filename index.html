@@ -619,9 +619,14 @@
     .npc-name { font-size: 0.92rem; font-weight: 600; color: var(--gold-light); font-family: var(--font-serif); }
     .npc-relation { font-size: 0.72rem; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid var(--border-subtle); }
     .rel-friendly { color: var(--jade-green); border-color: var(--jade-dark); }
+    .rel-close { color: #38bdf8; border-color: #0284c7; }
+    .rel-sworn { color: #f59e0b; border-color: #d97706; text-shadow: 0 0 6px rgba(245, 158, 11, 0.4); }
     .rel-hostile { color: var(--cinnabar); border-color: #881337; }
     .rel-neutral { color: var(--text-muted); }
-    .npc-actions { display: flex; gap: 0.35rem; margin-top: 0.15rem; }
+    .npc-actions { display: flex; gap: 0.35rem; margin-top: 0.15rem; flex-wrap: wrap; }
+    .btn-xs { padding: 0.15rem 0.45rem; font-size: 0.72rem; border-radius: 4px; }
+    .btn-xs.active { background: var(--gold-primary); color: #0f172a; border-color: var(--gold-light); font-weight: 600; }
+    .deceased-card { background: #090d13 !important; border: 1px dashed #334155 !important; opacity: 0.85; }
 
     /* 模态弹窗 */
     .modal-overlay {
@@ -1036,8 +1041,13 @@
 
         <!-- 标签2：因果谱 (NPC列表) -->
         <div class="tab-pane" id="tabNpc">
-          <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:0.35rem;">
-            相逢即因果，红尘知己与宿敌皆有其命途：
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem;">
+            <span style="font-size:0.76rem; color:var(--text-muted);" id="npcSummaryText">👥 结缘论道 · 万界因果谱</span>
+            <div style="display:flex; gap:0.25rem;" id="npcFilterGroup">
+              <button class="btn btn-xs active" id="btnNpcCur" onclick="setNpcFilter('current')">📍本域</button>
+              <button class="btn btn-xs" id="btnNpcAll" onclick="setNpcFilter('all')">📜全谱</button>
+              <button class="btn btn-xs" id="btnNpcDead" onclick="setNpcFilter('deceased')">🪦坐化</button>
+            </div>
           </div>
           <div id="npcList" style="display:flex; flex-direction:column; gap:0.55rem;"></div>
         </div>
@@ -1676,6 +1686,8 @@
         id: "town",
         name: "苍梧边陲 · 栖霞古镇",
         minRealm: 0,
+        expMult: 1.0,
+        densityText: "凡尘稀薄",
         desc: "凡人与低阶散修聚居小镇，坊市繁茂，适合安稳采药打工。",
         herbChance: { herb_red: 0.8, powder_beast: 0.2 },
         enemyPool: [
@@ -1687,6 +1699,8 @@
         id: "forest",
         name: "云林大泽 · 妖兽外围",
         minRealm: 2, // 炼气二层
+        expMult: 1.6,
+        densityText: "草木灵气",
         desc: "灵气渐浓郁的深山大泽，多有一阶凶狠妖兽盘踞，蕴藏百年灵药。",
         herbChance: { herb_red: 0.5, vine_gold: 0.4, herb_spirit: 0.1 },
         enemyPool: [
@@ -1698,6 +1712,8 @@
         id: "valley",
         name: "断魂迷涧 · 古仙残冢",
         minRealm: 6, // 炼气六层
+        expMult: 2.8,
+        densityText: "古修地脉",
         desc: "毒瘴弥漫的古修洞府遗址，危机四伏，常现筑基机缘与绝品古宝！",
         herbChance: { vine_gold: 0.4, herb_spirit: 0.4, herb_zhuji: 0.2 },
         enemyPool: [
@@ -1709,6 +1725,8 @@
         id: "city",
         name: "苍梧陆氏 · 凌霄仙城",
         minRealm: 11, // 筑基初期
+        expMult: 6.0,
+        densityText: "二阶灵脉",
         desc: "苍梧大域核心仙城，二阶灵脉汇聚，宗门大派林立，拍卖会仙珍无数。",
         herbChance: { herb_spirit: 0.5, herb_zhuji: 0.3, herb_longevity: 0.2 },
         enemyPool: [
@@ -1720,6 +1738,8 @@
         id: "tianxinghai",
         name: "天星海 · 万仙外岛",
         minRealm: 15, // 金丹初期
+        expMult: 16.0,
+        densityText: "瀚海潮灵",
         desc: "汪洋无际之修真海域，海底灵脉密布，出产绛云朱果与万寿火灵芝！",
         herbChance: { herb_jiangchen: 0.45, herb_wanshou: 0.35, herb_longevity: 0.2 },
         enemyPool: [
@@ -1731,6 +1751,8 @@
         id: "tianyuan",
         name: "天渊神冢 · 蛮荒禁地",
         minRealm: 19, // 元婴初期
+        expMult: 45.0,
+        densityText: "通灵煞脉",
         desc: "古仙魔陨落之凶地，地煞罡风肆虐，孕育九窍凝婴草与万年养魂木！",
         herbChance: { herb_ying: 0.45, herb_soul_wood: 0.35, herb_wanshou: 0.2 },
         enemyPool: [
@@ -1742,6 +1764,8 @@
         id: "kunlun",
         name: "九天昆仑 · 极道圣境",
         minRealm: 23, // 化神初期
+        expMult: 120.0,
+        densityText: "极道法则",
         desc: "万山之祖，极道法则汇聚，常现太虚造化果与九转涅槃仙草！",
         herbChance: { herb_tianhua: 0.45, herb_xiancao: 0.35, herb_soul_wood: 0.2 },
         enemyPool: [
@@ -1753,6 +1777,8 @@
         id: "feisheng_gate",
         name: "九霄云外 · 飞升天门",
         minRealm: 27, // 炼虚初期
+        expMult: 350.0,
+        densityText: "三十三天仙气",
         desc: "沟通真仙界之南天神门，三十三重天罡雷火漫天，蕴含混沌鸿蒙道果！",
         herbChance: { herb_daoguo: 0.4, herb_xiancao: 0.35, herb_tianhua: 0.25 },
         enemyPool: [
@@ -1761,6 +1787,716 @@
         ]
       }
     ];
+
+    /* ==========================================================================
+       天下因果谱与大域道友数据库（八大大域从凡人至飞升真仙）
+       ========================================================================== */
+    const MAP_NPCS_DB = [
+      // 1. 苍梧边陲 · 栖霞古镇 (town)
+      {
+        id: "aniu",
+        name: "阿牛",
+        title: "凡尘发小",
+        realm: "凡人",
+        realmTier: 0,
+        mapId: "town",
+        loc: "栖霞市集",
+        maxAge: 68,
+        desc: "质朴勤恳，曾与你一同砍柴放牧，见证你踏上仙途。",
+        talkLines: [
+          "仙师……不对，二狗哥！你真的炼出仙气了？俺娘说修仙的人能活几百岁，真神气！",
+          "今天市集收了好多老山参，俺留了一包最好的给你！",
+          "仙道漫漫，你在外头要是累了，就回小镇吃碗热汤面。"
+        ],
+        discussGain: { exp: 25, stones: 0, silver: 3 },
+        giftCost: { silver: 3, stones: 0, desc: "3两白银或粗茶" },
+        giftReturns: [
+          { relReq: 30, itemId: "herb_red", count: 3, text: "阿牛憨笑着塞给你一把山里新采的【赤血草】！" },
+          { relReq: 60, itemId: "powder_beast", count: 5, text: "阿牛将祖传的【粗制驱兽粉】全送给了你：“二狗哥进山防身！”" },
+          { relReq: 100, itemId: "pill_qi", count: 2, text: "阿牛四处做工，攒钱在百草堂给你买了两枚【一品聚气丹】！" }
+        ],
+        sparData: { hp: 50, atk: 6, rep: 1 }
+      },
+      {
+        id: "sun",
+        name: "孙掌柜",
+        title: "百草堂主事",
+        realm: "炼气四层",
+        realmTier: 4,
+        mapId: "town",
+        loc: "百草堂",
+        maxAge: 115,
+        desc: "精明守约，执掌小镇草药吞吐买卖数十年，乐于指点后进散修。",
+        talkLines: [
+          "大道多歧，凡事当谋定而后动。药草虽微，亦合五行生克之道。",
+          "修仙界杀伐无常，老夫能活到这把岁数，全靠一个‘慎’字。",
+          "近日多采些金钱藤与赤血草，炼几炉凝血散防身，总归是不亏的。"
+        ],
+        discussGain: { exp: 45, stones: 1, silver: 2 },
+        giftCost: { silver: 8, stones: 1, desc: "1块灵石或8两白银" },
+        giftReturns: [
+          { relReq: 30, itemId: "vine_gold", count: 2, text: "孙掌柜点头微笑，赠予你两株上好【百年金钱藤】！" },
+          { relReq: 60, itemId: "pill_qi", count: 3, text: "孙掌柜抚须大笑，取出一瓶【一品聚气丹】相赠：“小友前途不可限量！”" },
+          { relReq: 100, itemId: "pot_bronze", count: 1, text: "孙掌柜感念故情，将珍藏的【青铜八卦炉】郑重托付于你！" }
+        ],
+        sparData: { hp: 160, atk: 22, rep: 3 }
+      },
+      {
+        id: "lu",
+        name: "陆清平",
+        title: "陆氏外执事",
+        realm: "炼气六层",
+        realmTier: 6,
+        mapId: "town",
+        loc: "陆家别苑",
+        maxAge: 125,
+        desc: "苍梧陆家派驻管事，威严冷峻，唯视实力与灵石。",
+        talkLines: [
+          "修真界弱肉强食，没有靠山寸步难行。若有余力，当早日谋求世家大派庇护。",
+          "我陆氏坐拥仙城三千灵脉，若非老夫资质受限，何至于在此偏僻小镇任职。",
+          "灵石才是修行的根本，没有灵石，任你天资卓绝也是镜花水月。"
+        ],
+        discussGain: { exp: 70, stones: 2, silver: 0 },
+        giftCost: { silver: 0, stones: 3, desc: "3块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "herb_spirit", count: 2, text: "陆清平收下供奉，随手赐下两朵二阶【紫灵花】。" },
+          { relReq: 60, itemId: "sword_steel", count: 1, text: "陆清平态度缓和，赠予你一口陆氏卫队配备的【寒铁青锋剑】！" },
+          { relReq: 100, itemId: "pill_break", count: 2, text: "陆清平与你称兄道弟，私下相赠两枚珍贵的【二品破障散】！" }
+        ],
+        sparData: { hp: 280, atk: 35, rep: 5 }
+      },
+
+      // 2. 云林大泽 · 妖兽外围 (forest)
+      {
+        id: "liu_qingyi",
+        name: "柳青衣",
+        title: "散修猎妖客",
+        realm: "炼气五层",
+        realmTier: 5,
+        mapId: "forest",
+        loc: "大泽渡口",
+        maxAge: 125,
+        desc: "身披青蓑手扣猎妖弓，常年行走于大泽毒虫恶兽之间，直爽豪迈。",
+        talkLines: [
+          "大泽凶险，妖兽利爪不认人！出刀慢了半息，就成了蛇腹中美餐。",
+          "猎妖不仅要狠，还得懂风向与气息。顺风洒驱兽粉，逆风放冷箭！",
+          "瞧这身伤痕，都是咱散修一刀一枪拼出来的命途！"
+        ],
+        discussGain: { exp: 80, stones: 2, silver: 5 },
+        giftCost: { silver: 0, stones: 2, desc: "2块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "vine_gold", count: 3, text: "柳青衣爽朗大笑，赠你三根大泽深处掘出的【百年金钱藤】！" },
+          { relReq: 60, itemId: "sword_steel", count: 1, text: "柳青衣递过一柄淬过寒潭水的【寒铁青锋剑】：“拿着防身！”" },
+          { relReq: 100, itemId: "pill_break", count: 1, text: "柳青衣斩获大妖所得，分赠你一枚【二品破障散】！" }
+        ],
+        sparData: { hp: 220, atk: 30, rep: 4 }
+      },
+      {
+        id: "moshi",
+        name: "墨石道人",
+        title: "散修阵法师",
+        realm: "炼气七层",
+        realmTier: 7,
+        mapId: "forest",
+        loc: "墨竹石阵",
+        maxAge: 135,
+        desc: "在大泽深处以奇门石阵避世潜修，精研阴阳八卦聚灵之理。",
+        talkLines: [
+          "天有九星，地布八卦。万物灵气皆循经络流转，阵法亦然。",
+          "大泽妖兽虽蛮横，然若引入困阵之中，不过是瓮中捉鳖罢了。",
+          "静心聚神，方能于天地草木间体察细微灵压。"
+        ],
+        discussGain: { exp: 110, stones: 3, silver: 0, com: 1 },
+        giftCost: { silver: 0, stones: 4, desc: "4块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "herb_spirit", count: 2, text: "墨石道人赠你两朵护阵灵药【紫灵花】。" },
+          { relReq: 60, itemId: "shield_wood", count: 1, text: "墨石道人亲手为你刻画了避矢阵法的【青玄木盾】！" },
+          { relReq: 100, itemId: "talisman_soul", count: 1, text: "墨石道人视为知音，相赠安神至宝【温神聚魄玉佩】！" }
+        ],
+        sparData: { hp: 320, atk: 40, rep: 6 }
+      },
+
+      // 3. 断魂迷涧 · 古仙残冢 (valley)
+      {
+        id: "kugu",
+        name: "枯骨道人",
+        title: "探宝邪修",
+        realm: "炼气九层",
+        realmTier: 9,
+        mapId: "valley",
+        loc: "白骨阴窟",
+        maxAge: 145,
+        desc: "面容枯槁如骷髅，专在古仙墓葬与残冢险地倒斗探秘，手段毒辣。",
+        talkLines: [
+          "嘿嘿嘿……死人洞府里的宝贝，可比仙门宗库里的香多了！",
+          "断魂迷涧深处的毒瘴不仅蚀人骨髓，更能障蔽天机神识，切记当心！",
+          "世人皆言我心狠手辣，可若不狠，早化作这迷涧里的一堆烂泥了！"
+        ],
+        discussGain: { exp: 160, stones: 5, silver: 0 },
+        giftCost: { silver: 0, stones: 6, desc: "6块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "herb_spirit", count: 3, text: "枯骨道人桀桀怪笑，掷给你三株【紫灵花】。" },
+          { relReq: 60, itemId: "sword_fire", count: 1, text: "枯骨道人从古尸上扒出一柄【玄火裂空刃】扔给你：“算你有眼力！”" },
+          { relReq: 100, itemId: "herb_zhuji", count: 1, text: "枯骨道人与你立下冥誓，悄悄塞给你一株残冢出土的【筑基灵草】！" }
+        ],
+        sparData: { hp: 480, atk: 55, rep: 8 }
+      },
+      {
+        id: "leng_qianshuang",
+        name: "冷千霜",
+        title: "青云历练真传",
+        realm: "炼气圆满",
+        realmTier: 10,
+        mapId: "valley",
+        loc: "剑冢断崖",
+        maxAge: 155,
+        desc: "背负双剑，白衣胜雪，孤傲清冷，在此绝境砥砺杀伐剑意。",
+        talkLines: [
+          "剑者，百兵之君，亦凶戾之首。唯心如止水，方能斩破迷障。",
+          "我在此断崖斩杀阴煞三百六十头，只为寻得筑基前那一缕极道剑气。",
+          "道友气机沉稳，若能突破此关，来日仙道必有你一席之地。"
+        ],
+        discussGain: { exp: 220, stones: 8, silver: 0 },
+        giftCost: { silver: 0, stones: 8, desc: "8块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "pill_break", count: 1, text: "冷千霜微微颔首，回赠一枚宗门赐下的【二品破障散】。" },
+          { relReq: 60, itemId: "herb_zhuji", count: 1, text: "冷千霜斩杀护宝妖狼后，将伴生【筑基灵草】相赠以报知遇之谊！" },
+          { relReq: 100, itemId: "pill_zhuji", count: 1, text: "冷千霜动容，取出青云宗主亲授的保命之物【天元筑基丹】相赠！" }
+        ],
+        sparData: { hp: 600, atk: 75, rep: 12 }
+      },
+
+      // 4. 苍梧陆氏 · 凌霄仙城 (city)
+      {
+        id: "lu_yuanting",
+        name: "陆远霆",
+        title: "苍梧陆氏少主",
+        realm: "筑基初期",
+        realmTier: 11,
+        mapId: "city",
+        loc: "陆氏天阙楼",
+        maxAge: 250,
+        desc: "折扇轻摇，玉树临风，苍梧大域顶尖世家年轻一代领军人物。",
+        talkLines: [
+          "凌霄仙城有万载底蕴，聚天地龙脉。凡俗草芥穷尽一生，难见此城半分气象。",
+          "筑基方为仙道之始，凝铸天道道基者，寿可享两甲子，御空行千里！",
+          "我陆家待客向来厚道，道友若有真才实学，仙城之内尽可横行无虞。"
+        ],
+        discussGain: { exp: 500, stones: 15, silver: 0 },
+        giftCost: { silver: 0, stones: 20, desc: "20块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "pill_zhuji", count: 1, text: "陆远霆抚掌大笑，随手赠下一枚金丝锦盒装着的【天元筑基丹】！" },
+          { relReq: 60, itemId: "sword_seven", count: 1, text: "陆远霆命侍从取来陆氏藏珍阁珍藏的【龙泉七星飞剑】相赠！" },
+          { relReq: 100, itemId: "armor_gold", count: 1, text: "陆远霆引你为座上宾，将家族重甲【乌金辟劫宝甲】慷慨赠予！" }
+        ],
+        sparData: { hp: 1200, atk: 140, rep: 20 }
+      },
+      {
+        id: "miaoyu",
+        name: "妙玉仙子",
+        title: "百花仙坊掌印",
+        realm: "筑基中期",
+        realmTier: 12,
+        mapId: "city",
+        loc: "百花玉楼",
+        maxAge: 270,
+        desc: "身披百花霓裳，八面玲珑，执掌仙城最大商行与拍卖盛会。",
+        talkLines: [
+          "道友生得好气度！这满城的奇珍异宝，只要灵石足够，奴家都能为你寻来。",
+          "丹药之道不仅在于吞服，更在于洗练体内杂质，养寿元，开气府。",
+          "奴家阅人无数，道友眸中有傲骨神光，金丹境绝非你的终点。"
+        ],
+        discussGain: { exp: 700, stones: 20, silver: 0 },
+        giftCost: { silver: 0, stones: 30, desc: "30块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "herb_longevity", count: 1, text: "妙玉仙子巧笑嫣然，纤手奉上一枚温润的【九叶寿元果】！" },
+          { relReq: 60, itemId: "pill_life", count: 2, text: "妙玉仙子赠你两枚仙坊特制的【养寿九转丸】（服用延寿15载）！" },
+          { relReq: 100, itemId: "pot_purple", count: 1, text: "妙玉仙子倾心相助，将镇店之宝【紫金炼灵神鼎】相赠！" }
+        ],
+        sparData: { hp: 1800, atk: 190, rep: 25 }
+      },
+      {
+        id: "tie_master",
+        name: "铁狂徒",
+        title: "凌霄淬火大宗师",
+        realm: "筑基大圆满",
+        realmTier: 14,
+        mapId: "city",
+        loc: "灵炉宝阁",
+        maxAge: 290,
+        desc: "赤膊赤发，脾气如烈火，以地肺毒火铸剑二百载，近乎假丹之境。",
+        talkLines: [
+          "好剑！好胚子！老子打了一辈子铁，剑器就是修仙者的第二条命！",
+          "筑基圆满已摸到金丹门槛，若无四品降尘金丹护体，强行凝丹必被地火焚身！",
+          "来来来，饮了这碗烧刀子烈酒，咱们再来切磋战上三百回合！"
+        ],
+        discussGain: { exp: 1000, stones: 25, silver: 0 },
+        giftCost: { silver: 0, stones: 40, desc: "40块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "pill_tianling", count: 1, text: "铁狂徒扔给你一瓶烈火淬炼的【三品天灵淬骨丹】强健体魄！" },
+          { relReq: 60, itemId: "sword_seven", count: 1, text: "铁狂徒亲开地火大炉，为你精淬一口极品【龙泉七星飞剑】！" },
+          { relReq: 100, itemId: "pill_jindan", count: 1, text: "铁狂徒感怀生死之交，将压箱底的至宝【四品降尘金丹】慨然相托！" }
+        ],
+        sparData: { hp: 3500, atk: 320, rep: 35 }
+      },
+
+      // 5. 天星海 · 万仙外岛 (tianxinghai)
+      {
+        id: "ziyang",
+        name: "紫阳真人",
+        title: "海外纯阳散仙",
+        realm: "金丹初期",
+        realmTier: 15,
+        mapId: "tianxinghai",
+        loc: "紫阳金鼎洞",
+        maxAge: 550,
+        desc: "坐镇海岛仙山，仙风道骨，常年引九天纯阳之气淬炼九品金丹。",
+        talkLines: [
+          "金丹者，一点灵光凝万象，跳出凡尘五行中！寿享五百载，方知天地之广阔。",
+          "海外灵气充裕，然海兽残暴，劫修横行。非金丹大修士难以立足狂澜之中。",
+          "纯阳无垢，道心不染。道友金丹光华初显，大道可期！"
+        ],
+        discussGain: { exp: 4000, stones: 80, silver: 0 },
+        giftCost: { silver: 0, stones: 100, desc: "100块灵石或纯阳宝药" },
+        giftReturns: [
+          { relReq: 30, itemId: "herb_jiangchen", count: 2, text: "紫阳真人含笑拂袖，赐下两株火灵极品【绛云朱果】！" },
+          { relReq: 60, itemId: "pill_jindan", count: 1, text: "紫阳真人开炉，为你炼制一枚无瑕【四品降尘金丹】保驾护航！" },
+          { relReq: 100, itemId: "sword_lingbao", count: 1, text: "紫阳真人引为同道挚友，解下佩剑【纯阳斩龙飞剑】相赠！" }
+        ],
+        sparData: { hp: 9000, atk: 550, rep: 60 }
+      },
+      {
+        id: "bibo",
+        name: "碧波仙子",
+        title: "潮音阁主",
+        realm: "金丹中期",
+        realmTier: 16,
+        mapId: "tianxinghai",
+        loc: "碧海潮音岛",
+        maxAge: 580,
+        desc: "踏浪而行，碧裙飘拂，御使三阶独角海蛟，擅布九曲潮汐大阵。",
+        talkLines: [
+          "天星海浩渺三万里，潮起潮落，皆是无上天道法则演化。",
+          "海眼深处有一株万寿火灵芝出世，引得群修争夺，若无自保法宝切勿涉险。",
+          "小女子在此潮音岛静修两百载，难得道友这般谈吐清雅之辈。"
+        ],
+        discussGain: { exp: 6000, stones: 120, silver: 0 },
+        giftCost: { silver: 0, stones: 150, desc: "150块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "herb_wanshou", count: 1, text: "碧波仙子采自海底深渊，赠你一株生机磅礴的【万寿火灵芝】！" },
+          { relReq: 60, itemId: "armor_tianyu", count: 1, text: "碧波仙子以天蚕丝潮汐灵气织就【天罡玄煞法衣】相赠！" },
+          { relReq: 100, itemId: "talisman_haotian", count: 1, text: "碧波仙子芳心暗许，将师门重宝【昊天清虚宝镜】借与你护身！" }
+        ],
+        sparData: { hp: 15000, atk: 750, rep: 80 }
+      },
+      {
+        id: "li_youhai",
+        name: "厉幽海",
+        title: "万岛黑煞巨擘",
+        realm: "金丹大圆满",
+        realmTier: 18,
+        mapId: "tianxinghai",
+        loc: "黑龙堡魔渊",
+        maxAge: 620,
+        desc: "煞气滚滚，豪掷千金，纵横外海所向披靡，号令万岛数万散修海匪。",
+        talkLines: [
+          "哈哈哈！甚么名门正派，在老子的黑龙炮面前全是土鸡瓦狗！",
+          "金丹圆满又如何？迈不过碎丹化婴那道坎，五百载一过照样得烂在海里！",
+          "老子平生最敬重有种的汉子！只要合老子脾气，要灵石给灵石，要法宝给法宝！"
+        ],
+        discussGain: { exp: 9000, stones: 200, silver: 0 },
+        giftCost: { silver: 0, stones: 250, desc: "250块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "pill_wanshou_dan", count: 1, text: "厉幽海大笑掷来一枚【四品万寿延元丹】（直接延寿100载）！" },
+          { relReq: 60, itemId: "pot_jiulong", count: 1, text: "厉幽海从海皇宝藏中起出一口【九龙地心神火炉】送与你！" },
+          { relReq: 100, itemId: "pill_yuanying", count: 1, text: "厉幽海拜你为生死兄弟，将抢夺到的化婴圣丹【五品九转结婴丹】倾囊相赠！" }
+        ],
+        sparData: { hp: 28000, atk: 1200, rep: 120 }
+      },
+
+      // 6. 天渊神冢 · 蛮荒禁地 (tianyuan)
+      {
+        id: "shoumu",
+        name: "守墓老僧",
+        title: "上古雷音遗老",
+        realm: "元婴中期",
+        realmTier: 20,
+        mapId: "tianyuan",
+        loc: "枯荣菩提残刹",
+        maxAge: 1400,
+        desc: "枯坐古仙魔神冢万载，参悟生死枯荣，通晓紫府元神寂灭不灭之理。",
+        talkLines: [
+          "阿弥陀佛。神仙魔佛，俱作古冢荒丘。道友入此天渊，所求何物？",
+          "碎丹化婴，元神出窍，寿享千载。然千载光阴，在天地看来亦不过弹指一瞬。",
+          "一念执迷化魔，一念寂静生莲。抱元守一，方见真如本性。"
+        ],
+        discussGain: { exp: 25000, stones: 500, silver: 0, soul: 5 },
+        giftCost: { silver: 0, stones: 600, desc: "600块灵石或佛门圣物" },
+        giftReturns: [
+          { relReq: 30, itemId: "herb_ying", count: 2, text: "老僧合十，自菩提根下掘出两株天地奇珍【九窍凝婴草】相赠。" },
+          { relReq: 60, itemId: "herb_soul_wood", count: 2, text: "老僧折下一截菩提神木，赠予你通灵神物【万年养魂木】！" },
+          { relReq: 100, itemId: "pill_yuanying", count: 1, text: "老僧颂念古佛真经，赠予你一颗造化无上【五品九转结婴丹】！" }
+        ],
+        sparData: { hp: 70000, atk: 2200, rep: 250 }
+      },
+      {
+        id: "bai_susu",
+        name: "白素素",
+        title: "九幽九尾妖皇",
+        realm: "元婴后期",
+        realmTier: 21,
+        mapId: "tianyuan",
+        loc: "幽冥寒玉妖宫",
+        maxAge: 1600,
+        desc: "倾国倾城，银发狐耳，执掌天渊神冢极阴寒火，麾下亿万幽冥妖族臣服。",
+        talkLines: [
+          "咯咯咯……人族修士多伪善，倒是小郎君你，眸子里透着一股狠劲儿，奴家欢喜得很。",
+          "元婴大修士的血肉精魄最是滋补，不过郎君待奴家这般好，奴家怎舍得伤你？",
+          "九天之上的化神老怪们自诩清高，可要论活得自在，谁比得上我九幽逍遥！"
+        ],
+        discussGain: { exp: 38000, stones: 800, silver: 0 },
+        giftCost: { silver: 0, stones: 900, desc: "900块灵石或五阶妖珍" },
+        giftReturns: [
+          { relReq: 30, itemId: "herb_soul_wood", count: 2, text: "白素素轻掩檀口，赠你两根妖皇寝宫珍藏的【万年养魂木】！" },
+          { relReq: 60, itemId: "sword_yuanying", count: 1, text: "白素素从天渊古仙遗迹中取出一柄通灵古宝【诛仙青索灵宝剑】赐予你！" },
+          { relReq: 100, itemId: "pill_huashen", count: 1, text: "白素素与你神魂共鸣，赠予你妖族传承圣药【六品化神定阳丹】！" }
+        ],
+        sparData: { hp: 120000, atk: 3500, rep: 350 }
+      },
+      {
+        id: "ming_daoren",
+        name: "冥道人",
+        title: "天渊极道魔尊",
+        realm: "元婴大圆满",
+        realmTier: 22,
+        mapId: "tianyuan",
+        loc: "噬魂绝顶天殿",
+        maxAge: 1800,
+        desc: "周身魔焰滔天，元神化身千万，杀伐果断，以无上魔功睥睨人间修真界。",
+        talkLines: [
+          "天道不仁，以万物为刍狗！若不争、不杀、不抢，何谈逆天改命！",
+          "本座闭关八百年，只待神识化相破入化神极境，杀上九天昆仑！",
+          "拿去！这是败在本座手下的七十二位元婴老怪的遗珍，你若有胆量，尽管收下！"
+        ],
+        discussGain: { exp: 55000, stones: 1200, silver: 0 },
+        giftCost: { silver: 0, stones: 1500, desc: "1500块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "armor_taixu", count: 1, text: "冥道人冷哼一声，将一件战利品【太虚九龙混元袍】甩给了你！" },
+          { relReq: 60, itemId: "pill_tiandao", count: 1, text: "冥道人赠你一枚九死一生夺来的【六品天道感悟丹】（全属性暴涨50点）！" },
+          { relReq: 100, itemId: "pill_huashen", count: 1, text: "冥道人狂笑认你为修罗传人，将冲击化神必备【六品化神定阳丹】相赠！" }
+        ],
+        sparData: { hp: 200000, atk: 5500, rep: 500 }
+      },
+
+      // 7. 九天昆仑 · 极道圣境 (kunlun)
+      {
+        id: "piaomiao",
+        name: "飘渺圣女",
+        title: "昆仑道宗圣女",
+        realm: "化神中期",
+        realmTier: 24,
+        mapId: "kunlun",
+        loc: "瑶池极道仙宫",
+        maxAge: 3200,
+        desc: "仙姿缥缈，周身大道法则缭绕，手执太极玉如意，通晓天机推演大道法则。",
+        talkLines: [
+          "昆仑乃万山之祖，极道法则汇聚。化神法相凝结，方得窥见世界真容。",
+          "红尘三千丈，众生皆在苦海。唯有超脱两仪，方可踏足真仙界。",
+          "道友道韵清奇，竟具造化天命之象，来日若开天门，切莫相忘。"
+        ],
+        discussGain: { exp: 140000, stones: 3000, silver: 0, com: 10 },
+        giftCost: { silver: 0, stones: 3500, desc: "3500块灵石或太虚神药" },
+        giftReturns: [
+          { relReq: 30, itemId: "herb_tianhua", count: 1, text: "圣女轻拂衣袖，瑶池仙泉旁摘下一枚【太虚造化果】相赠！" },
+          { relReq: 60, itemId: "talisman_taiji", count: 1, text: "圣女借予你昆仑至宝【太极乾坤阴阳图】（神魂+180，灵力+1200）！" },
+          { relReq: 100, itemId: "pill_lianxu", count: 1, text: "圣女推演天机，为你炼就破虚圣丹【七品太虚涅槃丹】相赠！" }
+        ],
+        sparData: { hp: 450000, atk: 12000, rep: 1000 }
+      },
+      {
+        id: "jidao_sword",
+        name: "极道剑皇",
+        title: "万劫剑道始祖",
+        realm: "化神后期",
+        realmTier: 25,
+        mapId: "kunlun",
+        loc: "极道万剑峰",
+        maxAge: 3600,
+        desc: "一身破烂素袍，发如飞雪，万剑俯首称臣，一剑可荡平三万里星河。",
+        talkLines: [
+          "朝饮昆仑雪，暮宿太虚云。手中三尺剑，何惧天劫临！",
+          "剑意修到化神后期，草木竹石皆可通天，虚空天地尽为我剑！",
+          "小家伙，看好了！这一剑，名唤‘破界’！"
+        ],
+        discussGain: { exp: 200000, stones: 5000, silver: 0 },
+        giftCost: { silver: 0, stones: 6000, desc: "6000块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "herb_xiancao", count: 1, text: "剑皇随手掷下一株伴剑而生的八阶【九转涅槃仙草】！" },
+          { relReq: 60, itemId: "sword_tongtian", count: 1, text: "剑皇斩碎虚空，将其佩剑【通天太虚斩神剑】（杀力+4200）赠予你！" },
+          { relReq: 100, itemId: "pill_heti", count: 1, text: "剑皇赞叹你剑胆琴心，相赠身神合一无上神丹【八品两仪合体丹】！" }
+        ],
+        sparData: { hp: 750000, atk: 22000, rep: 1800 }
+      },
+      {
+        id: "jinwu_elder",
+        name: "荒古金乌尊者",
+        title: "太阳古神始祖",
+        realm: "化神大圆满",
+        realmTier: 26,
+        mapId: "kunlun",
+        loc: "扶桑纯阳神木",
+        maxAge: 4200,
+        desc: "沐浴大日真火数万载，肉身成圣，威仪盖世，举手投足焚尽万界群魔。",
+        talkLines: [
+          "吾生于天地初开之时，历大劫九十九重，方得肉身化神圆满！",
+          "凡间修士皆畏天雷，殊不知九天神雷亦是大道锤炼！",
+          "这天地万界，唯有强者方配与吾坐而论道！"
+        ],
+        discussGain: { exp: 320000, stones: 8000, silver: 0 },
+        giftCost: { silver: 0, stones: 10000, desc: "10000块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "pot_taixu", count: 1, text: "尊者以纯阳真火铸造【太虚八卦炼天鼎】赐予你（成丹率+75%）！" },
+          { relReq: 60, itemId: "pill_tiandao", count: 2, text: "尊者赐下两枚【六品天道感悟丹】，为你伐毛洗髓！" },
+          { relReq: 100, itemId: "pill_dacheng", count: 1, text: "尊者认你为忘年之交，赠予你至尊仙药【九品造化大乘丹】！" }
+        ],
+        sparData: { hp: 1200000, atk: 35000, rep: 3000 }
+      },
+
+      // 8. 九霄云外 · 飞升天门 (feisheng_gate)
+      {
+        id: "taixu_xian",
+        name: "太虚游方仙客",
+        title: "踏星大能",
+        realm: "炼虚期",
+        realmTier: 27,
+        mapId: "feisheng_gate",
+        loc: "太虚星河渡口",
+        maxAge: 7000,
+        desc: "遁入虚空，袖里乾坤纳星辰，游走于诸天万界无定所。",
+        talkLines: [
+          "踏破虚空，方知寰宇无垠。所谓一界天地，不过是太虚中的一粒微尘。",
+          "肉身与神魂融入虚空法则，身化千界，神游太虚！",
+          "小友能走到这飞升天门前，便已是万古难寻的逆天奇才。"
+        ],
+        discussGain: { exp: 700000, stones: 20000, silver: 0 },
+        giftCost: { silver: 0, stones: 20000, desc: "20000块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "herb_xiancao", count: 2, text: "仙客从星河中采摘两株【九转涅槃仙草】相赠！" },
+          { relReq: 60, itemId: "pill_heti", count: 1, text: "仙客赠你突破合体神药【八品两仪合体丹】！" },
+          { relReq: 100, itemId: "pill_dacheng", count: 1, text: "仙客赠你造化仙药【九品造化大乘丹】助你直冲大乘极境！" }
+        ],
+        sparData: { hp: 2500000, atk: 65000, rep: 5000 }
+      },
+      {
+        id: "pie_master",
+        name: "辟厄尊者",
+        title: "两仪造化至尊",
+        realm: "合体期",
+        realmTier: 29,
+        mapId: "feisheng_gate",
+        loc: "两仪诛魔道台",
+        maxAge: 12000,
+        desc: "身神合一，法相万丈，翻手为云覆手为雨，镇压域外天魔万载。",
+        talkLines: [
+          "合体期大能，身化两仪，阴阳互易，举手投足皆可令星宿移位！",
+          "天门之后乃三十三重真仙界，未渡天劫者，触之立化飞灰！",
+          "善哉！本尊见你元神充盈，已有八分真仙气度！"
+        ],
+        discussGain: { exp: 1800000, stones: 50000, silver: 0 },
+        giftCost: { silver: 0, stones: 50000, desc: "50000块灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "herb_daoguo", count: 1, text: "尊者取下一枚天地初开诞生的【混沌鸿蒙道果】相赠！" },
+          { relReq: 60, itemId: "pill_dujie", count: 1, text: "尊者将辟天劫圣药【绝品九霄辟雷神丹】赐予你！" },
+          { relReq: 100, itemId: "armor_xian", count: 1, text: "尊者将护体神器【万劫不灭紫金仙铠】慷慨授与！" }
+        ],
+        sparData: { hp: 6000000, atk: 150000, rep: 10000 }
+      },
+      {
+        id: "changsheng",
+        name: "长生老祖",
+        title: "万劫长生至尊",
+        realm: "大乘期",
+        realmTier: 30,
+        mapId: "feisheng_gate",
+        loc: "万劫长生仙殿",
+        maxAge: 25000,
+        desc: "渡尽无量劫数，万劫不磨，寿与天齐，静坐天门前观沧海桑田演变。",
+        talkLines: [
+          "老朽在这天门前枯坐了一万八千年，看遍了亿万天骄起起落落。",
+          "所谓长生，唯有道心坚如磐石。小友，你的道心可曾动摇？",
+          "去吧！九霄雷劫已聚，渡过此劫，你我便在真仙界瑶池重逢！"
+        ],
+        discussGain: { exp: 3500000, stones: 100000, silver: 0 },
+        giftCost: { silver: 0, stones: 100000, desc: "10万灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "pill_dujie", count: 1, text: "长生老祖赠下【绝品九霄辟雷神丹】护你渡过九天雷劫！" },
+          { relReq: 60, itemId: "talisman_dongtian", count: 1, text: "长生老祖将本命随身小世界【鸿蒙洞天紫金葫】赠予你！" },
+          { relReq: 100, itemId: "pill_feisheng", count: 1, text: "长生老祖抚须欣慰，将飞升圣物【鸿蒙造化真仙丹】郑重交予你！" }
+        ],
+        sparData: { hp: 12000000, atk: 350000, rep: 25000 }
+      },
+      {
+        id: "jianyin_shi",
+        name: "南天门接引真仙",
+        title: "仙界接引神使",
+        realm: "真仙法身",
+        realmTier: 33,
+        mapId: "feisheng_gate",
+        loc: "三十三天南天门",
+        maxAge: 99999999,
+        desc: "头顶仙冠，手持昊天照妖仙镜，威严无匹，专司接引诸界合道飞升真仙。",
+        talkLines: [
+          "何人叩响南天神门？凡骨尽褪，道气冲霄，可登真仙仙籍！",
+          "真仙界三十六重天宫、七十二座宝殿，尽等候真仙道友入驻！",
+          "万古岁月如流水，今日得见道友飞升，乃修真界万年未有之盛事！"
+        ],
+        discussGain: { exp: 12000000, stones: 300000, silver: 0, com: 50 },
+        giftCost: { silver: 0, stones: 300000, desc: "30万灵石" },
+        giftReturns: [
+          { relReq: 30, itemId: "sword_xian", count: 1, text: "真仙神使法旨一挥，赐下仙界重器【九天太一降魔圣剑】！" },
+          { relReq: 60, itemId: "pot_xian", count: 1, text: "真仙神使赐下仙界无上神鼎【乾坤混沌造化仙鼎】！" },
+          { relReq: 100, itemId: "pill_feisheng", count: 1, text: "真仙神使鸣仙乐、垂七彩祥云，宣告道友正式位列九天真仙！" }
+        ],
+        sparData: { hp: 30000000, atk: 900000, rep: 80000 }
+      }
+    ];
+
+    /* ==========================================================================
+       各大域专属坊市商铺货架与店名配置
+       ========================================================================== */
+    const MAP_SHOP_NAMES = {
+      town: "🏛️ 栖霞古镇 · 百草杂货坊",
+      forest: "🏛️ 云林大泽 · 散修猎妖市集",
+      valley: "🏛️ 断魂迷涧 · 残冢黑市暗阁",
+      city: "🏛️ 凌霄仙城 · 天工百宝行",
+      tianxinghai: "🏛️ 天星海 · 瀚海万宝楼",
+      tianyuan: "🏛️ 天渊神冢 · 蛮荒冥宝阁",
+      kunlun: "🏛️ 九天昆仑 · 极道仙阁",
+      feisheng_gate: "🏛️ 飞升天门 · 南天道藏楼"
+    };
+
+    const MAP_SHOPS_DB = {
+      town: [
+        ITEMS_DB.powder_beast,
+        ITEMS_DB.pill_blood,
+        ITEMS_DB.pill_qi,
+        ITEMS_DB.pill_break,
+        ITEMS_DB.herb_red,
+        ITEMS_DB.vine_gold,
+        ITEMS_DB.sword_rust,
+        ITEMS_DB.sword_steel,
+        ITEMS_DB.shield_wood,
+        ITEMS_DB.pot_bronze,
+        ITEMS_DB.talisman_ring
+      ],
+      forest: [
+        ITEMS_DB.powder_beast,
+        ITEMS_DB.pill_blood,
+        ITEMS_DB.pill_qi,
+        ITEMS_DB.pill_break,
+        ITEMS_DB.herb_red,
+        ITEMS_DB.vine_gold,
+        ITEMS_DB.herb_spirit,
+        ITEMS_DB.sword_steel,
+        ITEMS_DB.sword_fire,
+        ITEMS_DB.shield_wood,
+        ITEMS_DB.armor_robe,
+        ITEMS_DB.talisman_ring,
+        ITEMS_DB.pot_bronze
+      ],
+      valley: [
+        ITEMS_DB.pill_blood,
+        ITEMS_DB.pill_qi,
+        ITEMS_DB.pill_break,
+        ITEMS_DB.pill_zhuji,
+        ITEMS_DB.pill_life,
+        ITEMS_DB.vine_gold,
+        ITEMS_DB.herb_spirit,
+        ITEMS_DB.herb_zhuji,
+        ITEMS_DB.sword_fire,
+        ITEMS_DB.armor_robe,
+        ITEMS_DB.talisman_soul,
+        ITEMS_DB.pot_purple
+      ],
+      city: [
+        ITEMS_DB.pill_break,
+        ITEMS_DB.pill_zhuji,
+        ITEMS_DB.pill_life,
+        ITEMS_DB.pill_tianling,
+        ITEMS_DB.pill_jinghun,
+        ITEMS_DB.herb_spirit,
+        ITEMS_DB.herb_zhuji,
+        ITEMS_DB.herb_longevity,
+        ITEMS_DB.sword_fire,
+        ITEMS_DB.sword_seven,
+        ITEMS_DB.armor_gold,
+        ITEMS_DB.talisman_soul,
+        ITEMS_DB.pot_purple
+      ],
+      tianxinghai: [
+        ITEMS_DB.pill_zhuji,
+        ITEMS_DB.pill_jindan,
+        ITEMS_DB.pill_wanshou_dan,
+        ITEMS_DB.pill_tianling,
+        ITEMS_DB.pill_jinghun,
+        ITEMS_DB.herb_longevity,
+        ITEMS_DB.herb_jiangchen,
+        ITEMS_DB.herb_wanshou,
+        ITEMS_DB.sword_seven,
+        ITEMS_DB.sword_lingbao,
+        ITEMS_DB.armor_tianyu,
+        ITEMS_DB.talisman_haotian,
+        ITEMS_DB.pot_jiulong
+      ],
+      tianyuan: [
+        ITEMS_DB.pill_jindan,
+        ITEMS_DB.pill_yuanying,
+        ITEMS_DB.pill_wanshou_dan,
+        ITEMS_DB.herb_jiangchen,
+        ITEMS_DB.herb_wanshou,
+        ITEMS_DB.herb_ying,
+        ITEMS_DB.herb_soul_wood,
+        ITEMS_DB.sword_lingbao,
+        ITEMS_DB.sword_yuanying,
+        ITEMS_DB.armor_tianyu,
+        ITEMS_DB.armor_taixu,
+        ITEMS_DB.talisman_haotian,
+        ITEMS_DB.talisman_taiji,
+        ITEMS_DB.pot_jiulong,
+        ITEMS_DB.pot_taixu
+      ],
+      kunlun: [
+        ITEMS_DB.pill_yuanying,
+        ITEMS_DB.pill_huashen,
+        ITEMS_DB.pill_tiandao,
+        ITEMS_DB.pill_lianxu,
+        ITEMS_DB.herb_ying,
+        ITEMS_DB.herb_soul_wood,
+        ITEMS_DB.herb_tianhua,
+        ITEMS_DB.herb_xiancao,
+        ITEMS_DB.sword_yuanying,
+        ITEMS_DB.sword_tongtian,
+        ITEMS_DB.armor_taixu,
+        ITEMS_DB.talisman_taiji,
+        ITEMS_DB.pot_taixu
+      ],
+      feisheng_gate: [
+        ITEMS_DB.pill_huashen,
+        ITEMS_DB.pill_lianxu,
+        ITEMS_DB.pill_heti,
+        ITEMS_DB.pill_dacheng,
+        ITEMS_DB.pill_dujie,
+        ITEMS_DB.pill_feisheng,
+        ITEMS_DB.herb_tianhua,
+        ITEMS_DB.herb_xiancao,
+        ITEMS_DB.herb_daoguo,
+        ITEMS_DB.sword_tongtian,
+        ITEMS_DB.sword_xian,
+        ITEMS_DB.armor_xian,
+        ITEMS_DB.talisman_dongtian,
+        ITEMS_DB.pot_xian
+      ]
+    };
 
     /* ==========================================================================
        宗门门派库（凡界至九天仙宗）
@@ -2075,7 +2811,16 @@
         data.sectGiftClaimed = {};
         if (data.sect && data.sect.id) data.sectGiftClaimed[data.sect.id] = true;
       }
-      if (!data.currentMap) data.currentMap = "town";
+      if (!data.currentMap) {
+        const recommendedMap = MAPS_DB.slice().reverse().find(m => data.realmIndex >= m.minRealm);
+        data.currentMap = (recommendedMap && recommendedMap.id) ? recommendedMap.id : "town";
+      } else if (data.currentMap === "town" && data.realmIndex >= 6) {
+        const recommendedMap = MAPS_DB.slice().reverse().find(m => data.realmIndex >= m.minRealm);
+        if (recommendedMap) data.currentMap = recommendedMap.id;
+      }
+      const curMap = MAPS_DB.find(m => m.id === data.currentMap) || MAPS_DB[0];
+      data.location = curMap.name;
+
       if (!data.routine) data.routine = "cultivate";
       if (typeof data.currentQuestIndex !== "number" || isNaN(data.currentQuestIndex)) {
         data.currentQuestIndex = 0;
@@ -2083,6 +2828,7 @@
       if (!Array.isArray(data.worldLogs)) data.worldLogs = [];
       if (!Array.isArray(data.worldNews)) data.worldNews = [];
       if (!Array.isArray(data.npcs)) data.npcs = [];
+      syncNpcsForCurrentState(data, false);
 
       // 9. 气血与法力同步计算
       const eqHpBonus = (data.equipped.armor && data.equipped.armor.maxHp) ? data.equipped.armor.maxHp : 0;
@@ -2284,13 +3030,15 @@
       const routine = G.routine || 'cultivate';
       const curRealm = REALMS[G.realmIndex] || REALMS[0];
       const curMap = MAPS_DB.find(m => m.id === (G.currentMap || "town")) || MAPS_DB[0];
+      const mapMult = curMap.expMult || 1.0;
 
       if (routine === 'cultivate') {
-        let gain = (G.technique.bonusExp || 6) + Math.floor(G.stats.com * 0.15) + Math.floor(G.realmIndex * 1.5);
+        let baseGain = (G.technique.bonusExp || 6) + Math.floor(G.stats.com * 0.15) + Math.floor(G.realmIndex * 1.8);
+        let gain = Math.max(1, Math.floor(baseGain * mapMult));
         G.exp = Math.min(curRealm.maxExp * 1.5, G.exp + gain);
         if (Math.random() < 0.15) {
           G.stats.com += 1;
-          addLog("闭关静坐，周天大穴偶有灵机迸发，悟性微增。", "normal");
+          addLog(`于【${curMap.name}】闭关，受【${curMap.densityText}】滋润，神魂周天偶有灵机迸发，悟性微增。`, "normal");
         }
       } else if (routine === 'herb') {
         const r = Math.random();
@@ -2300,7 +3048,7 @@
           const item = ITEMS_DB[herbKey] || ITEMS_DB.herb_red;
           addItemToInv(item, 1);
           if (G.realmIndex >= 11) {
-            const stonesEarned = 1 + Math.floor(G.realmIndex * 0.3);
+            const stonesEarned = Math.max(1, Math.floor((1 + G.realmIndex * 0.4) * Math.sqrt(mapMult)));
             G.stones += stonesEarned;
             addLog(`于【${curMap.name}】灵脉密林间采获【${item.name}】×1，附赠采集灵石 ${stonesEarned} 块。`, "fortune");
           } else {
@@ -2318,9 +3066,9 @@
         }
       } else if (routine === 'bounty') {
         if (G.realmIndex >= 11) { // 筑基及以上，大域仙门榜文发放灵石与丰厚经验
-          const gainStones = Math.floor(2 + (G.realmIndex * 1.2));
+          const gainStones = Math.floor((2 + (G.realmIndex * 1.2)) * Math.sqrt(mapMult));
           G.stones += gainStones;
-          const gainExp = 12 + G.realmIndex * 3;
+          const gainExp = Math.floor((12 + G.realmIndex * 3) * mapMult);
           G.exp += gainExp;
           addLog(`完成【${curMap.name}】降魔除祟榜文，斩获佣金 ${gainStones} 灵石，修为精进 ${gainExp} 点。`, "fortune");
         } else {
@@ -2336,12 +3084,12 @@
           addLog(`涉险探秘触动古修残阵禁制，气血受损 ${dmg} 点。`, "danger");
         } else if (r < 0.72) {
           sfx.success();
-          const gotStones = Math.floor((3 + G.realmIndex * 2) * (1 + Math.random() * 0.5));
+          const gotStones = Math.floor((3 + G.realmIndex * 2) * (1 + Math.random() * 0.5) * Math.sqrt(mapMult));
           const herbKey = pickRandomByWeight(curMap.herbChance);
           const lootItem = ITEMS_DB[herbKey] || ITEMS_DB.vine_gold;
           addItemToInv(lootItem, 1);
           G.stones += gotStones;
-          const gainExp = 20 + G.realmIndex * 8;
+          const gainExp = Math.floor((20 + G.realmIndex * 8) * mapMult);
           G.exp += gainExp;
           addLog(`【古洞探幽】在【${curMap.name}】隐秘废墟瓦砾间发掘出灵石 ${gotStones} 块与【${lootItem.name}】！修为+${gainExp}。`, "fortune");
         } else if (r > 0.86) {
@@ -2612,7 +3360,8 @@
             sfx.click();
             G.currentMap = m.id;
             G.location = m.name;
-            addLog(`你收拾行囊，动身迁往【${m.name}】。`, "normal");
+            syncNpcsForCurrentState(G, true);
+            addLog(`你收拾行囊，御风迁往【${m.name}】（灵气浓郁度：${m.densityText}，吐纳效率×${m.expMult}）。`, "normal");
             saveToLocal();
             renderUI();
             renderMapGrid();
@@ -3031,8 +3780,8 @@
       document.getElementById('techName').textContent = G.technique.name;
       document.getElementById('techDesc').textContent = G.technique.desc;
       document.getElementById('sectName').textContent = G.sect ? G.sect.name : "散修";
-      document.getElementById('locName').textContent = G.location;
-      document.getElementById('currentLocTag').textContent = `📍 所在：${G.location}`;
+      const curMap = MAPS_DB.find(m => m.id === (G.currentMap || "town")) || MAPS_DB[0];
+      document.getElementById('currentLocTag').textContent = `📍 所在：${G.location} (灵气:${curMap.densityText || "凡尘"})`;
       document.getElementById('sectSalaryTag').textContent = `月俸：${G.sect ? G.sect.salary : 0} 灵石`;
 
       // 主修方略选中高亮
@@ -3379,29 +4128,341 @@
       renderInventory();
     }
 
+    let currentNpcFilter = 'current';
+
+    function setNpcFilter(f) {
+      currentNpcFilter = f;
+      const bCur = document.getElementById('btnNpcCur');
+      const bAll = document.getElementById('btnNpcAll');
+      const bDead = document.getElementById('btnNpcDead');
+      if (bCur) bCur.classList.toggle('active', f === 'current');
+      if (bAll) bAll.classList.toggle('active', f === 'all');
+      if (bDead) bDead.classList.toggle('active', f === 'deceased');
+      renderNpcs();
+    }
+
+    function syncNpcsForCurrentState(data, notify = false) {
+      if (!data) return;
+      if (!Array.isArray(data.npcs)) data.npcs = [];
+
+      const curMapId = data.currentMap || "town";
+      const curMap = MAPS_DB.find(m => m.id === curMapId) || MAPS_DB[0];
+
+      // 1. 同步现有 NPC 属性至最新配置库
+      data.npcs.forEach(npc => {
+        const ref = MAP_NPCS_DB.find(n => n.id === npc.id);
+        if (ref) {
+          npc.name = ref.name;
+          npc.title = ref.title;
+          npc.realm = ref.realm;
+          npc.realmTier = ref.realmTier;
+          npc.mapId = ref.mapId;
+          npc.loc = ref.loc;
+          npc.desc = ref.desc;
+          npc.maxAge = ref.maxAge;
+        }
+      });
+
+      // 2. 补全当前大域当值道友
+      let addedNames = [];
+      const currentMapNpcs = MAP_NPCS_DB.filter(n => n.mapId === curMapId);
+      currentMapNpcs.forEach(ref => {
+        const existing = data.npcs.find(n => n.id === ref.id);
+        if (!existing) {
+          data.npcs.push({
+            id: ref.id,
+            name: ref.name,
+            title: ref.title,
+            realm: ref.realm,
+            realmTier: ref.realmTier,
+            mapId: ref.mapId,
+            loc: ref.loc,
+            desc: ref.desc,
+            maxAge: ref.maxAge,
+            rel: 10,
+            status: "alive",
+            claimedGiftTiers: [],
+            memorialized: false
+          });
+          addedNames.push(ref.name);
+        }
+      });
+
+      // 3. 检查生灵寿元更替（仙凡永隔）
+      const playerAge = data.ageYears || 18;
+      data.npcs.forEach(npc => {
+        const maxAge = npc.maxAge || 120;
+        if (npc.status !== "deceased" && playerAge > maxAge) {
+          npc.status = "deceased";
+          if (notify) {
+            addLog(`【仙凡永隔】岁月无情，昔日故交【${npc.name}】寿元大限已至（享年${maxAge}岁），寿终仙逝。红尘故人化作黄土……`, "normal");
+          }
+        } else if (!npc.status) {
+          npc.status = "alive";
+        }
+      });
+
+      if (notify && addedNames.length > 0) {
+        addLog(`【因果结缘】初至【${curMap.name}】，你在此大域结识了道友【${addedNames.join("、")}】！可移步【👥 因果谱】参详论道。`, "fortune");
+      }
+    }
+
+    function checkNpcLifespans(data, notify = true) {
+      if (!data || !Array.isArray(data.npcs)) return;
+      const playerAge = data.ageYears || 18;
+      data.npcs.forEach(npc => {
+        const maxAge = npc.maxAge || 120;
+        if (npc.status !== "deceased" && playerAge > maxAge) {
+          npc.status = "deceased";
+          if (notify) {
+            addLog(`【仙凡永隔】岁月无情，昔日故友【${npc.name}】寿终正寝（享年${maxAge}岁），仙路渺渺，唯留青冢孤立。`, "normal");
+          }
+        }
+      });
+    }
+
     function renderNpcs() {
       const list = document.getElementById('npcList');
       list.innerHTML = '';
       if (!G || !G.npcs) return;
 
-      G.npcs.forEach(npc => {
+      const curMapId = G.currentMap || "town";
+      let displayNpcs = [];
+
+      if (currentNpcFilter === 'current') {
+        displayNpcs = G.npcs.filter(n => (n.mapId === curMapId) && n.status !== 'deceased');
+      } else if (currentNpcFilter === 'all') {
+        displayNpcs = G.npcs.filter(n => n.status !== 'deceased');
+      } else if (currentNpcFilter === 'deceased') {
+        displayNpcs = G.npcs.filter(n => n.status === 'deceased');
+      }
+
+      if (displayNpcs.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.style.textAlign = 'center';
+        emptyDiv.style.padding = '1rem 0.5rem';
+        emptyDiv.style.fontSize = '0.78rem';
+        emptyDiv.style.color = 'var(--text-muted)';
+        emptyDiv.style.background = '#090d13';
+        emptyDiv.style.borderRadius = '6px';
+        emptyDiv.style.border = '1px dashed #334155';
+
+        if (currentNpcFilter === 'current') {
+          emptyDiv.innerHTML = `📍 本域故交多已仙逝或坐化。<br>可至【🪦 坐化祠】祭奠，或御风前往更高阶大域探寻新仙缘！`;
+        } else if (currentNpcFilter === 'deceased') {
+          emptyDiv.innerHTML = `🪦 暂无故人仙逝坐化。<br>结识之仙友皆在天地各域清修，且珍重此世仙缘！`;
+        } else {
+          emptyDiv.innerHTML = `📜 暂未结识健在道友。游历大域即可广结善缘！`;
+        }
+        list.appendChild(emptyDiv);
+        return;
+      }
+
+      displayNpcs.forEach(npc => {
         const div = document.createElement('div');
-        div.className = 'npc-card';
-        let relClass = npc.rel >= 50 ? 'rel-friendly' : (npc.rel <= -10 ? 'rel-hostile' : 'rel-neutral');
-        div.innerHTML = `
-          <div class="npc-head">
-            <span class="npc-name">${npc.name} <small style="font-size:0.75rem; color:var(--text-muted);">(${npc.realm})</small></span>
-            <span class="npc-relation ${relClass}">关系: ${npc.rel}</span>
-          </div>
-          <div style="font-size:0.75rem; color:var(--text-muted);">${npc.title} · ${npc.loc}</div>
-          <div style="font-size:0.72rem; color:#94a3b8;">${npc.desc}</div>
-          <div class="npc-actions">
-            <button class="btn inv-btn" onclick="interactNpc('${npc.id}', 'talk')">攀谈探听</button>
-            <button class="btn inv-btn btn-gold" onclick="interactNpc('${npc.id}', 'gift')">赠礼结缘</button>
-          </div>
-        `;
+        const dbNpc = MAP_NPCS_DB.find(n => n.id === npc.id) || npc;
+        const isDeceased = npc.status === 'deceased';
+
+        if (isDeceased) {
+          div.className = 'npc-card deceased-card';
+          div.innerHTML = `
+            <div class="npc-head">
+              <span class="npc-name" style="color:#94a3b8; text-decoration:line-through;">🪦 ${npc.name} <small style="font-size:0.75rem; color:#64748b;">(${npc.realm})</small></span>
+              <span class="npc-relation" style="color:#64748b; background:#1e293b; border-color:#334155;">享年 ${npc.maxAge || 70} 载 · 已坐化</span>
+            </div>
+            <div style="font-size:0.75rem; color:#64748b;">昔日驻足：${npc.title} · ${npc.loc}</div>
+            <div style="font-size:0.72rem; color:#475569; font-style:italic;">“仙凡两隔，凡躯作土……生前与道友因果羁绊：${npc.rel} 点。”</div>
+            <div class="npc-actions">
+              <button class="btn inv-btn" style="border-color:#475569; color:#cbd5e1;" onclick="memorializeNpc('${npc.id}')">
+                ${npc.memorialized ? '✓ 已洒酒祭奠 (悟大道沧桑)' : '🍶 洒酒祭奠 (悟红尘如梦)'}
+              </button>
+            </div>
+          `;
+        } else {
+          div.className = 'npc-card';
+          let relClass = 'rel-neutral';
+          let relText = `因果: ${npc.rel}`;
+          if (npc.rel >= 100) { relClass = 'rel-sworn'; relText = `生死之交 (${npc.rel})`; }
+          else if (npc.rel >= 60) { relClass = 'rel-close'; relText = `莫逆同道 (${npc.rel})`; }
+          else if (npc.rel >= 30) { relClass = 'rel-friendly'; relText = `融洽相善 (${npc.rel})`; }
+          else if (npc.rel <= -10) { relClass = 'rel-hostile'; relText = `宿怨冷淡 (${npc.rel})`; }
+
+          const mapObj = MAPS_DB.find(m => m.id === npc.mapId);
+          const mapLabel = mapObj ? mapObj.name.split("·")[1]?.trim() || mapObj.name : "修真界";
+
+          div.innerHTML = `
+            <div class="npc-head">
+              <span class="npc-name">${npc.name} <small style="font-size:0.75rem; color:var(--text-muted);">(${npc.realm})</small></span>
+              <span class="npc-relation ${relClass}">${relText}</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">${npc.title} · ${mapLabel} ${npc.loc}</div>
+            <div style="font-size:0.72rem; color:#94a3b8;">${npc.desc}</div>
+            <div class="npc-actions">
+              <button class="btn inv-btn" onclick="discussNpc('${npc.id}')">💬 坐而论道</button>
+              <button class="btn inv-btn btn-gold" onclick="giftNpc('${npc.id}')">🎁 馈赠结缘</button>
+              <button class="btn inv-btn" style="border-color:#b91c1c; color:#f87171;" onclick="sparNpc('${npc.id}')">⚔️ 请教切磋</button>
+            </div>
+          `;
+        }
         list.appendChild(div);
       });
+    }
+
+    function discussNpc(id) {
+      sfx.click();
+      if (!G || !G.npcs) return;
+      const npc = G.npcs.find(n => n.id === id);
+      if (!npc || npc.status === 'deceased') return;
+      const dbNpc = MAP_NPCS_DB.find(n => n.id === id) || npc;
+
+      const curPeriod = `${G.year || 9427}-${G.ageMonths || 1}`;
+      if (npc.lastDiscussPeriod === curPeriod) {
+        alert(`【${npc.name}】温言道：“道友方才所论大道奥义尚在紫府翻腾，且待下月气机沉淀后再来论道。”`);
+        return;
+      }
+      npc.lastDiscussPeriod = curPeriod;
+
+      const lines = dbNpc.talkLines || ["大道至简，行稳致远。与道友论道，深感天道渊深。"];
+      const line = lines[Math.floor(Math.random() * lines.length)];
+      const gain = dbNpc.discussGain || { exp: 50, stones: 1 };
+
+      const expGain = gain.exp || 50;
+      const stoneGain = gain.stones || 0;
+      const silverGain = gain.silver || 0;
+      const comGain = gain.com || 0;
+      const soulGain = gain.soul || 0;
+
+      G.exp += expGain;
+      if (stoneGain) G.stones += stoneGain;
+      if (silverGain) G.silver += silverGain;
+      if (comGain) G.stats.com += comGain;
+      if (soulGain) G.stats.soul += soulGain;
+
+      sfx.success();
+      let rText = `修为 +${expGain}`;
+      if (stoneGain) rText += `，灵石 +${stoneGain}`;
+      if (silverGain) rText += `，白银 +${silverGain}两`;
+      if (comGain) rText += `，悟性 +${comGain}`;
+      if (soulGain) rText += `，神魂 +${soulGain}`;
+
+      alert(`【坐而论道 · 互印道法】\n${npc.name}（${npc.title} · ${npc.realm}）抚须道：\n“${line}”\n\n紫府共鸣，心境大振！获得收益：\n${rText}！`);
+      addLog(`与【${npc.name}】（${npc.realm}）坐而论道，参悟天地至理，${rText}。`, "fortune");
+      saveToLocal();
+      renderUI();
+    }
+
+    function giftNpc(id) {
+      sfx.click();
+      if (!G || !G.npcs) return;
+      const npc = G.npcs.find(n => n.id === id);
+      if (!npc || npc.status === 'deceased') return;
+      const dbNpc = MAP_NPCS_DB.find(n => n.id === id) || npc;
+
+      const cost = dbNpc.giftCost || { silver: 5, stones: 0, desc: "5两白银" };
+      let deductDesc = "";
+
+      if (cost.stones > 0) {
+        if (G.stones < cost.stones) {
+          alert(`【结缘资粮不足】\n${npc.name} 身为【${npc.realm}】大修士，眼界超凡，需奉上至少 ${cost.stones} 块灵石方显诚意。\n当前持有：${G.stones} 灵石。`);
+          return;
+        }
+        G.stones -= cost.stones;
+        deductDesc = `奉上 ${cost.stones} 块晶莹灵石相赠`;
+      } else if (cost.silver > 0) {
+        if (G.silver >= cost.silver) {
+          G.silver -= cost.silver;
+          deductDesc = `奉上 ${cost.silver} 两白银作为常礼`;
+        } else if (G.stones >= 1) {
+          G.stones -= 1;
+          deductDesc = `奉上 1 块灵石相赠打点`;
+        } else {
+          alert(`身无长物，囊中羞涩，拿不出相宜拜礼（需至少 ${cost.silver} 两白银或 1 灵石）。`);
+          return;
+        }
+      }
+
+      const relAdd = Math.min(30, 14 + Math.floor((dbNpc.realmTier || 1) * 0.4));
+      npc.rel += relAdd;
+      sfx.success();
+
+      let giftLog = `${deductDesc}，${npc.name} 欣然接纳，好感度 +${relAdd}（当前关系：${npc.rel}）！`;
+      let alertMsg = `【仙珍相赠 · 因果加深】\n${deductDesc}。\n${npc.name}（${npc.realm}）对你大为赏识，好感提升至 ${npc.rel}！\n“道友诚心相待，这份情谊本座记下了！”`;
+
+      // 检查知恩图报回礼
+      if (!npc.claimedGiftTiers) npc.claimedGiftTiers = [];
+      const returns = dbNpc.giftReturns || [];
+      for (const ret of returns) {
+        if (npc.rel >= ret.relReq && !npc.claimedGiftTiers.includes(ret.relReq)) {
+          npc.claimedGiftTiers.push(ret.relReq);
+          const retItem = ITEMS_DB[ret.itemId];
+          if (retItem) {
+            addItemToInv(retItem, ret.count || 1);
+            alertMsg += `\n\n【🎁 大能知恩还礼】\n${ret.text}\n恭喜获得【${retItem.name}】×${ret.count || 1}！`;
+            giftLog += ` ${npc.name} 感念挚谊，回赠重宝【${retItem.name}】×${ret.count || 1}！`;
+          }
+        }
+      }
+
+      alert(alertMsg);
+      addLog(giftLog, "fortune");
+      saveToLocal();
+      renderUI();
+    }
+
+    function sparNpc(id) {
+      sfx.click();
+      if (!G || !G.npcs) return;
+      const npc = G.npcs.find(n => n.id === id);
+      if (!npc || npc.status === 'deceased') return;
+      const dbNpc = MAP_NPCS_DB.find(n => n.id === id) || npc;
+      const spar = dbNpc.sparData || { hp: 120, atk: 20, rep: 3 };
+
+      const enemy = {
+        name: `演武印证 · ${npc.name}`,
+        realm: npc.realm,
+        hp: spar.hp,
+        atk: spar.atk,
+        isSpar: true,
+        npcName: npc.name,
+        sparRep: spar.rep || 3,
+        loot: {
+          stones: Math.floor((spar.rep || 3) * 2),
+          silver: 0
+        }
+      };
+
+      addLog(`与【${npc.name}】（${npc.realm}）移步演武场，点到为止，切磋印证法门！`, "normal");
+      startCombat(enemy);
+    }
+
+    function memorializeNpc(id) {
+      sfx.click();
+      if (!G || !G.npcs) return;
+      const npc = G.npcs.find(n => n.id === id);
+      if (!npc || npc.status !== 'deceased') return;
+
+      if (npc.memorialized) {
+        alert(`【故友青冢】\n你已在【${npc.name}】墓前洒过浊酒祭奠。昔人已乘黄鹤去，唯有大道长存！`);
+        return;
+      }
+
+      npc.memorialized = true;
+      G.stats.com += 2;
+      G.stats.soul += 6;
+      G.hp = G.maxHp;
+      G.mp = G.maxMp;
+      sfx.success();
+
+      alert(`【🪦 岁月如梭 · 洒酒怀故】\n你来到栖霞青石荒冢前，倾倒下一壶凡尘烈酒。\n忆及当年初涉仙途时，故友【${npc.name}】音容笑貌宛在眼前，而今已化作一抔黄土……\n\n仙凡殊途，红尘如梦！\n道心在万载沧桑洗礼中益发坚不可摧：\n【悟性 +2，神魂 +6，气血与法力彻底平复全满！】`);
+      addLog(`【祭奠怀古】于故人【${npc.name}】青冢前洒酒追忆，仙凡永隔，顿悟大道沧桑，悟性+2，神魂+6。`, "breakthrough");
+      saveToLocal();
+      renderUI();
+    }
+
+    function interactNpc(id, act) {
+      if (act === 'talk') discussNpc(id);
+      else if (act === 'gift') giftNpc(id);
+      else if (act === 'spar') sparNpc(id);
     }
 
     function renderWorldNews() {
@@ -3453,6 +4514,7 @@
         G.ageYears++;
         G.year = (G.year || 9427) + 1;
         addLog(`岁月悠悠，又是一载冬去春来。骨龄已达 ${G.ageYears} 岁。`, 'normal');
+        checkNpcLifespans(G, true);
       }
 
       if (G.ageYears >= G.maxAge) {
@@ -3469,16 +4531,43 @@
     }
 
     function evolveWorld() {
-      const pool = [
-        "【天地】苍梧大域忽降甘霖灵雨，灵田百草舒展，凡间岁稔年丰。",
-        "【宗门】青云剑宗开炉试剑，传出一口极品灵剑出世之惊世传闻。",
-        "【市集】苍梧仙城拍卖会传出两枚二品破障丹被筑基世家高价拍走。",
-        "【秘境】断魂迷涧深处毒瘴异动，疑有上古大修坐化洞府现世！"
-      ];
+      if (!G || !G.worldNews) return;
+      let pool = [];
+      const rIdx = G.realmIndex || 0;
+      if (rIdx < 11) { // 凡人至炼气
+        pool = [
+          "【天地】苍梧大域忽降甘霖灵雨，灵田百草舒展，凡间岁稔年丰。",
+          "【宗门】青云剑宗开山广招道苗，数千凡俗少年汇聚剑门石阶叩关。",
+          "【市集】百草堂高价求收新鲜赤血草与百年金钱藤，引得采药散修竞相进山。",
+          "【秘闻】云林大泽边缘传出一头一阶妖蛇出没伤人，数名猎妖散修结伴前去除害。"
+        ];
+      } else if (rIdx < 19) { // 筑基至金丹
+        pool = [
+          "【仙城】凌霄仙城举行十年一度拍卖盛典，两枚二品破障散与一口七星灵剑引得各族争抢！",
+          "【断魂】断魂迷涧深处毒瘴翻涌，数名筑基大修联手破开上古散仙洞府禁制残阵！",
+          "【瀚海】天星海突现三阶独角妖龙兴风作浪，潮音阁主号召海外金丹散仙共御海潮！",
+          "【丹道】据传海外万宝楼丹王开炉炼成极品降尘金丹，引动数十位散修假丹强者眼热！"
+        ];
+      } else if (rIdx < 27) { // 元婴至化神
+        pool = [
+          "【天象】天渊神冢魔煞血光冲霄，一头上古四阶冥皇苏醒，震动九天各大仙宗！",
+          "【造化】天渊禁地深处九窍凝婴草伴生灵雾显化，惊现数尊元婴老祖神念斗法！",
+          "【昆仑】九天昆仑极道圣境钟鸣九响，太上长老闭关三千载终凝天地法相成就化神！",
+          "【神话】西荒魔道极道魔尊与极道剑皇神交相争，万剑剑气横扫三万里星空！"
+        ];
+      } else { // 炼虚至真仙
+        pool = [
+          "【仙音】三十三天南天神门七彩祥云漫天垂落，真仙接引法旨震颤诸天万界！",
+          "【天劫】九天之上雷云浩荡百万里，合体至尊迎击九九灭世雷劫，天地震颤！",
+          "【长生】混沌鸿蒙道果出世，引发诸天大乘老祖横跨虚空神念竞逐！",
+          "【真仙】万载难遇之白日飞升吉兆显现，南天门金光通天彻地，真仙大道已成！"
+        ];
+      }
+
       if (Math.random() < 0.3) {
         const item = pool[Math.floor(Math.random() * pool.length)];
         G.worldNews.unshift(item);
-        if (G.worldNews.length > 5) G.worldNews.pop();
+        if (G.worldNews.length > 6) G.worldNews.pop();
       }
     }
 
@@ -3704,16 +4793,25 @@
       if (curEnemy.hp <= 0) {
         combatAutoRunning = false;
         sfx.breakthrough();
-        alert(`惨烈厮杀！你成功诛杀强敌【${curEnemy.name}】！`);
-        closeModal('modalCombat');
-        if (curEnemy.loot) {
-          G.stones += curEnemy.loot.stones || 0;
-          G.silver += curEnemy.loot.silver || 0;
-          if (curEnemy.loot.item) addItemToInv(curEnemy.loot.item, 1);
+        if (curEnemy.isSpar) {
+          alert(`【演武切磋 · 获胜】\n你气定神闲收敛灵力，与【${curEnemy.npcName}】拱手一笑！\n对方大赞：“道友神通惊人，在下心服口服！”\n\n声望 +${(curEnemy.sparRep || 3) * 3}，气血与法力已彻底平复！`);
+          closeModal('modalCombat');
+          G.hp = G.maxHp;
+          G.mp = G.maxMp;
+          G.stats.reputation += (curEnemy.sparRep || 3) * 3;
+          addLog(`与【${curEnemy.npcName}】演武切磋大胜，声望提升，气血平复。`, 'fortune');
+        } else {
+          alert(`惨烈厮杀！你成功诛杀强敌【${curEnemy.name}】！`);
+          closeModal('modalCombat');
+          if (curEnemy.loot) {
+            G.stones += curEnemy.loot.stones || 0;
+            G.silver += curEnemy.loot.silver || 0;
+            if (curEnemy.loot.item) addItemToInv(curEnemy.loot.item, 1);
+          }
+          G.exp += 30;
+          G.stats.reputation += 5;
+          addLog(`【斩敌获胜】诛杀【${curEnemy.name}】，获得灵石 ${curEnemy.loot.stones || 0} 块，凡银 ${curEnemy.loot.silver || 0} 两！`, 'breakthrough');
         }
-        G.exp += 30;
-        G.stats.reputation += 5;
-        addLog(`【斩敌获胜】诛杀【${curEnemy.name}】，获得灵石 ${curEnemy.loot.stones || 0} 块，凡银 ${curEnemy.loot.silver || 0} 两！`, 'breakthrough');
         saveToLocal();
         renderUI();
         return;
@@ -3734,13 +4832,27 @@
         G.hp = Math.max(0, G.hp - eDmg);
         updateCombatUI();
 
-        if (G.hp <= 0) {
+        if (G.hp <= 0 || (curEnemy.isSpar && G.hp <= G.maxHp * 0.15)) {
           combatAutoRunning = false;
-          sfx.fail();
-          alert(`气血耗尽……你倒在血泊之中，此生道途就此陨落！`);
-          closeModal('modalCombat');
-          settleKarmaAndReset();
-          return;
+          if (curEnemy.isSpar) {
+            sfx.alert();
+            alert(`【演武切磋 · 惜败】\n【${curEnemy.npcName}】及时收回法器，朗声笑道：“承让承让！道友根基非凡，来日必成大器！”\n\n虽惜败一招，但你在高境交手中获益良多：\n体魄 +2，神魂 +2，气血与法力已为你温养调理复原！`);
+            closeModal('modalCombat');
+            G.hp = G.maxHp;
+            G.mp = G.maxMp;
+            G.stats.phy += 2;
+            G.stats.soul += 2;
+            addLog(`与【${curEnemy.npcName}】切磋惜败，但窥得高深法门，体魄+2，神魂+2。`, 'normal');
+            saveToLocal();
+            renderUI();
+            return;
+          } else {
+            sfx.fail();
+            alert(`气血耗尽……你倒在血泊之中，此生道途就此陨落！`);
+            closeModal('modalCombat');
+            settleKarmaAndReset();
+            return;
+          }
         }
 
         if (combatAutoRunning && curEnemy && curEnemy.hp > 0 && G && G.hp > 0) {
@@ -3761,28 +4873,22 @@
     function openShopModal() {
       const list = document.getElementById('shopItemList');
       list.innerHTML = '';
-      const forSale = [
-        ITEMS_DB.pill_blood,
-        ITEMS_DB.pill_qi,
-        ITEMS_DB.pill_break,
-        ITEMS_DB.powder_beast,
-        ITEMS_DB.herb_red,
-        ITEMS_DB.vine_gold,
-        ITEMS_DB.sword_steel,
-        ITEMS_DB.shield_wood,
-        ITEMS_DB.pot_bronze,
-        ITEMS_DB.talisman_ring
-      ];
+      const mapId = G.currentMap || "town";
+      const shopTitle = MAP_SHOP_NAMES[mapId] || "🏛️ 修真坊市 · 万宝天阁";
+      const titleElem = document.querySelector('#modalShop .modal-title');
+      if (titleElem) titleElem.textContent = shopTitle;
 
-      forSale.forEach(item => {
+      const forSale = MAP_SHOPS_DB[mapId] || MAP_SHOPS_DB.town;
+
+      forSale.filter(Boolean).forEach(item => {
         const d = document.createElement('div');
         d.className = 'inv-item';
         const costStr = item.price > 0 ? `${item.price} 灵石` : `${item.silver} 两白银`;
         d.innerHTML = `
           <div class="inv-info">
-            <span class="inv-name">${item.name}</span>
+            <span class="inv-name" style="color:var(--gold-light);">${item.name}</span>
             <span class="inv-desc">${item.desc}</span>
-            <span style="font-size:0.75rem; color:var(--gold-light);">售价：${costStr}</span>
+            <span style="font-size:0.75rem; color:#38bdf8;">售价：${costStr}</span>
           </div>
           <div><button class="btn inv-btn btn-gold" onclick="buyFromShop('${item.id}')">买入</button></div>
         `;
@@ -3810,32 +4916,6 @@
       addLog(`在坊市买入一份【${item.name}】。`, "normal");
       saveToLocal();
       renderUI();
-    }
-
-    function interactNpc(id, act) {
-      sfx.click();
-      const npc = G.npcs.find(n => n.id === id);
-      if (!npc) return;
-      if (act === 'talk') {
-        alert(`${npc.name}（${npc.title}）道：“大道多歧，凡事当谋定而后动。”`);
-      } else if (act === 'gift') {
-        if (G.stones >= 1) {
-          G.stones -= 1;
-          npc.rel += 12;
-          sfx.success();
-          alert(`赠上一块灵石，${npc.name} 喜形于色，对你亲近不少。`);
-        } else if (G.silver >= 4) {
-          G.silver -= 4;
-          npc.rel += 5;
-          sfx.success();
-          alert(`奉上几两纹银打点，对方客套收下。`);
-        } else {
-          alert("身无长物，拿不出相宜礼物。");
-          return;
-        }
-        saveToLocal();
-        renderUI();
-      }
     }
 
     /* ==========================================================================
@@ -3897,6 +4977,11 @@
         G.exp = 0;
         G.stats.reputation += 15;
         addLog(`【突破功成】引灵锻体！你成功突破桎梏晋升【${nextRealm.name}】！寿元威能激增！`, 'breakthrough');
+        syncNpcsForCurrentState(G, true);
+        const highestMap = MAPS_DB.slice().reverse().find(m => G.realmIndex >= m.minRealm);
+        if (highestMap && highestMap.id !== G.currentMap) {
+          addLog(`【大域感召】道友成功晋升【${nextRealm.name}】！感知到高阶大域【${highestMap.name}】（灵气浓郁度：${highestMap.densityText}）已开启，可御风前往探寻！`, "breakthrough");
+        }
 
         if (G.realmIndex === REALMS.length - 1) { // 飞升真仙
           META.karmaPoints += 3000;
@@ -4123,6 +5208,7 @@
         lastActiveTime: Date.now()
       };
 
+      syncNpcsForCurrentState(G, false);
       saveToLocal();
       closeModal('modalCreation');
       renderUI();
