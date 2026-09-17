@@ -1250,6 +1250,7 @@
         <button class="btn" style="padding:0.2rem 0.5rem;" onclick="closeModal('modalSectSelect')">✕</button>
       </div>
       <div class="modal-body">
+        <div id="sectCurrentStatus" style="margin-bottom:0.85rem; padding:0.6rem 0.85rem; background:rgba(212,160,23,0.08); border:1px solid rgba(212,160,23,0.25); border-radius:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;"></div>
         <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.85rem;">
           大仙门每隔数年开山门收徒，各宗道统所求资历不同。一旦拜入，每月可领宗门月俸并研读独门古经：
         </p>
@@ -1473,6 +1474,21 @@
       pot_jiulong: { id: "pot_jiulong", name: "九龙地心神火炉", type: "furnace", quality: "purple", desc: "四阶丹道宗师至宝，引九龙地脉天火，成丹率+50%！", alchRate: 50, price: 400 },
       pot_taixu: { id: "pot_taixu", name: "太虚八卦炼天鼎", type: "furnace", quality: "orange", desc: "六阶通灵神鼎，天地为炉兮造化为工，成丹率+75%！", alchRate: 75, price: 3000 },
       pot_xian: { id: "pot_xian", name: "乾坤混沌造化仙鼎", type: "furnace", quality: "red", desc: "真仙界遗落绝世神鼎，天地灵气自然凝丹，成丹率+100%，极品丹爆率100%！", alchRate: 100, price: 25000 }
+    };
+
+    /* ==========================================================================
+       大关隘与突破必备神丹映射表
+       ========================================================================== */
+    const BREAKTHROUGH_REQUISITES = {
+      10: { id: "pill_zhuji", name: "天元筑基丹", buffKey: "zhujiBuff", bonus: 50, log: "感应到筑基天劫阻滞，自动服下【天元筑基丹】以固道基！" },
+      14: { id: "pill_jindan", name: "四品降尘金丹", buffKey: "jindanBuff", bonus: 50, log: "感应到金丹大道天堑，自动服下【四品降尘金丹】铸造九品金丹！" },
+      18: { id: "pill_yuanying", name: "五品九转结婴丹", buffKey: "yuanyingBuff", bonus: 50, log: "紫府金丹异动，自动服下【五品九转结婴丹】碎丹化婴！" },
+      22: { id: "pill_huashen", name: "六品化神定阳丹", buffKey: "huashenBuff", bonus: 50, log: "神识沟通虚空，自动服下【六品化神定阳丹】凝练化神法相！" },
+      26: { id: "pill_lianxu", name: "七品太虚涅槃丹", buffKey: "lianxuBuff", bonus: 50, log: "肉身与天地合虚，自动服下【七品太虚涅槃丹】遁入太虚！" },
+      29: { id: "pill_heti", name: "八品两仪合体丹", buffKey: "hetiBuff", bonus: 50, log: "身神两仪合一，自动服下【八品两仪合体丹】直入合体至尊！" },
+      30: { id: "pill_dacheng", name: "九品造化大乘丹", buffKey: "dachengBuff", bonus: 50, log: "天地法则圆融，自动服下【九品造化大乘丹】冲击大乘极境！" },
+      31: { id: "pill_dujie", name: "绝品九霄辟雷神丹", buffKey: "dujieBuff", bonus: 50, log: "九天雷劫漫天垂落，自动服下【绝品九霄辟雷神丹】迎击雷劫！" },
+      32: { id: "pill_feisheng", name: "鸿蒙造化真仙丹", buffKey: "feishengBuff", bonus: 50, log: "南天神门金光大盛，自动服下【鸿蒙造化真仙丹】飞升真仙！" }
     };
 
     /* ==========================================================================
@@ -2034,7 +2050,30 @@
         data.technique = { name: "《引气吐纳残卷》", grade: "黄级下品", bonusExp: 6, desc: "散修引灵入门吐纳法。" };
       }
       if (!data.sect || typeof data.sect !== "object") {
-        data.sect = { name: "散修", salary: 0 };
+        data.sect = { id: null, name: "散修", salary: 0, minRealm: 0 };
+      } else {
+        if (!data.sect.name) data.sect.name = "散修";
+        if (data.sect.name === "散修") {
+          data.sect.id = null;
+          data.sect.salary = 0;
+          data.sect.minRealm = 0;
+        } else {
+          const matchedSect = SECTS_DB.find(s => s.id === data.sect.id || s.name === data.sect.name);
+          if (matchedSect) {
+            data.sect.id = matchedSect.id;
+            data.sect.name = matchedSect.name;
+            data.sect.salary = matchedSect.salary;
+            data.sect.minRealm = matchedSect.minRealm;
+          } else {
+            data.sect.id = data.sect.id || "custom_sect";
+            data.sect.salary = Number(data.sect.salary) || 0;
+            data.sect.minRealm = Number(data.sect.minRealm) || 0;
+          }
+        }
+      }
+      if (!data.sectGiftClaimed || typeof data.sectGiftClaimed !== "object") {
+        data.sectGiftClaimed = {};
+        if (data.sect && data.sect.id) data.sectGiftClaimed[data.sect.id] = true;
       }
       if (!data.currentMap) data.currentMap = "town";
       if (!data.routine) data.routine = "cultivate";
@@ -2166,12 +2205,31 @@
       }
       const curRealm = REALMS[G.realmIndex] || REALMS[0];
       if (G.exp >= curRealm.maxExp && G.realmIndex < REALMS.length - 1) {
+        const nextRealm = REALMS[G.realmIndex + 1];
+        const req = BREAKTHROUGH_REQUISITES[G.realmIndex];
+
         if (G.autoBreakthrough) {
-          doBreakthrough(true);
-          return;
+          // 若属于大境界关隘天堑，先检测是否已备齐专属护道神丹
+          if (req) {
+            const hasPill = G.inventory.some(i => i.id === req.id && i.count > 0);
+            if (hasPill) {
+              doBreakthrough(true);
+              return;
+            } else {
+              // 缺乏专属大关隘破境丹，智能拦截急停，保护玩家道基
+              pauseTime(`冲击【${nextRealm.name}】缺乏护道神丹【${req.name}】！`);
+              addLog(`【关隘天堑】突破至【${nextRealm.name}】天劫险阻，储物袋中尚缺【${req.name}】！为防道基反噬已自动驻足，请开炉炼丹或坊市求购！`, "danger");
+              return;
+            }
+          } else {
+            // 普通小境界层级，直接自动破关
+            doBreakthrough(true);
+            return;
+          }
         } else {
           pauseTime(`修为已臻【${curRealm.name}】大圆满，关隘就绪！`);
-          addLog(`【关隘已至】周天经络气海饱满，触碰到【${REALMS[G.realmIndex+1].name}】壁障，请备齐丹药破境！`, "breakthrough");
+          const pillHint = req ? `（建议备妥【${req.name}】）` : "";
+          addLog(`【关隘已至】周天经络气海饱满，触碰到【${nextRealm.name}】壁障，请破境！${pillHint}`, "breakthrough");
           return;
         }
       }
@@ -2228,7 +2286,7 @@
       const curMap = MAPS_DB.find(m => m.id === (G.currentMap || "town")) || MAPS_DB[0];
 
       if (routine === 'cultivate') {
-        let gain = (G.technique.bonusExp || 6) + Math.floor(G.stats.com * 0.15);
+        let gain = (G.technique.bonusExp || 6) + Math.floor(G.stats.com * 0.15) + Math.floor(G.realmIndex * 1.5);
         G.exp = Math.min(curRealm.maxExp * 1.5, G.exp + gain);
         if (Math.random() < 0.15) {
           G.stats.com += 1;
@@ -2241,10 +2299,16 @@
           const herbKey = pickRandomByWeight(curMap.herbChance);
           const item = ITEMS_DB[herbKey] || ITEMS_DB.herb_red;
           addItemToInv(item, 1);
-          G.silver += 2;
-          addLog(`于【${curMap.name}】密林石缝中采获【${item.name}】×1。`, "fortune");
+          if (G.realmIndex >= 11) {
+            const stonesEarned = 1 + Math.floor(G.realmIndex * 0.3);
+            G.stones += stonesEarned;
+            addLog(`于【${curMap.name}】灵脉密林间采获【${item.name}】×1，附赠采集灵石 ${stonesEarned} 块。`, "fortune");
+          } else {
+            G.silver += 2;
+            addLog(`于【${curMap.name}】密林石缝中采获【${item.name}】×1。`, "fortune");
+          }
         } else if (r < 0.75) {
-          pauseTime("深山遇灵草与凶兽对峙！");
+          pauseTime(`在【${curMap.name}】搜寻到灵宝，与守宝凶物对峙！`);
           triggerHerbEncounterEvent();
         } else if (r > 0.92) {
           // 遇敌
@@ -2253,22 +2317,33 @@
           startCombat(enemy);
         }
       } else if (routine === 'bounty') {
-        const gainSilver = 5 + (G.realmIndex * 2);
-        G.silver += gainSilver;
-        G.exp += 4;
+        if (G.realmIndex >= 11) { // 筑基及以上，大域仙门榜文发放灵石与丰厚经验
+          const gainStones = Math.floor(2 + (G.realmIndex * 1.2));
+          G.stones += gainStones;
+          const gainExp = 12 + G.realmIndex * 3;
+          G.exp += gainExp;
+          addLog(`完成【${curMap.name}】降魔除祟榜文，斩获佣金 ${gainStones} 灵石，修为精进 ${gainExp} 点。`, "fortune");
+        } else {
+          const gainSilver = 5 + (G.realmIndex * 2);
+          G.silver += gainSilver;
+          G.exp += 4 + G.realmIndex;
+        }
       } else if (routine === 'explore') {
         const r = Math.random();
         if (r < 0.35) {
-          const dmg = 15 + (G.realmIndex * 5);
+          const dmg = Math.max(15, Math.floor(G.maxHp * 0.12));
           G.hp = Math.max(10, G.hp - dmg);
-          addLog(`涉险探秘触动古阵残芒，气血受损 ${dmg} 点。`, "danger");
+          addLog(`涉险探秘触动古修残阵禁制，气血受损 ${dmg} 点。`, "danger");
         } else if (r < 0.72) {
           sfx.success();
-          const gotStones = 2 + Math.floor(Math.random() * 3);
-          addItemToInv(ITEMS_DB.vine_gold, 1);
+          const gotStones = Math.floor((3 + G.realmIndex * 2) * (1 + Math.random() * 0.5));
+          const herbKey = pickRandomByWeight(curMap.herbChance);
+          const lootItem = ITEMS_DB[herbKey] || ITEMS_DB.vine_gold;
+          addItemToInv(lootItem, 1);
           G.stones += gotStones;
-          G.exp += 20;
-          addLog(`【古洞残卷】在古修瓦砾间发掘出灵石 ${gotStones} 块与【百年金钱藤】！`, "fortune");
+          const gainExp = 20 + G.realmIndex * 8;
+          G.exp += gainExp;
+          addLog(`【古洞探幽】在【${curMap.name}】隐秘废墟瓦砾间发掘出灵石 ${gotStones} 块与【${lootItem.name}】！修为+${gainExp}。`, "fortune");
         } else if (r > 0.86) {
           const enemy = curMap.enemyPool[Math.floor(Math.random() * curMap.enemyPool.length)];
           pauseTime(`惊动洞中妖王【${enemy.name}】！`);
@@ -2276,16 +2351,17 @@
         }
       } else if (routine === 'heal') {
         if (G.hp < G.maxHp) {
+          let heal = Math.floor(G.maxHp * 0.4);
           const pill = G.inventory.find(i => i.id === "pill_blood" && i.count > 0);
           if (pill) {
             pill.count--;
             cleanZeroInv();
-            G.hp = Math.min(G.maxHp, G.hp + 50);
-            addLog("吞服一品凝血散，皮肉暗伤温养平复。", "fortune");
-          } else {
-            const heal = Math.floor(G.maxHp * 0.35);
+            heal = Math.floor(heal * 1.25) + 50;
             G.hp = Math.min(G.maxHp, G.hp + heal);
-            addLog(`调息温养经脉，气血恢复 ${heal} 点。`, "normal");
+            addLog(`吞服一品凝血散并引灵温养，气血快速愈合回升 ${heal} 点。`, "fortune");
+          } else {
+            G.hp = Math.min(G.maxHp, G.hp + heal);
+            addLog(`盘坐吐纳周天生机温养经脉，气血平复回升 ${heal} 点。`, "normal");
           }
         } else {
           G.exp += (G.technique.bonusExp || 6);
@@ -2556,22 +2632,93 @@
     };
 
     function renderSectModal() {
+      const statusBox = document.getElementById('sectCurrentStatus');
       const list = document.getElementById('sectList');
       list.innerHTML = '';
 
+      const hasSect = G.sect && G.sect.id && G.sect.name !== "散修";
+      const curSectName = G.sect ? G.sect.name : "散修";
+      const curSalary = G.sect ? (G.sect.salary || 0) : 0;
+      const curTechName = G.technique ? G.technique.name : "《引气吐纳残卷》";
+
+      if (statusBox) {
+        if (hasSect) {
+          statusBox.innerHTML = `
+            <div>
+              <div style="font-size:0.85rem; font-weight:600; color:var(--gold-light);">当前道统：【${curSectName}】</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;">享有宗门月俸 ${curSalary} 灵石，研习独门心法 ${curTechName}</div>
+            </div>
+            <div>
+              <button class="btn" style="background:rgba(231,76,60,0.15); border:1px solid #e74c3c; color:#e74c3c; font-size:0.75rem; padding:0.3rem 0.65rem;" onclick="leaveSect()">🚪 脱离门庭 (重归散修)</button>
+            </div>
+          `;
+        } else {
+          statusBox.innerHTML = `
+            <div>
+              <div style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">当前身份：【闲云散修】</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;">无拘无束，亦无仙门月俸与道统护持。凡达各派门槛者皆可自由择一拜入。</div>
+            </div>
+          `;
+        }
+      }
+
+      // 寻找当前宗门在数据库中的境界线
+      const curSectDb = hasSect ? SECTS_DB.find(s => s.id === G.sect.id || s.name === G.sect.name) : null;
+      const curSectMinRealm = curSectDb ? curSectDb.minRealm : 0;
+
       SECTS_DB.forEach(sect => {
+        const isCurrentSect = hasSect && (G.sect.id === sect.id || G.sect.name === sect.name);
         const meetsRealm = G.realmIndex >= sect.minRealm;
+        const isHigherSect = hasSect && (sect.minRealm > curSectMinRealm);
+        const isLowerOrEqual = hasSect && !isCurrentSect && (sect.minRealm <= curSectMinRealm);
+
+        let btnLabel = "";
+        let btnDisabled = false;
+        let btnClass = "btn btn-gold";
+        let btnAction = `joinSect('${sect.id}')`;
+        let tipText = "";
+
+        if (isCurrentSect) {
+          btnLabel = "📍 已在门中";
+          btnDisabled = true;
+          btnClass = "btn";
+          tipText = "当前本命道统，每月享受月俸";
+        } else if (!meetsRealm) {
+          btnLabel = `需【${REALMS[sect.minRealm].name}】`;
+          btnDisabled = true;
+          btnClass = "btn";
+        } else if (isHigherSect) {
+          btnLabel = "🌟 破格晋升高门";
+          btnClass = "btn btn-gold";
+          tipText = "道法精进，可受上位仙宗破格提拔拜入！";
+        } else if (isLowerOrEqual) {
+          btnLabel = "已有同级道统";
+          btnDisabled = true;
+          btnClass = "btn";
+          tipText = "修真界恪守道约，不可转投平级或下位宗门；需先脱离当前门庭";
+        } else {
+          // 散修自由拜入
+          btnLabel = "拜入仙门";
+          btnClass = "btn btn-gold";
+        }
+
         const div = document.createElement('div');
-        div.className = 'sect-item';
+        div.className = `sect-item ${isCurrentSect ? 'active' : ''}`;
+        div.style.cssText = isCurrentSect ? 'border:1px solid rgba(46,204,113,0.4); background:rgba(46,204,113,0.05);' : '';
         div.innerHTML = `
-          <div>
-            <div style="font-weight:600; color:var(--gold-light);">${sect.name}</div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.2rem;">${sect.desc}</div>
-            <div style="font-size:0.72rem; color:var(--jade-green);">入门赠礼：${sect.giftItem.name}，月俸：${sect.salary} 灵石</div>
+          <div style="flex:1; margin-right:0.8rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-weight:600; color:var(--gold-light);">${sect.name}</span>
+              ${isCurrentSect ? '<span style="font-size:0.68rem; background:rgba(46,204,113,0.2); color:var(--jade-green); padding:0.1rem 0.35rem; border-radius:3px;">修习中</span>' : ''}
+              ${isHigherSect ? '<span style="font-size:0.68rem; background:rgba(212,160,23,0.2); color:var(--gold-light); padding:0.1rem 0.35rem; border-radius:3px;">更高道统</span>' : ''}
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin:0.25rem 0;">${sect.desc}</div>
+            <div style="font-size:0.72rem; color:var(--jade-green);">入门赠礼：${sect.giftItem.name} | 月俸：${sect.salary} 灵石 | 传授：${sect.tech.name}</div>
+            ${tipText ? `<div style="font-size:0.7rem; color:var(--cinnabar); margin-top:0.2rem;">${tipText}</div>` : ''}
           </div>
           <div>
-            <button class="btn btn-gold" ${meetsRealm ? '' : 'disabled'} onclick="joinSect('${sect.id}')">
-              ${meetsRealm ? '拜入仙门' : `需【${REALMS[sect.minRealm].name}】`}
+            <button class="${btnClass}" ${btnDisabled ? 'disabled' : ''} onclick="${btnAction}">
+              ${btnLabel}
             </button>
           </div>
         `;
@@ -2582,14 +2729,63 @@
     function joinSect(sectId) {
       const sect = SECTS_DB.find(s => s.id === sectId);
       if (!sect) return;
+
+      const hasSect = G.sect && G.sect.id && G.sect.name !== "散修";
+      const isCurrentSect = hasSect && (G.sect.id === sect.id || G.sect.name === sect.name);
+      if (isCurrentSect) {
+        alert(`道友已在【${sect.name}】门中，安心潜修即可！`);
+        return;
+      }
+
+      const curSectDb = hasSect ? SECTS_DB.find(s => s.id === G.sect.id || s.name === G.sect.name) : null;
+      const curSectMinRealm = curSectDb ? curSectDb.minRealm : 0;
+      if (hasSect && sect.minRealm <= curSectMinRealm) {
+        alert(`道友已有门派【${G.sect.name}】在身！\n修真界恪守门规，不可转投平级或下位宗门。\n若执意改换门庭，请先点击【脱离门庭】恢复散修之身。`);
+        return;
+      }
+
       sfx.breakthrough();
-      G.sect = { name: sect.name, salary: sect.salary };
-      if (sect.giftItem) addItemToInv(sect.giftItem, 1);
+      const oldSectName = hasSect ? G.sect.name : null;
+      G.sect = { id: sect.id, name: sect.name, salary: sect.salary, minRealm: sect.minRealm };
+      G.sectGiftClaimed = G.sectGiftClaimed || {};
+
+      let giftLog = "";
+      if (!G.sectGiftClaimed[sect.id]) {
+        G.sectGiftClaimed[sect.id] = true;
+        if (sect.giftItem) {
+          addItemToInv(sect.giftItem, 1);
+          giftLog = `，获赐真传重宝【${sect.giftItem.name}】`;
+        }
+      } else {
+        giftLog = `（曾拜此门，不再重复发放入门礼器）`;
+      }
+
       if (sect.tech) G.technique = sect.tech;
-      addLog(`【升仙大选】你通过重重考核，正式拜入【${sect.name}】！获赐入门重宝【${sect.giftItem.name}】与镇宗古经！`, "breakthrough");
+
+      if (oldSectName) {
+        addLog(`【名门擢升】道友修为精深，告别【${oldSectName}】，破格拜入上位仙宗【${sect.name}】${giftLog}！得传《${sect.tech ? sect.tech.name : '镇宗秘典'}》！`, "breakthrough");
+      } else {
+        addLog(`【升仙大选】你通过重重考核，正式拜入【${sect.name}】${giftLog}！得传镇宗秘典！`, "breakthrough");
+      }
+
       closeModal('modalSectSelect');
       saveToLocal();
       renderUI();
+    }
+
+    function leaveSect() {
+      if (!G.sect || !G.sect.id || G.sect.name === "散修") return;
+      sfx.click();
+      const sectName = G.sect.name;
+      if (confirm(`【脱离门庭】确定要辞去【${sectName}】弟子身份，重归散修自由之身吗？\n\n• 失去每月宗门俸禄 (${G.sect.salary || 0} 灵石)\n• 恢复散修身份，可自由择定其他同阶仙门拜入\n• 扣除 10 点修真界威望`)) {
+        G.sect = { id: null, name: "散修", salary: 0, minRealm: 0 };
+        G.stats.reputation = Math.max(0, (G.stats.reputation || 0) - 10);
+        sfx.alert();
+        addLog(`【重归闲散】你向【${sectName}】奉还宗门腰牌，解除羁绊，重回散修之身！`, "normal");
+        saveToLocal();
+        renderUI();
+        renderSectModal();
+      }
     }
 
     /* ==========================================================================
@@ -3287,45 +3483,61 @@
     }
 
     /* ==========================================================================
-       突发事件库
+       突发事件库（随大域与境界动态演变）
        ========================================================================== */
     function triggerHerbEncounterEvent() {
+      const curMap = MAPS_DB.find(m => m.id === (G.currentMap || "town")) || MAPS_DB[0];
+      const herbKey = pickRandomByWeight(curMap.herbChance);
+      const targetHerb = ITEMS_DB[herbKey] || ITEMS_DB.herb_red;
+      const enemyTemplate = curMap.enemyPool[Math.floor(Math.random() * curMap.enemyPool.length)] || curMap.enemyPool[0];
+      const beastEnemy = {
+        name: `守护【${targetHerb.name}】的${enemyTemplate.name}`,
+        realm: enemyTemplate.realm,
+        hp: enemyTemplate.hp,
+        atk: enemyTemplate.atk,
+        loot: {
+          stones: (enemyTemplate.loot ? enemyTemplate.loot.stones : 2) + Math.floor(Math.random() * 5),
+          silver: enemyTemplate.loot ? enemyTemplate.loot.silver : 10,
+          item: targetHerb
+        }
+      };
+
       G.activeEvent = {
-        title: "🌿 崖缝灵药与妖蛇对峙",
-        desc: "绝壁石隙中有一株散发微光的【赤血草】，但近旁一条碧磷妖蛇正昂首吞吐信子，警惕盯视着你。",
+        title: `🌿 绝域灵药与凶兽对峙`,
+        desc: `于【${curMap.name}】灵脉奇境深处，发现一株霞光缭绕的【${targetHerb.name}】！然而一头气机凶悍的【${enemyTemplate.name}】正盘踞守护，嘶吼逼近！`,
         choices: [
           {
-            text: "撒出粗制驱兽粉",
-            hint: "消耗驱兽粉×1，稳妥惊退",
+            text: "抛洒药散惊退",
+            hint: "若有驱兽粉且为低阶地图可避战",
             act: () => {
-              const item = G.inventory.find(i => i.id === "powder_beast" && i.count > 0);
-              if (item) {
-                item.count--;
+              const powder = G.inventory.find(i => i.id === "powder_beast" && i.count > 0);
+              if (powder && curMap.minRealm <= 2) {
+                powder.count--;
                 cleanZeroInv();
                 sfx.success();
-                addItemToInv(ITEMS_DB.herb_red, 1);
-                addLog("抖落硫磺药粉，妖蛇退缩回洞，你从容将赤血草掘起收入药囊！", "fortune");
+                addItemToInv(targetHerb, 1);
+                addLog(`抖落硫磺药粉，凶物受惊退散，你从容将珍贵的【${targetHerb.name}】掘起收入药囊！`, "fortune");
               } else {
-                addLog("伸手一摸才发觉驱兽粉已空，妖蛇暴起发难！", "danger");
-                startCombat({ name: "惊怒的碧磷妖蛇", realm: "一阶妖兽", hp: 65, atk: 14, loot: { stones: 1, silver: 5, item: ITEMS_DB.herb_red } });
+                addLog(`此地乃【${curMap.name}】，高阶大妖灵智已开，寻常药散根本无法逼退，凶兽怒吼扑杀而来！`, "danger");
+                startCombat(beastEnemy);
               }
               G.activeEvent = null;
               renderUI();
             }
           },
           {
-            text: "拔刃直接斩杀",
-            hint: "近身搏杀，直接夺宝",
+            text: "亮出法宝直接搏杀",
+            hint: "斩妖夺宝，抢占天道机缘",
             act: () => {
               G.activeEvent = null;
-              startCombat({ name: "碧磷妖蛇", realm: "一阶妖兽", hp: 65, atk: 14, loot: { stones: 1, silver: 5, item: ITEMS_DB.herb_red } });
+              startCombat(beastEnemy);
             }
           },
           {
             text: "谨慎后撤不立危墙",
-            hint: "命比草贵，安步当车",
+            hint: "大道求稳，安步当车",
             act: () => {
-              addLog("你收刀敛息从崖畔退下，虽未得灵草，但保全自身气血不损。", "normal");
+              addLog(`你敛息收敛神识从灵草近旁从容退下，虽未得【${targetHerb.name}】，但保全自身气血不损。`, "normal");
               G.activeEvent = null;
               renderUI();
             }
@@ -3407,8 +3619,20 @@
         pill.count--;
         cleanZeroInv();
         sfx.success();
-        G.hp = Math.min(G.maxHp, G.hp + 50);
-        appendCombatLog(`你急速仰头吞服一品凝血散，气血恢复 50 点！`);
+        const heal = Math.max(50, Math.floor(G.maxHp * 0.25));
+        G.hp = Math.min(G.maxHp, G.hp + heal);
+        appendCombatLog(`你急速仰头吞服一品凝血散并催动真元，气血强效平复回升 <b>${heal}</b> 点！`);
+        checkCombatTurn(true);
+        return;
+      }
+      const herb = G.inventory.find(i => i.id === "herb_red" && i.count > 0);
+      if (herb) {
+        herb.count--;
+        cleanZeroInv();
+        sfx.success();
+        const heal = Math.max(15, Math.floor(G.maxHp * 0.1));
+        G.hp = Math.min(G.maxHp, G.hp + heal);
+        appendCombatLog(`你急吞赤血灵草生津化血，勉强稳住伤势恢复 <b>${heal}</b> 点气血！`);
         checkCombatTurn(true);
         return;
       }
@@ -3416,12 +3640,12 @@
       if (powder) {
         powder.count--;
         cleanZeroInv();
-        curEnemy.atk = Math.max(5, curEnemy.atk - 6);
-        appendCombatLog(`你扬出呛人驱兽毒灰，迷了敌方双眼，敌方攻击威能减退！`);
+        curEnemy.atk = Math.max(5, Math.floor(curEnemy.atk * 0.8));
+        appendCombatLog(`你扬出呛人驱兽毒灰，迷了敌方双眼，敌方凶煞攻伐威能大幅减退！`);
         checkCombatTurn(true);
         return;
       }
-      alert("行囊中暂无可应急之药散！");
+      alert("行囊中暂无可应急之药散或灵草！");
     };
 
     document.getElementById('btnCombatDodge').onclick = () => {
@@ -3617,18 +3841,6 @@
     /* ==========================================================================
        手动操作与突破
        ========================================================================== */
-    const BREAKTHROUGH_REQUISITES = {
-      10: { id: "pill_zhuji", name: "天元筑基丹", buffKey: "zhujiBuff", bonus: 50, log: "感应到筑基天劫阻滞，自动服下【天元筑基丹】以固道基！" },
-      14: { id: "pill_jindan", name: "四品降尘金丹", buffKey: "jindanBuff", bonus: 50, log: "感应到金丹大道天堑，自动服下【四品降尘金丹】铸造九品金丹！" },
-      18: { id: "pill_yuanying", name: "五品九转结婴丹", buffKey: "yuanyingBuff", bonus: 50, log: "紫府金丹异动，自动服下【五品九转结婴丹】碎丹化婴！" },
-      22: { id: "pill_huashen", name: "六品化神定阳丹", buffKey: "huashenBuff", bonus: 50, log: "神识沟通虚空，自动服下【六品化神定阳丹】凝练化神法相！" },
-      26: { id: "pill_lianxu", name: "七品太虚涅槃丹", buffKey: "lianxuBuff", bonus: 50, log: "肉身与天地合虚，自动服下【七品太虚涅槃丹】遁入太虚！" },
-      29: { id: "pill_heti", name: "八品两仪合体丹", buffKey: "hetiBuff", bonus: 50, log: "身神两仪合一，自动服下【八品两仪合体丹】直入合体至尊！" },
-      30: { id: "pill_dacheng", name: "九品造化大乘丹", buffKey: "dachengBuff", bonus: 50, log: "天地法则圆融，自动服下【九品造化大乘丹】冲击大乘极境！" },
-      31: { id: "pill_dujie", name: "绝品九霄辟雷神丹", buffKey: "dujieBuff", bonus: 50, log: "九天雷劫漫天垂落，自动服下【绝品九霄辟雷神丹】迎击雷劫！" },
-      32: { id: "pill_feisheng", name: "鸿蒙造化真仙丹", buffKey: "feishengBuff", bonus: 50, log: "南天神门金光大盛，自动服下【鸿蒙造化真仙丹】飞升真仙！" }
-    };
-
     function doBreakthrough(isAuto = false) {
       if (!G) return false;
       const curRealm = REALMS[G.realmIndex] || REALMS[0];
@@ -3892,7 +4104,8 @@
           bonusExp: bonusExp
         },
         dao: daoVal,
-        sect: { name: "散修", salary: 0 },
+        sect: { id: null, name: "散修", salary: 0, minRealm: 0 },
+        sectGiftClaimed: {},
         inventory: inv,
         npcs: [
           { id: "sun", name: "孙掌柜", title: "百草堂主事", realm: "炼气四层", rel: 15, desc: "精明守约，执掌小镇草药吞吐买卖。", loc: "百草堂" },
