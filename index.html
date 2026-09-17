@@ -94,6 +94,14 @@
     }
     .btn:hover { background: var(--bg-card-hover); border-color: var(--border-focus); color: #fff; }
     .btn:active { transform: scale(0.98); }
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      filter: grayscale(0.5);
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
     .btn-gold {
       background: linear-gradient(135deg, #2b220b 0%, #443511 100%);
       border-color: var(--gold-dim);
@@ -246,6 +254,7 @@
     .fill-hp { background: linear-gradient(90deg, #dc2626, #f87171); }
     .fill-mp { background: linear-gradient(90deg, #0284c7, #38bdf8); }
     .fill-life { background: linear-gradient(90deg, #059669, #34d399); }
+    .fill-foundation { background: linear-gradient(90deg, #6d28d9, #a855f7, #fbbf24); }
 
     /* 属性六维 */
     .attr-grid {
@@ -804,6 +813,14 @@
             <div class="progress-track"><div class="progress-fill fill-exp" id="barExp" style="width: 0%;"></div></div>
           </div>
 
+          <div class="bar-row" id="rowFoundation">
+            <div class="bar-label-val">
+              <span>道基打磨 (<span id="foundationVal">0</span>% · <span id="foundationTierText" style="color:var(--gold-light);">粗浅虚浮</span>)</span>
+              <span id="foundationBonusText" style="color:var(--purple-rare); font-size:0.72rem;">突破率+10%</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill fill-foundation" id="barFoundation" style="width: 0%;"></div></div>
+          </div>
+
           <div class="bar-row">
             <div class="bar-label-val">
               <span>气血体魄 (<span id="hpVal">0</span>/<span id="maxHpVal">100</span>)</span>
@@ -943,6 +960,7 @@
             </div>
           </div>
           <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.3rem;">
+            <button class="btn btn-purple" id="btnPolishFoundation" style="display:none;">✨ 凝练打磨道基</button>
             <button class="btn btn-gold" id="btnManualBreakthrough">⚡ 尝试突破破境</button>
             <button class="btn" id="btnManualStepOne">⏭️ 手动踏过一月</button>
           </div>
@@ -2749,6 +2767,18 @@
         data.maxAge = Math.max(minExpectedAge, data.ageYears + 25);
       }
 
+      // 4.1 道基打磨度与气机损伤恢复机制
+      if (typeof data.foundation !== "number" || isNaN(data.foundation)) {
+        data.foundation = (data.exp >= curRealm.maxExp) ? 25 : 0;
+      }
+      data.foundation = Math.max(0, Math.min(100, Math.floor(data.foundation)));
+
+      if (typeof data.breakthroughInjuryMonths !== "number" || isNaN(data.breakthroughInjuryMonths)) {
+        data.breakthroughInjuryMonths = 0;
+      } else {
+        data.breakthroughInjuryMonths = Math.max(0, Math.floor(data.breakthroughInjuryMonths));
+      }
+
       // 5. 属性对象安全校验
       if (!data.stats || typeof data.stats !== "object") {
         data.stats = { phy: 40, soul: 40, com: 40, alchemyExp: 0, karma: 0, fortune: "紫气东来", reputation: 0 };
@@ -2951,33 +2981,45 @@
       }
       const curRealm = REALMS[G.realmIndex] || REALMS[0];
       if (G.exp >= curRealm.maxExp && G.realmIndex < REALMS.length - 1) {
+        G.exp = curRealm.maxExp; // 严禁超溢，锁死在极限
         const nextRealm = REALMS[G.realmIndex + 1];
         const req = BREAKTHROUGH_REQUISITES[G.realmIndex];
 
         if (G.autoBreakthrough) {
-          // 若属于大境界关隘天堑，先检测是否已备齐专属护道神丹
+          // 自动破境严格纪律：
+          // 1. 若气机紊乱内伤未愈，等待温养恢复
+          if (G.breakthroughInjuryMonths > 0) return;
+
+          // 2. 若属于大境界关隘天堑，先检测是否已备齐专属护道神丹
           if (req) {
-            const hasPill = G.inventory.some(i => i.id === req.id && i.count > 0);
-            if (hasPill) {
-              doBreakthrough(true);
-              return;
-            } else {
-              // 缺乏专属大关隘破境丹，智能拦截急停，保护玩家道基
+            const hasPill = (G.inventory || []).some(i => i.id === req.id && i.count > 0) || G[req.buffKey];
+            if (!hasPill) {
               pauseTime(`冲击【${nextRealm.name}】缺乏护道神丹【${req.name}】！`);
-              addLog(`【关隘天堑】突破至【${nextRealm.name}】天劫险阻，储物袋中尚缺【${req.name}】！为防道基反噬已自动驻足，请开炉炼丹或坊市求购！`, "danger");
+              addLog(`【关隘天堑】突破至【${nextRealm.name}】天劫险阻，储物袋中尚缺【${req.name}】！为防道基反噬崩毁已自动驻足，请开炉炼丹或坊市求购！`, "danger");
               return;
             }
-          } else {
-            // 普通小境界层级，直接自动破关
-            doBreakthrough(true);
+          }
+
+          // 3. 道基打磨纪律：道基必须打磨至精纯稳固（>= 80%）才允许自动冲关，杜绝盲目赌博！
+          if ((G.foundation || 0) < 80) {
+            // 继续闭关沉淀淬炼道基中
             return;
           }
+
+          // 达到极限 + 道基打磨稳固 + 护道神丹齐备 -> 纪律冲关
+          doBreakthrough(true);
+          return;
         } else {
-          pauseTime(`修为已臻【${curRealm.name}】大圆满，关隘就绪！`);
-          const pillHint = req ? `（建议备妥【${req.name}】）` : "";
-          addLog(`【关隘已至】周天经络气海饱满，触碰到【${nextRealm.name}】壁障，请破境！${pillHint}`, "breakthrough");
+          if (!G._bottleneckNotified) {
+            G._bottleneckNotified = true;
+            pauseTime(`修为已臻【${curRealm.name}】大圆满，关隘就绪！`);
+            const pillHint = req ? `（大境界关隘务必备妥【${req.name}】）` : "（可继续打磨道基至无瑕极境提高把握）";
+            addLog(`【极限已至】修为已达【${curRealm.name}】极限！周天经络气海饱满。${pillHint}`, "breakthrough");
+          }
           return;
         }
+      } else {
+        G._bottleneckNotified = false;
       }
       if (G.maxAge - G.ageYears <= 5 && G.maxAge - G.ageYears > 0) {
         if (!G._lifeWarned) {
@@ -3033,9 +3075,25 @@
       const mapMult = curMap.expMult || 1.0;
 
       if (routine === 'cultivate') {
-        let baseGain = (G.technique.bonusExp || 6) + Math.floor(G.stats.com * 0.15) + Math.floor(G.realmIndex * 1.8);
+        let baseGain = (G.technique.bonusExp || 6) + Math.floor((G.stats.com || 40) * 0.15) + Math.floor(G.realmIndex * 1.8);
         let gain = Math.max(1, Math.floor(baseGain * mapMult));
-        G.exp = Math.min(curRealm.maxExp * 1.5, G.exp + gain);
+        if (G.exp < curRealm.maxExp) {
+          G.exp = Math.min(curRealm.maxExp, G.exp + gain);
+        } else {
+          // 修为已达瓶颈极限，转入淬炼打磨道基
+          G.exp = curRealm.maxExp;
+          if ((G.foundation || 0) < 100) {
+            const oldTier = getFoundationTier(G.foundation);
+            let polishGain = Math.max(8, Math.min(25, Math.floor(10 + ((G.stats.com || 40) * 0.08) + Math.sqrt(mapMult) * 1.5)));
+            G.foundation = Math.min(100, (G.foundation || 0) + polishGain);
+            const newTier = getFoundationTier(G.foundation);
+            if (newTier.name !== oldTier.name) {
+              addLog(`【道基蜕变】修为达至极限，沉淀淬炼道基由【${oldTier.name}】跃升至【${newTier.name}】（圆满度：${G.foundation}%）！冲关把握大幅攀升！`, "breakthrough");
+            } else if (Math.random() < 0.2) {
+              addLog(`【打磨道基】修为已臻极限，静心沉淀淬炼道基，打磨精纯至 ${G.foundation}%（${newTier.name}）。`, "normal");
+            }
+          }
+        }
         if (Math.random() < 0.15) {
           G.stats.com += 1;
           addLog(`于【${curMap.name}】闭关，受【${curMap.densityText}】滋润，神魂周天偶有灵机迸发，悟性微增。`, "normal");
@@ -3069,12 +3127,12 @@
           const gainStones = Math.floor((2 + (G.realmIndex * 1.2)) * Math.sqrt(mapMult));
           G.stones += gainStones;
           const gainExp = Math.floor((12 + G.realmIndex * 3) * mapMult);
-          G.exp += gainExp;
+          addExp(gainExp, "降魔差事");
           addLog(`完成【${curMap.name}】降魔除祟榜文，斩获佣金 ${gainStones} 灵石，修为精进 ${gainExp} 点。`, "fortune");
         } else {
           const gainSilver = 5 + (G.realmIndex * 2);
           G.silver += gainSilver;
-          G.exp += 4 + G.realmIndex;
+          addExp(4 + G.realmIndex, "杂役差事");
         }
       } else if (routine === 'explore') {
         const r = Math.random();
@@ -3090,7 +3148,7 @@
           addItemToInv(lootItem, 1);
           G.stones += gotStones;
           const gainExp = Math.floor((20 + G.realmIndex * 8) * mapMult);
-          G.exp += gainExp;
+          addExp(gainExp, "古洞探幽");
           addLog(`【古洞探幽】在【${curMap.name}】隐秘废墟瓦砾间发掘出灵石 ${gotStones} 块与【${lootItem.name}】！修为+${gainExp}。`, "fortune");
         } else if (r > 0.86) {
           const enemy = curMap.enemyPool[Math.floor(Math.random() * curMap.enemyPool.length)];
@@ -3098,6 +3156,9 @@
           startCombat(enemy);
         }
       } else if (routine === 'heal') {
+        if (G.breakthroughInjuryMonths > 0) {
+          G.breakthroughInjuryMonths = Math.max(0, G.breakthroughInjuryMonths - 1);
+        }
         if (G.hp < G.maxHp) {
           let heal = Math.floor(G.maxHp * 0.4);
           const pill = G.inventory.find(i => i.id === "pill_blood" && i.count > 0);
@@ -3112,7 +3173,7 @@
             addLog(`盘坐吐纳周天生机温养经脉，气血平复回升 ${heal} 点。`, "normal");
           }
         } else {
-          G.exp += (G.technique.bonusExp || 6);
+          addExp(G.technique.bonusExp || 6, "温养吐纳");
         }
       }
     }
@@ -3711,6 +3772,161 @@
     }
 
     /* ==========================================================================
+       道基体系与突破把握运算系统 (Dao Foundation & Breakthrough Calculation)
+       ========================================================================== */
+    function getFoundationTier(val) {
+      val = Number(val) || 0;
+      if (val >= 100) return { name: "天道极境", bonus: 55, color: "var(--gold-primary)", desc: "无瑕无漏，天道共鸣，破境必降极境道韵" };
+      if (val >= 85) return { name: "圆满无瑕", bonus: 48, color: "var(--gold-light)", desc: "神完气足，气通周天，破境把握极大" };
+      if (val >= 60) return { name: "凝练精纯", bonus: 38, color: "var(--purple-rare)", desc: "道基扎实，气象初成，具备良好破境底蕴" };
+      if (val >= 30) return { name: "初凝稳固", bonus: 25, color: "var(--ethereal-blue)", desc: "勉强可试，但根基未深，仍具反噬风险" };
+      return { name: "粗浅虚浮", bonus: 10, color: "var(--text-muted)", desc: "心浮气躁，气海不稳，强冲极易遭经脉反噬" };
+    }
+
+    function calcBreakthroughChance(g) {
+      if (!g) return { chance: 0, canAttempt: false, reason: "角色未就绪", foundationBonus: 0, pillBonus: 0, tier: getFoundationTier(0) };
+      const curRealm = REALMS[g.realmIndex] || REALMS[0];
+      if (g.realmIndex >= REALMS.length - 1) {
+        return { chance: 100, canAttempt: false, reason: "已证万古真仙极境", foundationBonus: 55, pillBonus: 0, tier: getFoundationTier(100) };
+      }
+
+      const tier = getFoundationTier(g.foundation || 0);
+
+      // 1. 严格纪律：修为必须达到当前境界极限
+      if (g.exp < curRealm.maxExp) {
+        return {
+          chance: 0,
+          canAttempt: false,
+          reason: `修为未达当前极限 (${g.exp}/${curRealm.maxExp})`,
+          foundationBonus: tier.bonus,
+          pillBonus: 0,
+          tier
+        };
+      }
+
+      // 2. 气机受损创伤检查
+      if (g.breakthroughInjuryMonths > 0) {
+        return {
+          chance: 0,
+          canAttempt: false,
+          reason: `气机受损温养中 (还需${g.breakthroughInjuryMonths}月)`,
+          foundationBonus: tier.bonus,
+          pillBonus: 0,
+          tier
+        };
+      }
+
+      // 3. 达到极限后，科学纪律计算冲关把握
+      let baseChance = 20; // 达到极限后的基础破境把握
+      let foundationBonus = tier.bonus; // 10% ~ 55%
+      let comBonus = Math.min(15, Math.floor((g.stats.com || 40) * 0.15)); // 悟性加成 0~15%
+      let perkBonus = 0;
+      if ((META.unlockedPerks || []).includes("perk_dao_heart")) perkBonus += 10;
+      if ((META.unlockedPerks || []).includes("perk_reincarnation_god")) perkBonus += 10;
+
+      let pillBonus = 0;
+      const req = BREAKTHROUGH_REQUISITES[g.realmIndex];
+      let lacksReqPill = false;
+
+      if (req) {
+        // 大境界天堑关隘（如筑基、结丹、结婴、化神等）
+        const hasBuff = g[req.buffKey];
+        const hasPillInInv = (g.inventory || []).some(i => i.id === req.id && i.count > 0);
+        if (hasBuff) {
+          pillBonus += 35;
+        } else if (hasPillInInv) {
+          pillBonus += 30;
+        } else {
+          lacksReqPill = true;
+          // 大境界无专属神丹，受九霄天劫法则压制，把握大幅暴跌45%
+          pillBonus -= 45;
+        }
+      } else {
+        // 小境界
+        if (g.breakthroughBuff) pillBonus += 20;
+        else if ((g.inventory || []).some(i => i.id === "pill_break" && i.count > 0)) pillBonus += 15;
+      }
+
+      let total = baseChance + foundationBonus + comBonus + perkBonus + pillBonus;
+      total = Math.max(10, Math.min(98, total));
+
+      return {
+        chance: total,
+        canAttempt: true,
+        reason: "修为达至极限，可引气冲关",
+        foundationBonus,
+        pillBonus,
+        comBonus,
+        perkBonus,
+        tier,
+        lacksReqPill,
+        req
+      };
+    }
+
+    function addExp(gain, itemDesc = "") {
+      if (!G) return;
+      const curRealm = REALMS[G.realmIndex] || REALMS[0];
+      if (G.realmIndex >= REALMS.length - 1) return;
+      if (G.exp < curRealm.maxExp) {
+        const remaining = curRealm.maxExp - G.exp;
+        if (gain <= remaining) {
+          G.exp += gain;
+        } else {
+          G.exp = curRealm.maxExp;
+          const overflow = gain - remaining;
+          // 溢出修为转化为道基打磨
+          if ((G.foundation || 0) < 100) {
+            const polishGain = Math.max(5, Math.min(25, Math.floor((overflow / Math.max(20, curRealm.maxExp * 0.05)) * 10)));
+            G.foundation = Math.min(100, (G.foundation || 0) + polishGain);
+            const tier = getFoundationTier(G.foundation);
+            if (itemDesc) {
+              addLog(`【修为溢出转道基】周天饱满，【${itemDesc}】溢出灵气淬炼道基，打磨度+${polishGain}%（当前：${G.foundation}% · ${tier.name}）！`, "fortune");
+            }
+          }
+        }
+      } else {
+        G.exp = curRealm.maxExp;
+        if ((G.foundation || 0) < 100) {
+          const polishGain = Math.max(6, Math.min(25, Math.floor(10 + ((G.stats.com || 40) * 0.08))));
+          G.foundation = Math.min(100, (G.foundation || 0) + polishGain);
+          const tier = getFoundationTier(G.foundation);
+          if (itemDesc) {
+            addLog(`修为已臻极限，【${itemDesc}】灵气淬炼道基，打磨度+${polishGain}%（当前：${G.foundation}% · ${tier.name}）！`, "fortune");
+          }
+        }
+      }
+    }
+
+    function polishDaoFoundation() {
+      if (!G) return;
+      if (G.realmIndex >= REALMS.length - 1) {
+        alert("已证万古真仙极境，道基已与天地虚空融为一体，无缺无漏！");
+        return;
+      }
+      const curRealm = REALMS[G.realmIndex] || REALMS[0];
+      if (G.exp < curRealm.maxExp) {
+        alert(`修为尚未积满当前境界极限（当前 ${G.exp}/${curRealm.maxExp}）！\n气海尚未充盈，请先吐纳闭关积攒修为。`);
+        return;
+      }
+      if ((G.foundation || 0) >= 100) {
+        alert("道基已淬炼至【天道极境 · 圆满无瑕】（100%）！\n气海如渊，神完气足，随时可引动天地异象尝试破关！");
+        return;
+      }
+      const curMap = MAPS_DB.find(m => m.id === (G.currentMap || "town")) || MAPS_DB[0];
+      const mapMult = curMap.expMult || 1.0;
+      let gain = Math.max(16, Math.min(35, Math.floor(18 + ((G.stats.com || 40) * 0.12) + Math.sqrt(mapMult) * 2)));
+      G.foundation = Math.min(100, (G.foundation || 0) + gain);
+      const tier = getFoundationTier(G.foundation);
+      sfx.success();
+      addLog(`【凝练打磨道基】闭关沉淀，引大域周天灵气洗涤气海经络，道基打磨精纯度提升 ${gain}%！当前：${G.foundation}%（${tier.name}）。`, "fortune");
+      if (G.breakthroughInjuryMonths > 0) {
+        G.breakthroughInjuryMonths = Math.max(0, G.breakthroughInjuryMonths - 1);
+      }
+      stepTimeMonth();
+    }
+
+    /* ==========================================================================
        界面全量渲染与绑定
        ========================================================================== */
     function renderUI() {
@@ -3744,10 +3960,31 @@
       document.getElementById('maxExpVal').textContent = curRealm.maxExp;
       document.getElementById('barExp').style.width = expPercent + '%';
 
-      let baseChance = Math.max(15, Math.min(85, Math.round((G.exp / curRealm.maxExp) * 55 + (G.stats.com * 0.4))));
-      if (G.exp >= curRealm.maxExp) baseChance = Math.min(92, baseChance + 25);
-      if ((META.unlockedPerks || []).includes("perk_dao_heart")) baseChance = Math.min(95, baseChance + 15);
-      document.getElementById('breakthroughProb').textContent = `突破把握: ${baseChance}%`;
+      // 道基打磨与突破把握计算
+      const calc = calcBreakthroughChance(G);
+      if (document.getElementById('foundationVal')) {
+        document.getElementById('foundationVal').textContent = G.foundation || 0;
+        document.getElementById('foundationTierText').textContent = calc.tier.name;
+        document.getElementById('foundationTierText').style.color = calc.tier.color;
+        document.getElementById('foundationBonusText').textContent = `突破率+${calc.tier.bonus}%`;
+        document.getElementById('barFoundation').style.width = Math.min(100, G.foundation || 0) + '%';
+      }
+
+      const probEl = document.getElementById('breakthroughProb');
+      if (G.realmIndex >= REALMS.length - 1) {
+        probEl.textContent = "万古真仙 · 极境圆满";
+        probEl.style.color = "var(--gold-primary)";
+      } else if (G.breakthroughInjuryMonths > 0) {
+        probEl.textContent = `气机受损调理中 (${G.breakthroughInjuryMonths}月)`;
+        probEl.style.color = "var(--cinnabar-light)";
+      } else if (G.exp < curRealm.maxExp) {
+        probEl.textContent = `修为积聚中 (${expPercent}%)`;
+        probEl.style.color = "var(--text-muted)";
+      } else {
+        const pillHint = calc.lacksReqPill ? " · 缺护道丹" : (calc.pillBonus > 0 ? " · 丹药护持" : "");
+        probEl.textContent = `突破把握: ${calc.chance}% (${calc.tier.name}${pillHint})`;
+        probEl.style.color = calc.chance >= 80 ? "var(--gold-primary)" : (calc.chance >= 50 ? "var(--purple-rare)" : "var(--cinnabar-light)");
+      }
 
       const hpPercent = Math.min(100, Math.round((G.hp / G.maxHp) * 100));
       document.getElementById('hpVal').textContent = G.hp;
@@ -3789,6 +4026,42 @@
         if (c.getAttribute('data-routine') === (G.routine || 'cultivate')) c.classList.add('active');
         else c.classList.remove('active');
       });
+
+      // 突破与打磨道基按钮状态渲染
+      const btnBreak = document.getElementById('btnManualBreakthrough');
+      const btnPolish = document.getElementById('btnPolishFoundation');
+
+      if (btnBreak) {
+        if (G.realmIndex >= REALMS.length - 1) {
+          btnBreak.disabled = true;
+          btnBreak.textContent = "🌟 已证万古真仙极境";
+        } else if (G.breakthroughInjuryMonths > 0) {
+          btnBreak.disabled = true;
+          btnBreak.textContent = `🩹 气机受损调理中 (还需${G.breakthroughInjuryMonths}月)`;
+        } else if (G.exp < curRealm.maxExp) {
+          btnBreak.disabled = true;
+          btnBreak.textContent = `⚡ 冲关壁障 (修为未满 ${expPercent}%)`;
+        } else {
+          btnBreak.disabled = false;
+          const nextRealm = REALMS[G.realmIndex + 1];
+          btnBreak.textContent = `⚡ 冲击【${nextRealm.name}】(${calc.chance}%把握)`;
+        }
+      }
+
+      if (btnPolish) {
+        if (G.exp >= curRealm.maxExp && G.realmIndex < REALMS.length - 1) {
+          btnPolish.style.display = 'inline-flex';
+          if ((G.foundation || 0) < 100) {
+            btnPolish.disabled = false;
+            btnPolish.textContent = `✨ 凝练打磨道基 (${G.foundation || 0}% · ${calc.tier.name})`;
+          } else {
+            btnPolish.disabled = true;
+            btnPolish.textContent = `✨ 道基已达极境 (100%圆满)`;
+          }
+        } else {
+          btnPolish.style.display = 'none';
+        }
+      }
 
       // 模块渲染
       renderLogs();
@@ -3931,15 +4204,21 @@
         sfx.success();
         addLog("吞服一品凝血散，气血平复回升 50 点。", "fortune");
       } else if (item.id === "pill_qi") {
-        G.exp += 50;
+        addExp(50, "聚气丹");
         item.count--;
         sfx.breakthrough();
-        addLog("化开聚气丹温润药力，丹田关隘暴涨 50 点！", "breakthrough");
+        addLog("化开聚气丹温润药力，周天行气，修为与道基精进！", "breakthrough");
       } else if (item.id === "pill_break") {
         G.breakthroughBuff = 25;
+        if ((G.foundation || 0) < 100) {
+          G.foundation = Math.min(100, (G.foundation || 0) + 20);
+        }
+        if (G.breakthroughInjuryMonths > 0) {
+          G.breakthroughInjuryMonths = Math.max(0, G.breakthroughInjuryMonths - 3);
+        }
         item.count--;
         sfx.breakthrough();
-        addLog("服下二品破障散！下次冲关破境成功率额外暴涨 25%！", "breakthrough");
+        addLog("服下【二品破障散】！药力化解经络窒碍，道基打磨度+20%，冲关破境把握大幅提升！", "breakthrough");
       } else if (item.id === "pill_zhuji") {
         G.zhujiBuff = 50;
         item.count--;
@@ -4021,18 +4300,18 @@
         sfx.success();
         addLog("生嚼赤血草，微涩苦楚，气血微复 15 点。（入炉炼制凝血散效果倍增）", "normal");
       } else if (item.id === "vine_gold") {
-        G.exp += 15;
+        addExp(15, "百年金钱藤");
         item.count--;
         sfx.success();
         addLog("嚼服百年金钱藤，微薄木灵入脉，修为+15。（配合赤血草炼制聚气丹收益更佳）", "normal");
       } else if (item.id === "herb_spirit") {
-        G.exp += 35;
+        addExp(35, "紫灵花");
         if (G.maxMp > 0) G.mp = Math.min(G.maxMp, G.mp + 25);
         item.count--;
         sfx.breakthrough();
         addLog("生吞紫灵花，清香充盈经脉，灵气与修为双长。（二品丹药主材，生食暴殄天物）", "normal");
       } else if (item.id === "herb_zhuji") {
-        G.exp += 70;
+        addExp(70, "筑基灵草");
         item.count--;
         sfx.breakthrough();
         addLog("吞嚼筑基灵草，丹田燥热，修为暴涨 70 点！（用于开炉炼制天元筑基丹方为正道）", "normal");
@@ -4042,7 +4321,7 @@
         sfx.breakthrough();
         addLog("细细含化九叶寿元果，延寿 3 载！（若炼成养寿九转丸可延寿 15 载）", "fortune");
       } else if (item.id === "herb_jiangchen") {
-        G.exp += 160;
+        addExp(160, "绛云朱果");
         item.count--;
         sfx.breakthrough();
         addLog("生食绛云朱果，温热纯厚，修为+160。（炼制四品降尘金丹绝佳主药）", "normal");
@@ -4052,7 +4331,7 @@
         sfx.breakthrough();
         addLog("嚼食万寿火灵芝，延寿 15 载！（炼成四品万寿延元丹可延寿 100 载）", "fortune");
       } else if (item.id === "herb_ying") {
-        G.exp += 600;
+        addExp(600, "九窍凝婴草");
         if (G.maxMp > 0) G.mp = Math.min(G.maxMp, G.mp + 400);
         item.count--;
         sfx.breakthrough();
@@ -4064,7 +4343,7 @@
         sfx.breakthrough();
         addLog("温养万年养魂木灵力，识海稳固，神魂永久+20！（炼制化神定阳丹核心）", "breakthrough");
       } else if (item.id === "herb_tianhua") {
-        G.exp += 2500;
+        addExp(2500, "太虚造化果");
         item.count--;
         sfx.breakthrough();
         addLog("含服太虚造化果，感应周天虚空，修为暴涨 2500 点！（七品太虚涅槃丹主材）", "breakthrough");
@@ -4079,7 +4358,7 @@
         G.stats.phy += 50;
         G.stats.soul += 50;
         G.stats.com += 50;
-        G.exp += 12000;
+        addExp(12000, "混沌鸿蒙道果");
         recalcPlayerStats();
         item.count--;
         sfx.breakthrough();
@@ -4332,7 +4611,7 @@
       const comGain = gain.com || 0;
       const soulGain = gain.soul || 0;
 
-      G.exp += expGain;
+      addExp(expGain, `${npc.name}论道心得`);
       if (stoneGain) G.stones += stoneGain;
       if (silverGain) G.silver += silverGain;
       if (comGain) G.stats.com += comGain;
@@ -4522,6 +4801,13 @@
         alert(`【大限已至】寿元枯竭，气血渐冷……你在天地凡尘间油尽灯枯，享年 ${G.ageYears} 岁。`);
         settleKarmaAndReset();
         return;
+      }
+
+      if (G.breakthroughInjuryMonths > 0) {
+        G.breakthroughInjuryMonths--;
+        if (G.breakthroughInjuryMonths === 0) {
+          addLog("【经脉平复】经过数月调元温养，此前冲关反噬受损的经脉暗伤彻底痊愈，气机稳固，已可再次凝聚心神冲击关隘！", "fortune");
+        }
       }
 
       if (G.maxMp > 0) G.mp = Math.min(G.maxMp, G.mp + 15);
@@ -4808,7 +5094,7 @@
             G.silver += curEnemy.loot.silver || 0;
             if (curEnemy.loot.item) addItemToInv(curEnemy.loot.item, 1);
           }
-          G.exp += 30;
+          addExp(30, "斩敌感悟");
           G.stats.reputation += 5;
           addLog(`【斩敌获胜】诛杀【${curEnemy.name}】，获得灵石 ${curEnemy.loot.stones || 0} 块，凡银 ${curEnemy.loot.silver || 0} 两！`, 'breakthrough');
         }
@@ -4929,58 +5215,99 @@
         return false;
       }
 
-      if (isAuto) {
-        const req = BREAKTHROUGH_REQUISITES[G.realmIndex];
-        if (req) {
+      // 1. 严格极限前置检验：修为必须达到当前境界极限
+      if (G.exp < curRealm.maxExp) {
+        if (!isAuto) alert(`【修为未达极限】当前境界修为尚未积满极限（${G.exp}/${curRealm.maxExp}）！\n修仙之道讲究水到渠成，未达瓶颈绝不可急躁冲关！`);
+        return false;
+      }
+
+      // 2. 气机受损创伤检查
+      if (G.breakthroughInjuryMonths > 0) {
+        if (!isAuto) alert(`【经脉气机紊乱】此前冲关受创未愈，尚需温养调理 ${G.breakthroughInjuryMonths} 个月方可再次引气破境！`);
+        return false;
+      }
+
+      const nextRealm = REALMS[G.realmIndex + 1];
+      const req = BREAKTHROUGH_REQUISITES[G.realmIndex];
+
+      // 3. 自动引化或服用备用破境丹药
+      if (req) {
+        if (!G[req.buffKey]) {
           const pill = G.inventory.find(i => i.id === req.id && i.count > 0);
-          if (pill && !G[req.buffKey]) {
+          if (pill) {
             pill.count--;
             cleanZeroInv();
             G[req.buffKey] = req.bonus;
-            addLog(`【自动破境】${req.log}`, "breakthrough");
+            addLog(`【护道神丹】引动储物袋中【${req.name}】化开，九品药力护持紫府道基！`, "breakthrough");
           }
-        } else {
+        }
+      } else {
+        if (!G.breakthroughBuff) {
           const pBreak = G.inventory.find(i => i.id === "pill_break" && i.count > 0);
-          if (pBreak && !G.breakthroughBuff) {
+          if (pBreak) {
             pBreak.count--;
             cleanZeroInv();
             G.breakthroughBuff = 25;
-            addLog("【自动破境】感应到关隘屏障，自动化开【二品破障散】药力！", "breakthrough");
+            addLog("【药力助阵】化开【二品破障散】药力，经络窒碍消散！", "breakthrough");
           }
         }
       }
 
-      const ratio = G.exp / curRealm.maxExp;
-      let chance = Math.max(15, Math.min(85, Math.round(ratio * 55 + (G.stats.com * 0.35))));
-      if (G.exp >= curRealm.maxExp) chance = Math.min(92, chance + 25);
-      if (G.breakthroughBuff) { chance = Math.min(98, chance + G.breakthroughBuff); G.breakthroughBuff = 0; }
-      if (G.zhujiBuff) { chance = Math.min(98, chance + G.zhujiBuff); G.zhujiBuff = 0; }
-      if (G.jindanBuff) { chance = Math.min(98, chance + G.jindanBuff); G.jindanBuff = 0; }
-      if (G.yuanyingBuff) { chance = Math.min(98, chance + G.yuanyingBuff); G.yuanyingBuff = 0; }
-      if (G.huashenBuff) { chance = Math.min(98, chance + G.huashenBuff); G.huashenBuff = 0; }
-      if (G.lianxuBuff) { chance = Math.min(98, chance + G.lianxuBuff); G.lianxuBuff = 0; }
-      if (G.hetiBuff) { chance = Math.min(98, chance + G.hetiBuff); G.hetiBuff = 0; }
-      if (G.dachengBuff) { chance = Math.min(98, chance + G.dachengBuff); G.dachengBuff = 0; }
-      if (G.dujieBuff) { chance = Math.min(98, chance + G.dujieBuff); G.dujieBuff = 0; }
-      if (G.feishengBuff) { chance = Math.min(98, chance + G.feishengBuff); G.feishengBuff = 0; }
-      if ((META.unlockedPerks || []).includes("perk_dao_heart")) chance = Math.min(98, chance + 15);
-      if ((META.unlockedPerks || []).includes("perk_reincarnation_god")) chance = Math.min(98, chance + 20);
+      // 4. 计算破境概率
+      const calc = calcBreakthroughChance(G);
+      const chance = calc.chance;
 
-      if (Math.random() * 100 < chance) {
+      // 5. 手动突破时的风险告诫
+      if (!isAuto) {
+        if (calc.lacksReqPill) {
+          if (!confirm(`【九天玄雷天堑警告】\n冲击【${nextRealm.name}】缺乏专属护道神丹【${req.name}】！\n若强行引劫破境，把握仅有 ${chance}%，一旦失败将遭九天玄雷重创，损耗寿元与道基！\n\n是否仍要执意强冲？`)) {
+            return false;
+          }
+        } else if ((G.foundation || 0) < 40) {
+          if (!confirm(`【道基虚浮警告】\n当前道基仅为【${calc.tier.name}】（打磨度 ${G.foundation || 0}%），尚未扎实稳固！\n当前冲关把握为 ${chance}%，失败将导致修为回退与受创。\n\n建议先点击【✨ 凝练打磨道基】。是否仍要冒险冲关？`)) {
+            return false;
+          }
+        }
+      }
+
+      // 6. 天道运数掷骰
+      const roll = Math.random() * 100;
+      const isSuccess = roll < chance;
+
+      // 清除单次冲关丹药 Buff
+      G.breakthroughBuff = 0;
+      if (req) G[req.buffKey] = 0;
+      G.zhujiBuff = 0; G.jindanBuff = 0; G.yuanyingBuff = 0; G.huashenBuff = 0;
+      G.lianxuBuff = 0; G.hetiBuff = 0; G.dachengBuff = 0; G.dujieBuff = 0; G.feishengBuff = 0;
+
+      if (isSuccess) {
         sfx.breakthrough();
+
+        // 极境破境额外天道赏赐
+        if ((G.foundation || 0) >= 100) {
+          G.stats.phy += 4;
+          G.stats.soul += 4;
+          G.stats.com += 3;
+          G.maxAge += 5;
+          addLog("【天道极境 · 极境道韵】你以【天道极境】无瑕道基勘破桎梏！天地垂落极境道韵：体魄+4，神魂+4，悟性+3，更添寿元 5 载！", "breakthrough");
+        }
+
         G.realmIndex++;
-        const nextRealm = REALMS[G.realmIndex];
+        const newRealm = REALMS[G.realmIndex];
         recalcPlayerStats();
         G.hp = G.maxHp;
         G.mp = G.maxMp;
-        G.maxAge += nextRealm.lifeBonus;
+        G.maxAge += newRealm.lifeBonus;
         G.exp = 0;
-        G.stats.reputation += 15;
-        addLog(`【突破功成】引灵锻体！你成功突破桎梏晋升【${nextRealm.name}】！寿元威能激增！`, 'breakthrough');
+        G.foundation = 0;
+        G.breakthroughInjuryMonths = 0;
+        G.stats.reputation += 20;
+        addLog(`【突破功成】引灵锻体！你成功突破桎梏晋升【${newRealm.name}】！寿元威能激增！`, 'breakthrough');
         syncNpcsForCurrentState(G, true);
+
         const highestMap = MAPS_DB.slice().reverse().find(m => G.realmIndex >= m.minRealm);
         if (highestMap && highestMap.id !== G.currentMap) {
-          addLog(`【大域感召】道友成功晋升【${nextRealm.name}】！感知到高阶大域【${highestMap.name}】（灵气浓郁度：${highestMap.densityText}）已开启，可御风前往探寻！`, "breakthrough");
+          addLog(`【大域感召】道友成功晋升【${newRealm.name}】！感知到高阶大域【${highestMap.name}】（灵气浓郁度：${highestMap.densityText}）已开启，可御风前往探寻！`, "breakthrough");
         }
 
         if (G.realmIndex === REALMS.length - 1) { // 飞升真仙
@@ -4995,13 +5322,26 @@
         return true;
       } else {
         sfx.fail();
-        const dmg = Math.floor(G.maxHp * 0.25);
-        if (!(META.unlockedPerks || []).includes("perk_dao_heart")) {
-          G.hp = Math.max(10, G.hp - dmg);
+
+        // 纪律失败机制：反噬冷却、修为回退、道基受挫
+        G.breakthroughInjuryMonths = 6 + Math.floor(Math.random() * 5); // 6~10个月气机紊乱冷却
+        G.exp = Math.floor(curRealm.maxExp * 0.70); // 回退至70%，需重新闭关
+        G.foundation = Math.max(0, Math.floor((G.foundation || 0) * 0.5) - 10); // 道基受震荡
+
+        if (calc.lacksReqPill) {
+          const dmg = Math.floor(G.maxHp * 0.55);
+          G.hp = Math.max(1, G.hp - dmg);
+          G.maxAge = Math.max(G.ageYears + 1, G.maxAge - 2);
+          addLog(`【九天玄雷反噬】未持专属护道神丹【${req ? req.name : '神丹'}】强冲大关！九天玄雷倾泻重创气血 ${dmg} 点，道基裂痕蔓生，寿元遭天道削减 2 载！需静养 ${G.breakthroughInjuryMonths} 个月！`, "danger");
+        } else {
+          const dmg = Math.floor(G.maxHp * 0.35);
+          if (!(META.unlockedPerks || []).includes("perk_dao_heart")) {
+            G.hp = Math.max(10, G.hp - dmg);
+          }
+          addLog(`【冲关受挫】行气至【${curRealm.name}】壁障时周天气血翻腾逆流，受到 ${dmg} 点暗伤！道基动荡，需调理温养 ${G.breakthroughInjuryMonths} 个月方可再次凝聚气海！`, "danger");
         }
-        G.exp = Math.max(0, Math.floor(G.exp * 0.75));
-        addLog(`【冲关受挫】行气至关隘时气血翻腾反噬，受到 ${dmg} 点暗伤，已为你驻足调理！`, 'danger');
-        pauseTime("冲关受挫，需调元休养！");
+
+        pauseTime("冲关受挫，气机紊乱！需温养调理！");
         saveToLocal();
         renderUI();
         return false;
@@ -5010,9 +5350,18 @@
 
     document.getElementById('btnManualBreakthrough').onclick = () => {
       sfx.click();
-      doBreakthrough(false);
-      advanceMonth();
+      const res = doBreakthrough(false);
+      if (res) {
+        advanceMonth();
+      }
     };
+
+    if (document.getElementById('btnPolishFoundation')) {
+      document.getElementById('btnPolishFoundation').onclick = () => {
+        sfx.click();
+        polishDaoFoundation();
+      };
+    }
 
     if (document.getElementById('chkAutoBreakthrough')) {
       document.getElementById('chkAutoBreakthrough').onchange = (e) => {
@@ -5153,6 +5502,8 @@
         maxAge: lifeBonus + realm.lifeBonus + Math.floor(basePhy * 0.2),
         realmIndex: startRealmIdx,
         exp: 0,
+        foundation: 0,
+        breakthroughInjuryMonths: 0,
         hp: maxHp,
         maxHp: maxHp,
         mp: maxMp,
