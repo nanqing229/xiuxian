@@ -1807,6 +1807,8 @@
       herb_ying: { id: "herb_ying", name: "九窍凝婴草", type: "herb", tier: "yuanying", quality: "orange", desc: "孕育纯正婴灵之气，炼制【五品九转结婴丹】不可替代！【主产地：天星海/天渊神冢/万宝楼坊市】", price: 500, silver: 0 },
       herb_soul_wood: { id: "herb_soul_wood", name: "万年养魂木", type: "herb", tier: "huashen", quality: "gold", desc: "通灵神木，万年不腐，安抚紫府神魂，炼制【六品化神定阳丹】核心。【主产地：天渊神冢/九天昆仑】", price: 1200, silver: 0 },
       branch_spirit: { id: "branch_spirit", name: "九幽通天灵枝", type: "herb", tier: "jindan", quality: "purple", desc: "上古通天神木脱落之通灵灵枝，聚拢周天生机，可用于法宝炼制与重赏出征门生！", price: 150, silver: 0 },
+      herb_fire: { id: "herb_fire", name: "赤焰火莲", type: "herb", tier: "jindan", quality: "purple", desc: "生于绝壁灵泉与地火精魄交汇处的四阶灵药，花开如烈焰，服之通畅周天气血！", price: 120, silver: 0 },
+      spirit_dew: { id: "spirit_dew", name: "万年灵乳", type: "usable", tier: "jindan", quality: "purple", desc: "天地极寒造化凝聚的万年灵乳，服之可令周天法力瞬间尽复，并极大打磨淬炼道基！", price: 160, silver: 0 },
       herb_tianhua: { id: "herb_tianhua", name: "太虚造化果", type: "herb", tier: "lianxu", quality: "red", desc: "七阶神异道果，内蕴虚空道韵，炼制【七品太虚涅槃丹】与高阶突破神药！【主产地：天渊神冢/九天昆仑/飞升天门】", price: 3000, silver: 0 },
       herb_xiancao: { id: "herb_xiancao", name: "九转涅槃仙草", type: "herb", tier: "heti", quality: "red", desc: "八阶仙草，蕴含涅槃法则，炼制【八品两仪合体丹】与【绝品九霄辟雷神丹】！【主产地：九天昆仑/飞升天门】", price: 8000, silver: 0 },
       herb_daoguo: { id: "herb_daoguo", name: "混沌鸿蒙道果", type: "herb", tier: "xian", quality: "gold", desc: "九阶绝品神物，天地初开时之造化灵种，炼制【鸿蒙造化真仙丹】飞升至宝！【主产地：飞升天门】", price: 20000, silver: 0 },
@@ -7083,6 +7085,20 @@
         item.count--;
         sfx.breakthrough();
         addLog("吞服混沌鸿蒙道果！诸天道韵灌顶，体魄、神魂、悟性各+50，修为暴涨 12000 点！", "breakthrough");
+      } else if (item.id === "herb_fire") {
+        const heal = Math.max(80, Math.floor(G.maxHp * 0.35));
+        G.hp = Math.min(G.maxHp, G.hp + heal);
+        item.count--;
+        sfx.success();
+        addLog(`吞服【赤焰火莲】！至阳至热的火莲药力通达周天，气血激荡恢复 ${heal} 点！`, "fortune");
+      } else if (item.id === "spirit_dew") {
+        G.mp = G.maxMp;
+        if ((G.foundation || 0) < 100) {
+          G.foundation = Math.min(100, (G.foundation || 0) + 15);
+        }
+        item.count--;
+        sfx.spell();
+        addLog("吞服【万年灵乳】！至纯灵液化开，丹田法力瞬间回满，道基打磨+15%！", "breakthrough");
       }
       cleanZeroInv();
       saveToLocal();
@@ -7115,6 +7131,7 @@
     }
 
     function addItemToInv(item, qty = 1) {
+      if (!item || !item.id || !G || !G.inventory) return;
       const ex = G.inventory.find(i => i.id === item.id);
       if (ex) ex.count = (ex.count || 1) + qty;
       else G.inventory.push({ ...item, count: qty });
@@ -7670,16 +7687,31 @@
     }
 
     function resolveEventChoice(idx) {
-      if (!G || !G.activeEvent) return;
+      if (!G) return;
+      if (!G.activeEvent) {
+        // 若界面仍残留事件卡片但内部事件已处理或消解，强制刷新 UI 清理残留
+        renderUI();
+        return;
+      }
       const choice = G.activeEvent.choices && G.activeEvent.choices[idx];
       if (choice && typeof choice.act === "function") {
-        choice.act();
+        try {
+          choice.act();
+        } catch (err) {
+          console.error("resolveEventChoice act error:", err);
+          G.activeEvent = null;
+          addLog("天机涌动，机缘波澜平复归于虚无。", "normal");
+          saveToLocal();
+          renderUI();
+          resumeAutoTimeIfEligible("机缘平复");
+        }
         return;
       }
       // 兜底：若因存档往返导致 act 丢失，不让异常抛给用户，
       // 直接消解这张失效卡片并放行时间流转。
       G.activeEvent = null;
       addLog("此段机缘已随天机流散，无从追溯，就此揭过。", "normal");
+      saveToLocal();
       renderUI();
       resumeAutoTimeIfEligible("机缘消散");
     }
