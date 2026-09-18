@@ -132,16 +132,31 @@
     /* 容器布局 */
     .game-container {
       display: grid;
-      grid-template-columns: 310px 1fr 340px;
+      grid-template-columns: 310px minmax(0, 1fr) 340px;
       gap: 1rem;
       padding: 0.9rem 1.25rem;
       max-width: 1750px;
       margin: 0 auto;
       flex: 1;
       width: 100%;
+      /* 三栏各自内部滚动，避免整页无限拉长导致关键操作区被挤出首屏 */
+      min-height: 0;
+      align-items: stretch;
+    }
+    /* 宽屏下锁定视口高度，让三栏各自独立滚动。
+       body 已是 flex 纵向容器（header + .game-container），
+       故用 flex:1 + min-height:0 让容器精确吃掉剩余高度，
+       无需依赖写死的 header 高度，header 换行时也不会错位。 */
+    @media (min-width: 1201px) and (min-height: 700px) {
+      body { height: 100vh; overflow: hidden; }
+      header { flex: 0 0 auto; position: static; }
+      .game-container { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+      .game-container > .panel,
+      .game-container > .center-panel { min-height: 0; }
+      .center-panel { overflow-y: auto; overflow-x: hidden; padding-right: 0.25rem; }
     }
     @media (max-width: 1200px) {
-      .game-container { grid-template-columns: 290px 1fr; }
+      .game-container { grid-template-columns: 290px minmax(0, 1fr); }
       .right-panel { grid-column: 1 / -1; }
     }
     @media (max-width: 800px) {
@@ -174,7 +189,10 @@
       align-items: center;
       gap: 0.45rem;
     }
-    .panel-body { padding: 0.9rem; overflow-y: auto; flex: 1; }
+    .panel-body { padding: 0.9rem; overflow-y: auto; flex: 1; min-height: 0; }
+    /* 右栏各标签页填满可用高度，列表在内部滚动 */
+    .right-panel .panel-body { display: flex; flex-direction: column; }
+    .right-panel .tab-pane.active { display: flex; flex-direction: column; min-height: 0; flex: 1; }
 
     /* 角色面板 */
     .char-profile {
@@ -380,7 +398,10 @@
       background: #0d141d;
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
-      height: 320px;
+      /* 原为写死 320px：高屏留下大片空白，矮屏又把下方玩法标签页挤出首屏。
+         改为自适应区间，随视口伸缩。 */
+      height: clamp(190px, 30vh, 380px);
+      min-height: 0;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -524,7 +545,7 @@
       gap: 0.85rem;
     }
     @media (max-width: 650px) { .alch-workbench { grid-template-columns: 1fr; } }
-    .recipe-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 250px; overflow-y: auto; }
+    .recipe-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: clamp(200px, 34vh, 420px); overflow-y: auto; }
     .recipe-card {
       background: #0d141e;
       border: 1px solid var(--border-subtle);
@@ -668,7 +689,11 @@
     .tab-pane.active { display: flex; }
 
     /* 物品行囊 */
-    .inv-list { display: flex; flex-direction: column; gap: 0.45rem; max-height: 480px; overflow-y: auto; }
+    .inv-list { display: flex; flex-direction: column; gap: 0.45rem; max-height: clamp(280px, 52vh, 620px); overflow-y: auto; }
+    /* 宽屏定高布局下让列表吃满剩余高度，取代写死上限 */
+    @media (min-width: 1201px) and (min-height: 700px) {
+      .inv-list, #npcList, #worldNewsList { max-height: none; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+    }
     .inv-item {
       background: #0d141d;
       border: 1px solid var(--border-subtle);
@@ -809,7 +834,7 @@
       background: #06090e;
       border: 1px solid var(--border-subtle);
       border-radius: 6px;
-      height: 150px;
+      height: clamp(130px, 22vh, 260px);
       overflow-y: auto;
       padding: 0.55rem 0.75rem;
       font-size: 0.82rem;
@@ -988,12 +1013,15 @@
 
         <!-- 主修功法 -->
         <div class="info-block">
-          <div class="info-block-title">
+          <div class="info-block-title" style="display:flex; justify-content:space-between; align-items:center;">
             <span>📖 主修功法</span>
             <span id="techGrade" style="font-size:0.72rem; color:#facc15;">--</span>
           </div>
           <div id="techName" style="font-weight:600; margin-bottom:0.2rem;">暂无功法</div>
           <div id="techDesc" style="font-size:0.72rem; color:var(--text-muted);">尚未踏入仙途。</div>
+          <div id="techBonusRow" style="font-size:0.7rem; color:var(--jade-green); margin-top:0.25rem;"></div>
+          <button class="btn" id="btnToggleTechLibrary" style="width:100%; margin-top:0.4rem; padding:0.2rem; font-size:0.7rem;" onclick="toggleTechLibrary()">📚 道统典藏 (0)</button>
+          <div id="techLibraryList" style="display:none; margin-top:0.45rem; max-height:220px; overflow-y:auto;"></div>
         </div>
 
         <!-- 宗门与声名 -->
@@ -1593,45 +1621,60 @@
        ========================================================================== */
     const REALMS = [
       { name: "凡人", maxExp: 30, baseHp: 80, baseMp: 0, lifeBonus: 0, power: 10 },
-      { name: "炼气一层", maxExp: 60, baseHp: 90, baseMp: 30, lifeBonus: 0, power: 25 },
-      { name: "炼气二层", maxExp: 100, baseHp: 100, baseMp: 60, lifeBonus: 0, power: 40 },
-      { name: "炼气三层", maxExp: 160, baseHp: 120, baseMp: 90, lifeBonus: 2, power: 65 },
-      { name: "炼气四层", maxExp: 240, baseHp: 150, baseMp: 130, lifeBonus: 4, power: 95 },
+      { name: "炼气一层", maxExp: 60, baseHp: 90, baseMp: 30, lifeBonus: 7, power: 25 },
+      { name: "炼气二层", maxExp: 100, baseHp: 100, baseMp: 60, lifeBonus: 6, power: 40 },
+      { name: "炼气三层", maxExp: 160, baseHp: 120, baseMp: 90, lifeBonus: 6, power: 65 },
+      { name: "炼气四层", maxExp: 240, baseHp: 150, baseMp: 130, lifeBonus: 6, power: 95 },
       { name: "炼气五层", maxExp: 340, baseHp: 180, baseMp: 180, lifeBonus: 6, power: 135 },
-      { name: "炼气六层", maxExp: 460, baseHp: 220, baseMp: 240, lifeBonus: 8, power: 180 },
-      { name: "炼气七层", maxExp: 600, baseHp: 270, baseMp: 310, lifeBonus: 10, power: 240 },
-      { name: "炼气八层", maxExp: 780, baseHp: 330, baseMp: 390, lifeBonus: 12, power: 310 },
-      { name: "炼气九层", maxExp: 1000, baseHp: 400, baseMp: 480, lifeBonus: 15, power: 400 },
-      { name: "炼气圆满", maxExp: 1400, baseHp: 500, baseMp: 600, lifeBonus: 20, power: 520 },
-      { name: "筑基初期", maxExp: 2400, baseHp: 850, baseMp: 1100, lifeBonus: 120, power: 1100 },
-      { name: "筑基中期", maxExp: 3800, baseHp: 1300, baseMp: 1800, lifeBonus: 150, power: 1800 },
-      { name: "筑基后期", maxExp: 5500, baseHp: 1900, baseMp: 2600, lifeBonus: 180, power: 2600 },
-      { name: "筑基圆满", maxExp: 8000, baseHp: 2800, baseMp: 3800, lifeBonus: 220, power: 3800 },
+      { name: "炼气六层", maxExp: 460, baseHp: 220, baseMp: 240, lifeBonus: 6, power: 180 },
+      { name: "炼气七层", maxExp: 600, baseHp: 270, baseMp: 310, lifeBonus: 7, power: 240 },
+      { name: "炼气八层", maxExp: 780, baseHp: 330, baseMp: 390, lifeBonus: 7, power: 310 },
+      { name: "炼气九层", maxExp: 1000, baseHp: 400, baseMp: 480, lifeBonus: 8, power: 400 },
+      { name: "炼气圆满", maxExp: 1400, baseHp: 500, baseMp: 600, lifeBonus: 8, power: 520 },
+      { name: "筑基初期", maxExp: 2400, baseHp: 850, baseMp: 1100, lifeBonus: 50, power: 1100 },
+      { name: "筑基中期", maxExp: 3800, baseHp: 1300, baseMp: 1800, lifeBonus: 30, power: 1800 },
+      { name: "筑基后期", maxExp: 5500, baseHp: 1900, baseMp: 2600, lifeBonus: 30, power: 2600 },
+      { name: "筑基圆满", maxExp: 8000, baseHp: 2800, baseMp: 3800, lifeBonus: 40, power: 3800 },
       // 金丹大道（原金丹真人对应此处索引15，老存档玩家无缝平移继承）
-      { name: "金丹初期", maxExp: 15000, baseHp: 4500, baseMp: 6000, lifeBonus: 350, power: 6500 },
-      { name: "金丹中期", maxExp: 22000, baseHp: 6500, baseMp: 9000, lifeBonus: 100, power: 9500 },
-      { name: "金丹后期", maxExp: 32000, baseHp: 9000, baseMp: 13000, lifeBonus: 100, power: 14000 },
-      { name: "金丹圆满", maxExp: 48000, baseHp: 13000, baseMp: 19000, lifeBonus: 150, power: 20000 },
+      { name: "金丹初期", maxExp: 15000, baseHp: 4500, baseMp: 6000, lifeBonus: 200, power: 6500 },
+      { name: "金丹中期", maxExp: 22000, baseHp: 6500, baseMp: 9000, lifeBonus: 60, power: 9500 },
+      { name: "金丹后期", maxExp: 32000, baseHp: 9000, baseMp: 13000, lifeBonus: 60, power: 14000 },
+      { name: "金丹圆满", maxExp: 48000, baseHp: 13000, baseMp: 19000, lifeBonus: 80, power: 20000 },
       // 碎丹成婴（寿元大幅跨越至千年）
-      { name: "元婴初期", maxExp: 80000, baseHp: 20000, baseMp: 30000, lifeBonus: 800, power: 35000 },
-      { name: "元婴中期", maxExp: 120000, baseHp: 30000, baseMp: 45000, lifeBonus: 200, power: 55000 },
-      { name: "元婴后期", maxExp: 180000, baseHp: 45000, baseMp: 68000, lifeBonus: 200, power: 85000 },
-      { name: "元婴大圆满", maxExp: 280000, baseHp: 65000, baseMp: 100000, lifeBonus: 300, power: 130000 },
+      { name: "元婴初期", maxExp: 80000, baseHp: 20000, baseMp: 30000, lifeBonus: 500, power: 35000 },
+      { name: "元婴中期", maxExp: 120000, baseHp: 30000, baseMp: 45000, lifeBonus: 150, power: 55000 },
+      { name: "元婴后期", maxExp: 180000, baseHp: 45000, baseMp: 68000, lifeBonus: 150, power: 85000 },
+      { name: "元婴大圆满", maxExp: 280000, baseHp: 65000, baseMp: 100000, lifeBonus: 200, power: 130000 },
       // 化神入虚（凝练天地法相）
-      { name: "化神初期", maxExp: 450000, baseHp: 100000, baseMp: 160000, lifeBonus: 2000, power: 200000 },
-      { name: "化神中期", maxExp: 700000, baseHp: 150000, baseMp: 240000, lifeBonus: 500, power: 300000 },
-      { name: "化神后期", maxExp: 1100000, baseHp: 220000, baseMp: 360000, lifeBonus: 500, power: 450000 },
-      { name: "化神大圆满", maxExp: 1600000, baseHp: 320000, baseMp: 520000, lifeBonus: 1000, power: 650000 },
+      { name: "化神初期", maxExp: 450000, baseHp: 100000, baseMp: 160000, lifeBonus: 1300, power: 200000 },
+      { name: "化神中期", maxExp: 700000, baseHp: 150000, baseMp: 240000, lifeBonus: 400, power: 300000 },
+      { name: "化神后期", maxExp: 1100000, baseHp: 220000, baseMp: 360000, lifeBonus: 400, power: 450000 },
+      { name: "化神大圆满", maxExp: 1600000, baseHp: 320000, baseMp: 520000, lifeBonus: 400, power: 650000 },
       // 炼虚期（遁入虚空，天人合一）
-      { name: "炼虚初期", maxExp: 2500000, baseHp: 480000, baseMp: 800000, lifeBonus: 4000, power: 950000 },
-      { name: "炼虚中期", maxExp: 3800000, baseHp: 700000, baseMp: 1200000, lifeBonus: 2000, power: 1400000 },
-      { name: "炼虚圆满", maxExp: 5800000, baseHp: 1000000, baseMp: 1800000, lifeBonus: 3000, power: 2000000 },
+      { name: "炼虚初期", maxExp: 2500000, baseHp: 480000, baseMp: 800000, lifeBonus: 3800, power: 950000 },
+      { name: "炼虚中期", maxExp: 3800000, baseHp: 700000, baseMp: 1200000, lifeBonus: 1000, power: 1400000 },
+      { name: "炼虚圆满", maxExp: 5800000, baseHp: 1000000, baseMp: 1800000, lifeBonus: 1000, power: 2000000 },
       // 高阶巨擘
-      { name: "合体期", maxExp: 9000000, baseHp: 1600000, baseMp: 3000000, lifeBonus: 15000, power: 3200000 },
-      { name: "大乘期", maxExp: 15000000, baseHp: 2600000, baseMp: 5000000, lifeBonus: 30000, power: 5000000 },
-      { name: "渡劫期", maxExp: 25000000, baseHp: 4000000, baseMp: 8000000, lifeBonus: 50000, power: 8000000 },
-      { name: "飞升真仙", maxExp: 99999999, baseHp: 9999999, baseMp: 9999999, lifeBonus: 999999, power: 99999999 }
+      { name: "合体期", maxExp: 9000000, baseHp: 1600000, baseMp: 3000000, lifeBonus: 10000, power: 3200000 },
+      { name: "大乘期", maxExp: 15000000, baseHp: 2600000, baseMp: 5000000, lifeBonus: 15000, power: 5000000 },
+      { name: "渡劫期", maxExp: 25000000, baseHp: 4000000, baseMp: 8000000, lifeBonus: 25000, power: 8000000 },
+      { name: "飞升真仙", maxExp: 99999999, baseHp: 9999999, baseMp: 9999999, lifeBonus: 9939999, power: 99999999 }
     ];
+
+    /**
+     * 计算某境界的理论寿元上限。
+     * REALMS[].lifeBonus 是「破境时增量」，并非绝对值，因此推算某境界应有的寿元
+     * 必须自凡人起累加至该境界（老存档补齐与界面提示都依赖此函数）。
+     */
+    const REALM_BASE_AGE = 75;
+    function getCumulativeLifespan(realmIndex) {
+      let total = REALM_BASE_AGE;
+      const top = Math.min(Math.max(0, realmIndex), REALMS.length - 1);
+      for (let i = 0; i <= top; i++) {
+        total += (REALMS[i].lifeBonus || 0);
+      }
+      return total;
+    }
 
     /* ==========================================================================
        修仙法宝与物品位阶体系（凡尘级至真仙级）
@@ -1777,6 +1820,90 @@
     /* ==========================================================================
        大关隘与突破必备神丹映射表
        ========================================================================== */
+    /* ==========================================================================
+       功法道统体系（黄 / 玄 / 地 / 天 四阶九品）
+       --------------------------------------------------------------------------
+       小说中「功法」是与境界并列的核心进阶轴：同为金丹，修《天级》功法者
+       可越阶战越阶。旧版 G.technique 仅是一段静态展示文字，入宗时赋值后终生不变，
+       故此处补齐可获取 / 可参悟 / 可替换的完整功法体系。
+       ========================================================================== */
+    const TECH_GRADES = {
+      huang_low:  { key: "huang_low",  name: "黄级下品", level: 0, color: "#94a3b8" },
+      huang_high: { key: "huang_high", name: "黄级上品", level: 1, color: "#cbd5e1" },
+      xuan_low:   { key: "xuan_low",   name: "玄级下品", level: 2, color: "#4ade80" },
+      xuan_high:  { key: "xuan_high",  name: "玄级上品", level: 3, color: "#22d3ee" },
+      di_low:     { key: "di_low",     name: "地级下品", level: 4, color: "#60a5fa" },
+      di_high:    { key: "di_high",    name: "地级上品", level: 5, color: "#c084fc" },
+      tian_low:   { key: "tian_low",   name: "天级下品", level: 6, color: "#fb923c" },
+      tian_high:  { key: "tian_high",  name: "天级上品", level: 7, color: "#f87171" },
+      xian_grade: { key: "xian_grade", name: "仙品道经", level: 8, color: "#fde047" }
+    };
+
+    /**
+     * 功法库。minRealm 为可参悟的最低境界（悟性不足者强行修习会心魔暴涨）。
+     * reqCom 为参悟所需悟性门槛。
+     */
+    const TECHNIQUES_DB = {
+      tech_basic: {
+        id: "tech_basic", name: "《引气吐纳残卷》", gradeKey: "huang_low",
+        bonusExp: 6, combatBonus: 0, alchBonus: 0, minRealm: 0, reqCom: 0,
+        desc: "散修街边淘来的引灵入门吐纳法，聊胜于无。"
+      },
+      tech_changchun: {
+        id: "tech_changchun", name: "《百草长春真解》", gradeKey: "xuan_low",
+        bonusExp: 12, combatBonus: 0, alchBonus: 10, minRealm: 6, reqCom: 45,
+        desc: "生机绵绵不绝，延年益寿，兼助丹道。"
+      },
+      tech_qingyuan: {
+        id: "tech_qingyuan", name: "《青元剑诀残篇》", gradeKey: "xuan_low",
+        bonusExp: 14, combatBonus: 20, alchBonus: 0, minRealm: 6, reqCom: 45,
+        desc: "剑气如虹，一剑霜寒十九州。"
+      },
+      tech_xuanshui: {
+        id: "tech_xuanshui", name: "《陆氏玄水诀》", gradeKey: "huang_high",
+        bonusExp: 10, combatBonus: 8, alchBonus: 0, minRealm: 2, reqCom: 30,
+        desc: "仙族嫡传水法，气脉中正平和，胜在稳妥。"
+      },
+      tech_wuji: {
+        id: "tech_wuji", name: "《无极玄光真诀》", gradeKey: "xuan_high",
+        bonusExp: 30, combatBonus: 45, alchBonus: 0, minRealm: 11, reqCom: 60,
+        desc: "上古散修遗篇，玄光化万法，攻守兼备。"
+      },
+      tech_taiqing: {
+        id: "tech_taiqing", name: "《太清一气紫宵决》", gradeKey: "di_high",
+        bonusExp: 75, combatBonus: 80, alchBonus: 15, minRealm: 15, reqCom: 90,
+        desc: "紫气东来三万里，正道魁首之无上道统。"
+      },
+      tech_leiyin: {
+        id: "tech_leiyin", name: "《九天神雷真经》", gradeKey: "tian_low",
+        bonusExp: 220, combatBonus: 280, alchBonus: 0, minRealm: 19, reqCom: 130,
+        desc: "身化狂雷，诛邪伏魔，雷道极致。"
+      },
+      tech_piaomiao: {
+        id: "tech_piaomiao", name: "《太上飘渺证道经》", gradeKey: "tian_high",
+        bonusExp: 520, combatBonus: 600, alchBonus: 20, minRealm: 23, reqCom: 180,
+        desc: "极道仙庭镇派真经，一步一景，证道飘渺。"
+      },
+      tech_hundun: {
+        id: "tech_hundun", name: "《混沌造化道卷》", gradeKey: "tian_high",
+        bonusExp: 800, combatBonus: 750, alchBonus: 25, minRealm: 23, reqCom: 190,
+        desc: "吞吐天地太虚混元之精，极道仙庭赐下的无上道卷。"
+      },
+      tech_hongmeng: {
+        id: "tech_hongmeng", name: "《鸿蒙混沌道经》", gradeKey: "xian_grade",
+        bonusExp: 1600, combatBonus: 1800, alchBonus: 35, minRealm: 27, reqCom: 260,
+        desc: "天地初开时的第一部道经，万法之祖，仙品无上。"
+      }
+    };
+
+    function getTechGrade(tech) {
+      if (!tech) return TECH_GRADES.huang_low;
+      if (tech.gradeKey && TECH_GRADES[tech.gradeKey]) return TECH_GRADES[tech.gradeKey];
+      // 老存档仅存中文 grade 字符串，按名称回溯匹配
+      const byName = Object.values(TECH_GRADES).find(g => g.name === tech.grade);
+      return byName || TECH_GRADES.huang_low;
+    }
+
     const BREAKTHROUGH_REQUISITES = {
       10: { id: "pill_zhuji", name: "天元筑基丹", buffKey: "zhujiBuff", bonus: 50, log: "感应到筑基天劫阻滞，自动服下【天元筑基丹】以固道基！" },
       14: { id: "pill_jindan", name: "四品降尘金丹", buffKey: "jindanBuff", bonus: 50, log: "感应到金丹大道天堑，自动服下【四品降尘金丹】铸造九品金丹！" },
@@ -1979,8 +2106,8 @@
         desc: "凡人与低阶散修聚居小镇，坊市繁茂，后山偶能采得金钱藤与紫灵花。",
         herbChance: { herb_red: 0.45, vine_gold: 0.30, herb_spirit: 0.15, powder_beast: 0.10 },
         enemyPool: [
-          { name: "坊市泼皮散修", realm: "凡人武夫", hp: 45, atk: 8, loot: { silver: 4, stones: 0 } },
-          { name: "山道劫财歹人", realm: "炼气一层", hp: 60, atk: 12, loot: { silver: 8, stones: 1, item: ITEMS_DB.herb_red } }
+          { name: "坊市泼皮散修", realm: "凡人武夫", hp: 95, atk: 8, loot: { silver: 4, stones: 0 } },
+          { name: "山道劫财歹人", realm: "炼气一层", hp: 160, atk: 12, loot: { silver: 8, stones: 1, item: ITEMS_DB.herb_red } }
         ]
       },
       {
@@ -1992,41 +2119,41 @@
         desc: "灵气渐浓郁的深山大泽，多有一阶凶狠妖兽盘踞，深处已现筑基灵草机缘。",
         herbChance: { vine_gold: 0.35, herb_spirit: 0.35, herb_zhuji: 0.15, herb_red: 0.15 },
         enemyPool: [
-          { name: "碧磷斑目妖蛇", realm: "一阶妖蛇", hp: 75, atk: 15, loot: { silver: 10, stones: 2, item: ITEMS_DB.herb_red } },
-          { name: "夺宝嗜血散修", realm: "炼气三层", hp: 100, atk: 20, loot: { silver: 15, stones: 3, item: ITEMS_DB.vine_gold } }
+          { name: "碧磷斑目妖蛇", realm: "一阶妖蛇", hp: 240, atk: 15, loot: { silver: 10, stones: 2, item: ITEMS_DB.herb_red } },
+          { name: "夺宝嗜血散修", realm: "炼气三层", hp: 380, atk: 20, loot: { silver: 15, stones: 3, item: ITEMS_DB.vine_gold } }
         ]
       },
       {
         id: "valley",
         name: "断魂迷涧 · 古仙残冢",
         minRealm: 6, // 炼气六层
-        expMult: 2.8,
+        expMult: 2.6,
         densityText: "古修地脉",
         desc: "毒瘴弥漫的古修洞府遗址，危机四伏，常现筑基灵草与绝品古宝！",
         herbChance: { herb_zhuji: 0.35, herb_spirit: 0.35, vine_gold: 0.20, herb_longevity: 0.10 },
         enemyPool: [
-          { name: "断魂白骨阴煞", realm: "炼气八层", hp: 220, atk: 35, loot: { silver: 30, stones: 8, item: ITEMS_DB.herb_spirit } },
-          { name: "幽冥双头炎狼", realm: "一阶巅峰妖王", hp: 350, atk: 48, loot: { silver: 50, stones: 15, item: ITEMS_DB.herb_zhuji } }
+          { name: "断魂白骨阴煞", realm: "炼气八层", hp: 600, atk: 35, loot: { silver: 30, stones: 8, item: ITEMS_DB.herb_spirit } },
+          { name: "幽冥双头炎狼", realm: "一阶巅峰妖王", hp: 1000, atk: 48, loot: { silver: 50, stones: 15, item: ITEMS_DB.herb_zhuji } }
         ]
       },
       {
         id: "city",
         name: "苍梧陆氏 · 凌霄仙城",
         minRealm: 11, // 筑基初期
-        expMult: 6.0,
+        expMult: 4.5,
         densityText: "二阶灵脉",
         desc: "苍梧大域核心仙城，二阶灵脉汇聚，外郊出产绛云朱果与筑基仙草，拍卖坊市仙宝无数。",
         herbChance: { herb_jiangchen: 0.30, herb_zhuji: 0.30, herb_spirit: 0.20, herb_longevity: 0.20 },
         enemyPool: [
-          { name: "仙城黑市杀手", realm: "筑基初期", hp: 650, atk: 85, loot: { silver: 100, stones: 30, item: ITEMS_DB.herb_longevity } },
-          { name: "叛逆魔门邪修", realm: "筑基中期", hp: 1100, atk: 130, loot: { silver: 200, stones: 60, item: ITEMS_DB.herb_jiangchen } }
+          { name: "仙城黑市杀手", realm: "筑基初期", hp: 2200, atk: 85, loot: { silver: 100, stones: 30, item: ITEMS_DB.herb_longevity } },
+          { name: "叛逆魔门邪修", realm: "筑基中期", hp: 3800, atk: 130, loot: { silver: 200, stones: 60, item: ITEMS_DB.herb_jiangchen } }
         ]
       },
       {
         id: "tianxinghai",
         name: "天星海 · 万仙外岛",
         minRealm: 15, // 金丹初期
-        expMult: 16.0,
+        expMult: 9.0,
         densityText: "瀚海潮灵",
         desc: "汪洋无际之修真海域，海底灵脉密布，外岛绝崖出产九窍凝婴草、绛云朱果与万寿火灵芝！",
         herbChance: { herb_ying: 0.25, herb_jiangchen: 0.35, herb_wanshou: 0.25, herb_longevity: 0.15 },
@@ -2039,7 +2166,7 @@
         id: "tianyuan",
         name: "天渊神冢 · 蛮荒禁地",
         minRealm: 19, // 元婴初期
-        expMult: 45.0,
+        expMult: 20.0,
         densityText: "通灵煞脉",
         desc: "古仙魔陨落之凶地，地煞罡风肆虐，孕育九窍凝婴草、万年养魂木与太虚造化果！",
         herbChance: { herb_soul_wood: 0.35, herb_ying: 0.35, herb_tianhua: 0.15, herb_wanshou: 0.15 },
@@ -2052,7 +2179,7 @@
         id: "kunlun",
         name: "九天昆仑 · 极道圣境",
         minRealm: 23, // 化神初期
-        expMult: 120.0,
+        expMult: 45.0,
         densityText: "极道法则",
         desc: "万山之祖，极道法则汇聚，常现太虚造化果与九转涅槃仙草！",
         herbChance: { herb_tianhua: 0.40, herb_xiancao: 0.35, herb_soul_wood: 0.25 },
@@ -2065,13 +2192,13 @@
         id: "feisheng_gate",
         name: "九霄云外 · 飞升天门",
         minRealm: 27, // 炼虚初期
-        expMult: 350.0,
+        expMult: 100.0,
         densityText: "三十三天仙气",
         desc: "沟通真仙界之南天神门，三十三重天罡雷火漫天，蕴含混沌鸿蒙道果！",
         herbChance: { herb_daoguo: 0.4, herb_xiancao: 0.35, herb_tianhua: 0.25 },
         enemyPool: [
-          { name: "九天雷劫罚罪神将", realm: "合体巅峰", hp: 1500000, atk: 28000, loot: { stones: 25000, item: ITEMS_DB.herb_daoguo } },
-          { name: "仙界接引真仙分魂", realm: "大乘巨擘", hp: 4500000, atk: 68000, loot: { stones: 80000, item: ITEMS_DB.sword_xian } }
+          { name: "九天雷劫罚罪神将", realm: "合体巅峰", hp: 620000, atk: 22000, loot: { stones: 25000, item: ITEMS_DB.herb_daoguo } },
+          { name: "仙界接引真仙分魂", realm: "大乘巨擘", hp: 1050000, atk: 44000, loot: { stones: 80000, item: ITEMS_DB.sword_xian } }
         ]
       }
     ];
@@ -2835,7 +2962,7 @@
         desc: "东荒顶尖剑道大宗，以攻伐犀利著称。宗门月俸丰厚，赐《青元剑诀》。",
         salary: 4, // 基础每月灵石
         giftItem: ITEMS_DB.sword_steel,
-        tech: { name: "《青元剑诀残篇》", grade: "玄级下品", desc: "剑气如虹，攻击杀伤暴涨，每月吐纳修为+14。", bonusExp: 14, combatBonus: 20 }
+        techId: "tech_qingyuan", tech: { name: "《青元剑诀残篇》", grade: "玄级下品", desc: "剑气如虹，攻击杀伤暴涨，每月吐纳修为+14。", bonusExp: 14, combatBonus: 20 }
       },
       {
         id: "shennong",
@@ -2847,7 +2974,7 @@
         desc: "专精炼丹药道之仙门，药田广布。每月赐下灵草配方与青铜八卦炉。",
         salary: 3,
         giftItem: ITEMS_DB.pot_bronze,
-        tech: { name: "《百草长春真解》", grade: "玄级下品", desc: "生机绵绵，延年益寿，每月吐纳修为+12，炼丹成功率+10%。", bonusExp: 12, alchBonus: 10 }
+        techId: "tech_changchun", tech: { name: "《百草长春真解》", grade: "玄级下品", desc: "生机绵绵，延年益寿，每月吐纳修为+12，炼丹成功率+10%。", bonusExp: 12, alchBonus: 10 }
       },
       {
         id: "lu_clan",
@@ -2859,7 +2986,7 @@
         desc: "盘踞栖霞一带的千年修真世家，规矩严明，重金礼聘各路客卿供奉。",
         salary: 2,
         giftItem: ITEMS_DB.talisman_ring,
-        tech: { name: "《陆氏玄水诀》", grade: "黄级上品", desc: "气脉中正平和，每月吐纳修为+10。", bonusExp: 10 }
+        techId: "tech_xuanshui", tech: { name: "《陆氏玄水诀》", grade: "黄级上品", desc: "气脉中正平和，每月吐纳修为+10。", bonusExp: 10 }
       },
       // 高阶仙门道统
       {
@@ -2872,7 +2999,7 @@
         desc: "苍梧大域正道执牛耳者，底蕴深不可测。月俸极厚，赐纯阳飞剑与地品玄功！",
         salary: 60,
         giftItem: ITEMS_DB.sword_lingbao,
-        tech: { name: "《太清一气紫宵决》", grade: "地级上品", desc: "紫气东来，道法纯厚，每月吐纳修为+75，炼丹成功率+15%。", bonusExp: 75, alchBonus: 15, combatBonus: 80 }
+        techId: "tech_taiqing", tech: { name: "《太清一气紫宵决》", grade: "地级上品", desc: "紫气东来，道法纯厚，每月吐纳修为+75，炼丹成功率+15%。", bonusExp: 75, alchBonus: 15, combatBonus: 80 }
       },
       {
         id: "leiyin",
@@ -2884,7 +3011,7 @@
         desc: "避世不出的上古雷道圣地，代行天罚。月俸奢华，赐九龙火炉与至高神雷！",
         salary: 200,
         giftItem: ITEMS_DB.pot_jiulong,
-        tech: { name: "《九天神雷真经》", grade: "天级下品", desc: "身化狂雷诛邪伏魔，每月吐纳修为+220，杀伤威力倍增！", bonusExp: 220, combatBonus: 280 }
+        techId: "tech_leiyin", tech: { name: "《九天神雷真经》", grade: "天级下品", desc: "身化狂雷诛邪伏魔，每月吐纳修为+220，杀伤威力倍增！", bonusExp: 220, combatBonus: 280 }
       },
       {
         id: "piaomiao",
@@ -2896,7 +3023,7 @@
         desc: "直通天门之极道仙庭，俯瞰人间万古兴衰。每月赐无穷灵石，授混元道卷！",
         salary: 800,
         giftItem: ITEMS_DB.sword_yuanying,
-        tech: { name: "《混沌造化道卷》", grade: "仙级无上", desc: "吞吐天地太虚混元之精，每月吐纳修为+800，破境概率大增！", bonusExp: 800, combatBonus: 750, alchBonus: 25 }
+        techId: "tech_hundun", tech: { name: "《混沌造化道卷》", grade: "仙级无上", desc: "吞吐天地太虚混元之精，每月吐纳修为+800，破境概率大增！", bonusExp: 800, combatBonus: 750, alchBonus: 25 }
       }
     ];
 
@@ -3104,9 +3231,9 @@
       { id: "perk_ancestor_sword", name: "祖传寒铁剑", cost: 15, desc: "出生时储物袋自带一件【寒铁青锋剑】与百两白银！" },
       { id: "perk_alchemy_god", name: "药尊遗鼎", cost: 25, desc: "出生时直接获得【青铜八卦炉】与基础丹方全解锁！" },
       { id: "perk_longevity", name: "彭祖长生相", cost: 20, desc: "各境界基础理论寿元永久 +30 岁！" },
-      { id: "perk_dao_heart", name: "金刚不坏道心", cost: 35, desc: "所有境界突破成功率永久 +15%，失败不受气血暗伤！" },
+      { id: "perk_dao_heart", name: "金刚不坏道心", cost: 35, desc: "所有境界突破成功率永久 +10%，冲关失败不受气血暗伤！" },
       // 高阶宿慧
-      { id: "perk_reincarnation_god", name: "仙帝转世宿慧", cost: 50, desc: "历劫不灭！出生即拥有 500 块灵石，突破成功率永久再+20%！" },
+      { id: "perk_reincarnation_god", name: "仙帝转世宿慧", cost: 50, desc: "历劫不灭！出生即拥有 500 块灵石，突破成功率永久再+10%！" },
       { id: "perk_dan_emperor", name: "丹圣地火本源", cost: 40, desc: "出生直接获赐四阶【九龙地心神火炉】，所有炼丹成功率额外+25%！" },
       { id: "perk_immortal_body", name: "混沌鸿蒙圣体", cost: 60, desc: "肉身成圣！开局体魄神魂各+80，基础理论寿元暴涨整整 100 岁！" }
     ];
@@ -3275,7 +3402,7 @@
 
       // 4. 寿元安全保障（根据新境界体系自动补足合理底线，防止老存档玩家因旧版寿元上限低而暴毙）
       const curRealm = REALMS[data.realmIndex] || REALMS[0];
-      const minExpectedAge = 75 + (curRealm.lifeBonus || 0);
+      const minExpectedAge = getCumulativeLifespan(data.realmIndex || 0);
       if (!data.maxAge || isNaN(data.maxAge) || data.maxAge < minExpectedAge) {
         data.maxAge = Math.max(minExpectedAge, data.ageYears + 25);
       }
@@ -3334,7 +3461,26 @@
 
       // 8. 功法、宗门与地图
       if (!data.technique || typeof data.technique !== "object") {
-        data.technique = { name: "《引气吐纳残卷》", grade: "黄级下品", bonusExp: 6, desc: "散修引灵入门吐纳法。" };
+        data.technique = { id: "tech_basic", name: "《引气吐纳残卷》", grade: "黄级下品", gradeKey: "huang_low", bonusExp: 6, combatBonus: 0, alchBonus: 0, desc: "散修引灵入门吐纳法。" };
+      } else if (!data.technique.id || !data.technique.gradeKey) {
+        // 老存档的 technique 仅有中文名与 grade 文本，按名称回溯补齐 id / gradeKey，
+        // 使其接入新的功法参悟体系（找不到则视为入门残卷保底）。
+        const matched = Object.values(TECHNIQUES_DB).find(t => t.name === data.technique.name);
+        if (matched) {
+          data.technique.id = matched.id;
+          data.technique.gradeKey = matched.gradeKey;
+          if (typeof data.technique.combatBonus !== "number") data.technique.combatBonus = matched.combatBonus || 0;
+          if (typeof data.technique.alchBonus !== "number") data.technique.alchBonus = matched.alchBonus || 0;
+        } else {
+          data.technique.id = data.technique.id || "tech_basic";
+          data.technique.gradeKey = data.technique.gradeKey || (getTechGrade(data.technique) || {}).key || "huang_low";
+        }
+      }
+      if (!Array.isArray(data.knownTechniques)) {
+        data.knownTechniques = data.technique && data.technique.id ? [data.technique.id] : ["tech_basic"];
+      }
+      if (data.technique && data.technique.id && !data.knownTechniques.includes(data.technique.id)) {
+        data.knownTechniques.push(data.technique.id);
       }
       if (!data.sect || typeof data.sect !== "object") {
         data.sect = { id: null, name: "散修", salary: 0, minRealm: 0, rankKey: "outer", rankName: "散修", contrib: 0, totalContrib: 0 };
@@ -3848,6 +3994,9 @@
         executeCurrentRoutine();
         advanceMonth();
 
+        // 寿元大限或身陨时 advanceMonth 内部已结算轮回并置空 G，必须立刻中止推演避免空指针
+        if (!G) return;
+
         if (G.hp < G.maxHp * 0.35) {
           pauseTime("十年闭关中途因气血虚竭提前出关！");
           alert(`闭关至第 ${Math.floor(monthsPassed/12)} 年，气血翻腾不适，被迫提前破关！`);
@@ -3927,7 +4076,9 @@
       if (selectedRecipe) {
         const canMake = canCraftRecipe(selectedRecipe);
         const maxCount = getMaxCraftCount(selectedRecipe);
-        const totalRate = Math.min(95, selectedRecipe.baseSuccess + (furnace.alchRate || 0) + (G.talent === '天生药体' ? 20 : 0) + Math.floor(G.stats.com * 0.2));
+        const dispSectAlchBonus = (G.technique && G.technique.alchBonus) ? G.technique.alchBonus : 0;
+        const dispPerkAlchBonus = (META.unlockedPerks || []).includes("perk_dan_emperor") ? 25 : 0;
+        const totalRate = Math.min(98, selectedRecipe.baseSuccess + (furnace.alchRate || 0) + (G.talent === '天生药体' ? 20 : 0) + dispSectAlchBonus + dispPerkAlchBonus + Math.floor(G.stats.com * 0.2));
 
         const matDetails = selectedRecipe.materials.map(m => {
           const inv = G.inventory.find(i => i.id === m.id);
@@ -4726,7 +4877,20 @@
         giftLog = `（曾拜此门，不再重复发放入门礼器）`;
       }
 
-      if (sect.tech) G.technique = sect.tech;
+      if (sect.tech) {
+        // 宗门真传接入功法体系：补齐 id / gradeKey 并登记入已参悟名录，
+        // 使其可在【功法道统】面板中与其他道统自由切换。
+        const dbTech = sect.techId ? TECHNIQUES_DB[sect.techId] : null;
+        G.technique = dbTech
+          ? { id: dbTech.id, name: dbTech.name, grade: getTechGrade(dbTech).name, gradeKey: dbTech.gradeKey,
+              bonusExp: dbTech.bonusExp, combatBonus: dbTech.combatBonus || 0,
+              alchBonus: dbTech.alchBonus || 0, desc: dbTech.desc }
+          : { ...sect.tech };
+        G.knownTechniques = G.knownTechniques || [];
+        if (G.technique.id && !G.knownTechniques.includes(G.technique.id)) {
+          G.knownTechniques.push(G.technique.id);
+        }
+      }
 
       if (oldSectName) {
         addLog(`【名门擢升】道友修为精深，告别【${oldSectName}】，破格拜入上位仙宗【${sect.name}】！因修为通玄，直接定阶为【${startingRank.name}】${giftLog}！得传《${sect.tech ? sect.tech.name : '镇宗秘典'}》！移步山门【${G.location}】！`, "breakthrough");
@@ -5691,14 +5855,18 @@
         let startExp = G.exp;
         let startStones = G.stones;
 
+        let actualMonths = 0;
         for (let i = 0; i < offlineMonths; i++) {
           executeCurrentRoutine();
           advanceMonth();
+          // 离线推演途中寿元枯竭身陨，advanceMonth 已结算轮回并置空 G，直接中止不再出报告
+          if (!G) return;
+          actualMonths++;
           if (G.hp < G.maxHp * 0.35 || G.ageYears >= G.maxAge) break;
         }
 
         const reportText = `
-          在道友神游物外期间，凡尘沧桑流转 <b>${Math.floor(offlineMonths / 12)} 年 ${offlineMonths % 12} 个月</b>：<br><br>
+          在道友神游物外期间，凡尘沧桑流转 <b>${Math.floor(actualMonths / 12)} 年 ${actualMonths % 12} 个月</b>：<br><br>
           📈 骨龄从 <b>${startAge} 岁</b> 增长至 <b>${G.ageYears} 岁</b>；<br>
           ✨ 修为精进增加 <b>${G.exp - startExp} 点</b>；<br>
           💰 积攒灵石收益 <b>+${G.stones - startStones} 块</b>；<br>
@@ -5893,6 +6061,136 @@
     /* ==========================================================================
        界面全量渲染与绑定
        ========================================================================== */
+    /**
+     * 参悟一部新功法。功法是与境界并列的进阶轴，故切换有真实代价：
+     *  - 悟性不足者强行修习会心魔暴涨（对应小说中「根基不稳、走火入魔」）；
+     *  - 换功法需重新熟悉气脉，损失部分道基打磨度。
+     */
+    /**
+     * 依当前境界从功法库中抽取一部尚未参得的「传承功法」。
+     * 用于秘境古府 / 上古遗迹的机缘奖励，使探索具备长期价值（对应小说「传承」桥段）。
+     */
+    function rollInheritanceTechnique() {
+      if (!G) return null;
+      const known = G.knownTechniques || [];
+      const pool = Object.values(TECHNIQUES_DB).filter(t =>
+        !known.includes(t.id) &&
+        t.minRealm <= G.realmIndex &&
+        t.id !== "tech_basic"
+      );
+      if (pool.length === 0) return null;
+      // 优先给出品阶高于当前主修的道统，否则退而给任意未得功法
+      const curLevel = getTechGrade(G.technique).level;
+      const better = pool.filter(t => getTechGrade(t).level > curLevel);
+      const finalPool = better.length > 0 ? better : pool;
+      return finalPool[Math.floor(Math.random() * finalPool.length)];
+    }
+
+    function grantInheritanceTechnique(tech) {
+      if (!G || !tech) return false;
+      G.knownTechniques = G.knownTechniques || [];
+      if (!G.knownTechniques.includes(tech.id)) G.knownTechniques.push(tech.id);
+      const g = getTechGrade(tech);
+      addLog(`【上古传承】石壁道纹骤然流转，一部${g.name}功法【${tech.name}】烙入识海！可于左侧【道统典藏】中参悟转修。`, "breakthrough");
+      return true;
+    }
+
+    function comprehendTechnique(techId) {
+      if (!G) return;
+      const tech = TECHNIQUES_DB[techId];
+      if (!tech) return;
+      const curGrade = getTechGrade(G.technique);
+      const newGrade = getTechGrade(tech);
+
+      if (G.technique && G.technique.id === techId) {
+        alert(`【道心已明】你已在修习【${tech.name}】，无需重复参悟。`);
+        return;
+      }
+      if (G.realmIndex < tech.minRealm) {
+        alert(`【境界不足】【${tech.name}】乃${newGrade.name}道统，需【${REALMS[tech.minRealm].name}】以上境界方可承载其道韵，否则经脉必受反噬！`);
+        return;
+      }
+
+      const com = G.stats.com || 40;
+      const lacking = com < tech.reqCom;
+      const demonAdd = lacking ? Math.min(45, 15 + Math.floor((tech.reqCom - com) * 0.5)) : 0;
+      const foundationLoss = Math.min(G.foundation || 0, newGrade.level > curGrade.level ? 25 : 40);
+
+      let warn = `【参悟新法 · ${newGrade.name}】\n${tech.name}\n${tech.desc}\n\n` +
+        `月均吐纳修为：${tech.bonusExp}（当前 ${G.technique ? (G.technique.bonusExp || 6) : 6}）\n` +
+        `杀伐加成：${tech.combatBonus || 0}　丹道加成：${tech.alchBonus || 0}%\n\n` +
+        `⚠️ 转修新法需重新梳理气脉，道基打磨度将损失 ${foundationLoss}%。`;
+      if (lacking) {
+        warn += `\n\n🔴 悟性不足！参悟【${tech.name}】需悟性 ${tech.reqCom}，你仅有 ${com}。\n强行修习将走火入魔，心魔业障暴涨 ${demonAdd}%！`;
+      }
+      warn += `\n\n是否确认转修？`;
+      if (!confirm(warn)) return;
+
+      G.technique = {
+        id: tech.id, name: tech.name, grade: newGrade.name, gradeKey: tech.gradeKey,
+        bonusExp: tech.bonusExp, combatBonus: tech.combatBonus || 0,
+        alchBonus: tech.alchBonus || 0, desc: tech.desc
+      };
+      G.foundation = Math.max(0, (G.foundation || 0) - foundationLoss);
+      if (demonAdd > 0) {
+        G.innerDemon = Math.min(100, (G.innerDemon || 0) + demonAdd);
+        addLog(`【走火入魔】悟性不足而强修【${tech.name}】，气机逆冲识海，心魔业障暴涨 ${demonAdd}%！`, "danger");
+      }
+      G.knownTechniques = G.knownTechniques || [];
+      if (!G.knownTechniques.includes(techId)) G.knownTechniques.push(techId);
+      addLog(`【道统更易】你敛息静坐，参悟${newGrade.name}功法【${tech.name}】，气脉重塑，月均吐纳跃至 ${tech.bonusExp} 点！`, "breakthrough");
+      sfx.breakthrough();
+      recalcPlayerStats();
+      saveToLocal();
+      renderUI();
+    }
+
+    function toggleTechLibrary() {
+      const box = document.getElementById('techLibraryList');
+      if (!box) return;
+      const open = box.style.display !== 'none';
+      box.style.display = open ? 'none' : 'block';
+      if (!open) renderTechniquePanel();
+    }
+
+    /** 渲染功法参悟面板（列出已得功法与可参悟条件） */
+    function renderTechniquePanel() {
+      const box = document.getElementById('techLibraryList');
+      if (!box || !G) return;
+      const known = G.knownTechniques || [];
+      const curId = G.technique ? G.technique.id : null;
+      box.innerHTML = "";
+      if (known.length === 0) {
+        box.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted); padding:0.5rem 0;">尚未参得他派道统。可拜入宗门领受真传，或于秘境古府中发掘上古功法残卷。</div>`;
+        return;
+      }
+      known.forEach(tid => {
+        const t = TECHNIQUES_DB[tid];
+        if (!t) return;
+        const g = getTechGrade(t);
+        const isCur = tid === curId;
+        const meetsRealm = G.realmIndex >= t.minRealm;
+        const meetsCom = (G.stats.com || 40) >= t.reqCom;
+        const div = document.createElement('div');
+        div.style.cssText = `border:1px solid ${isCur ? 'var(--gold-primary)' : 'var(--border-subtle)'}; border-radius:5px; padding:0.45rem 0.6rem; margin-bottom:0.4rem; background:${isCur ? 'rgba(212,160,23,0.08)' : 'rgba(0,0,0,0.2)'};`;
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+            <span style="font-weight:600; font-size:0.8rem; color:${g.color};">${t.name}</span>
+            <span style="font-size:0.68rem; color:${g.color}; border:1px solid ${g.color}; border-radius:3px; padding:0 4px;">${g.name}</span>
+          </div>
+          <div style="font-size:0.7rem; color:var(--text-muted); margin:0.25rem 0; line-height:1.4;">${t.desc}</div>
+          <div style="font-size:0.7rem; color:var(--jade-green);">吐纳+${t.bonusExp} · 杀伐+${t.combatBonus || 0} · 丹道+${t.alchBonus || 0}%</div>
+          <div style="font-size:0.68rem; color:${meetsCom ? 'var(--text-muted)' : 'var(--cinnabar-light)'}; margin-top:0.2rem;">
+            需境界 ${REALMS[t.minRealm].name} · 需悟性 ${t.reqCom}（现 ${G.stats.com || 40}）
+          </div>
+          ${isCur
+            ? `<div style="font-size:0.72rem; color:var(--gold-light); margin-top:0.35rem;">✅ 当前主修</div>`
+            : `<button class="btn btn-purple" style="width:100%; margin-top:0.35rem; padding:0.2rem; font-size:0.72rem;" ${meetsRealm ? '' : 'disabled'} onclick="comprehendTechnique('${tid}')">📖 转修此法${meetsCom ? '' : '（悟性不足·凶险）'}</button>`}
+        `;
+        box.appendChild(div);
+      });
+    }
+
     function renderUI() {
       if (!G) return;
       loadMeta();
@@ -6029,9 +6327,23 @@
       document.getElementById('attrKarma').textContent = `${G.stats.karma}`;
 
       // 功法与宗门
-      document.getElementById('techGrade').textContent = G.technique.grade;
+      const techGradeInfo = getTechGrade(G.technique);
+      const techGradeEl = document.getElementById('techGrade');
+      techGradeEl.textContent = techGradeInfo.name;
+      techGradeEl.style.color = techGradeInfo.color;
       document.getElementById('techName').textContent = G.technique.name;
+      document.getElementById('techName').style.color = techGradeInfo.color;
       document.getElementById('techDesc').textContent = G.technique.desc;
+      const techBonusRow = document.getElementById('techBonusRow');
+      if (techBonusRow) {
+        techBonusRow.textContent = `月均吐纳 +${G.technique.bonusExp || 6}　杀伐 +${G.technique.combatBonus || 0}　丹道 +${G.technique.alchBonus || 0}%`;
+      }
+      const techLibBtn = document.getElementById('btnToggleTechLibrary');
+      if (techLibBtn) {
+        techLibBtn.textContent = `📚 道统典藏 (${(G.knownTechniques || []).length})`;
+      }
+      const techLibBox = document.getElementById('techLibraryList');
+      if (techLibBox && techLibBox.style.display !== 'none') renderTechniquePanel();
 
       const hasSect = G.sect && G.sect.id && G.sect.name !== "散修";
       const curRank = getSectRankInfo(G.sect ? G.sect.rankKey : 'outer');
@@ -6312,10 +6624,12 @@
       const item = G.inventory[idx];
       if (!item) return;
       if (item.id === "pill_blood") {
-        G.hp = Math.min(G.maxHp, G.hp + 50);
+        // 与战斗中【吞服丹药】同一套药力换算，避免高境界时丹药形同废纸
+        const bloodHeal = Math.max(50, Math.floor(G.maxHp * 0.25));
+        G.hp = Math.min(G.maxHp, G.hp + bloodHeal);
         item.count--;
         sfx.success();
-        addLog("吞服一品凝血散，气血平复回升 50 点。", "fortune");
+        addLog(`吞服一品凝血散，药力化开周天，气血平复回升 ${bloodHeal} 点。`, "fortune");
       } else if (item.id === "pill_qi") {
         addExp(50, "聚气丹");
         item.count--;
@@ -7062,6 +7376,23 @@
     /* ==========================================================================
        修仙小说经典奇遇因果系统（十大奇遇与多分支抉择）
        ========================================================================== */
+    /**
+     * 奇遇灵石奖励的境界缩放系数。
+     * 旧版奇遇奖励为写死的常量（如 150 灵石），在金丹以后已形同虚设，
+     * 导致中后期「机缘」失去吸引力。此处按境界威能开方缩放，
+     * 使奇遇在任何阶段都保有相称的价值。
+     */
+    function getEncounterScale() {
+      if (!G) return 1;
+      const pw = (REALMS[G.realmIndex] && REALMS[G.realmIndex].power) ? REALMS[G.realmIndex].power : 10;
+      return Math.max(1, Math.round(Math.sqrt(pw / 10)));
+    }
+
+    /** 按境界缩放后的灵石奖励 */
+    function scaledStones(base) {
+      return Math.max(1, Math.floor(base * getEncounterScale()));
+    }
+
     function triggerNovelEncounter(category = "explore") {
       if (!G || G.activeEvent) return;
       const curMap = MAPS_DB.find(m => m.id === (G.currentMap || "town")) || MAPS_DB[0];
@@ -7103,6 +7434,9 @@
                   addExp(180, "先贤传法");
                   addItemToInv(ITEMS_DB.talisman_substitute, 1);
                   addLog(`【先贤衣钵】古修残魂欣然显化：“心性淳厚，善根未泯！”挥手解开禁制，传授太古法门！悟性+4，修为暴涨，心魔消退20%，并获赠保命神物【替死替劫木傀儡】！`, "breakthrough");
+                  // 传承功法：秘境古府的长期价值来源
+                  const inherited = rollInheritanceTechnique();
+                  if (inherited) grantInheritanceTechnique(inherited);
                 }
                 saveToLocal(); renderUI(); resumeAutoTimeIfEligible("古洞得法");
               }
@@ -7116,7 +7450,7 @@
                 const dmg = Math.floor(G.maxHp * 0.3);
                 G.hp = Math.max(1, G.hp - dmg);
                 G.innerDemon = Math.min(100, (G.innerDemon || 0) + 20);
-                const stones = 150 + Math.floor(Math.random() * 150);
+                const stones = scaledStones(150 + Math.floor(Math.random() * 150));
                 G.stones += stones;
                 addItemToInv(ITEMS_DB.pill_break, 2);
                 addLog(`【蛮横破阵】你祭出法器轰碎石台！上古残雷反震受创 ${dmg} 点，心魔+20%，但强行卷走灵石 ${stones} 块与【二品破障散】×2！`, "danger");
@@ -7208,7 +7542,7 @@
                   sfx.success();
                   G.stats.soul += 3;
                   G.innerDemon = Math.min(100, (G.innerDemon || 0) + 5);
-                  const stones = 160 + Math.floor(Math.random() * 80);
+                  const stones = scaledStones(160 + Math.floor(Math.random() * 80));
                   G.stones += stones;
                   addItemToInv(ITEMS_DB.powder_beast, 3);
                   addLog(`【神魂镇杀】魔头元神尖啸冲入识海企图夺舍，反被你雄浑神魂一掌震碎炼化！缴获灵石 ${stones} 块，神魂+3！`, "breakthrough");
@@ -7260,7 +7594,7 @@
                 sfx.spell();
                 G.mp = Math.max(0, (G.mp || 20) - 20);
                 G.stats.reputation += 50;
-                G.stones += 200;
+                G.stones += scaledStones(200);
                 addItemToInv(ITEMS_DB.token_taishang, 1);
                 addLog(`【太上仙缘】圣女姬清雪幽幽转醒，美目盈盈：“多谢道兄舍命相护，此恩清雪永世难忘！”赠予护身金令【太上九天仙令】及灵石 200 块，声望+50！`, "breakthrough");
                 saveToLocal(); renderUI(); resumeAutoTimeIfEligible("救助圣女");
@@ -7272,7 +7606,7 @@
               act: () => {
                 G.activeEvent = null;
                 sfx.slash();
-                G.stones += 300;
+                G.stones += scaledStones(300);
                 G.stats.reputation = Math.max(0, G.stats.reputation - 30);
                 G.innerDemon = Math.min(100, (G.innerDemon || 0) + 15);
                 addLog(`你冷漠搜走圣女储物袋中 300 灵石。圣女苏醒后美目冰冷：“今日之耻，来日必报！”御剑负伤遁去，你心魔+15。`, "danger");
@@ -7321,7 +7655,7 @@
               act: () => {
                 G.activeEvent = null;
                 sfx.success();
-                G.stones += 220;
+                G.stones += scaledStones(220);
                 addLog(`你以玄冰匣巧妙隔空封存火种，送往仙城大殿兑得 220 块灵石！`, "fortune");
                 saveToLocal(); renderUI(); resumeAutoTimeIfEligible("封存真火");
               }
@@ -7415,7 +7749,7 @@
                 sfx.success();
                 addItemToInv(ITEMS_DB.vine_gold, 2);
                 addItemToInv(ITEMS_DB.spirit_dew, 1);
-                G.stones += 80;
+                G.stones += scaledStones(80);
                 addLog(`你审时度势潜入隐秘偏殿，采得【金髓灵藤】×2与【千年灵乳】×1，附带灵石 80 块！`, "fortune");
                 saveToLocal(); renderUI(); resumeAutoTimeIfEligible("偏殿搜寻");
               }
@@ -7426,7 +7760,7 @@
               act: () => {
                 G.activeEvent = null;
                 sfx.slash();
-                G.stones += 220;
+                G.stones += scaledStones(220);
                 G.innerDemon = Math.min(100, (G.innerDemon || 0) + 25);
                 addLog(`【秘境截杀】你于出口处截杀两名负伤散修，缴获灵石 220 块！但杀戮过甚，心魔暴增 25%！`, "danger");
                 saveToLocal(); renderUI(); resumeAutoTimeIfEligible("截杀归来");
@@ -7572,7 +7906,7 @@
                 G.activeEvent = null;
                 sfx.slash();
                 addItemToInv(ITEMS_DB.scroll_ancient, 1);
-                G.stones += 120;
+                G.stones += scaledStones(120);
                 G.innerDemon = Math.min(100, (G.innerDemon || 0) + 20);
                 addLog(`【黑夜夺经】你于仙城郊外雷霆截杀纨绔修士！一番激战夺下【上古无量残经】与灵石 120 块！心魔暴涨 20%！`, "danger");
                 saveToLocal(); renderUI(); resumeAutoTimeIfEligible("伏击夺宝");
@@ -7672,6 +8006,36 @@
     let curEnemy = null;
     let combatAutoRunning = false;
 
+    /**
+     * 法宝品阶对威能的加成系数。
+     * 旧版伤害为 武器威能 + 体魄*0.35 + 境界威压*0.08，境界项在元婴以后可达数十万，
+     * 而顶阶神兵仅 18000 威能，导致「法宝形同虚设」——换与不换伤害只差 2%。
+     * 此处令境界威压项随本命法宝品阶缩放（赤手 0.55x，境界匹配神兵 ~1.0x），
+     * 使任何境界下「有无神兵」都稳定拉开约 2 倍差距，法宝追求贯穿全程。
+     */
+    function getWeaponScale(weaponPower, realmIndex) {
+      // 各境界段位的「标称本命法宝威能」参照值
+      const REF_POWER = [12, 35, 35, 90, 90, 90, 220, 220, 220, 220, 220,
+                         550, 550, 550, 550, 1500, 1500, 1500, 1500,
+                         2600, 2600, 2600, 2600, 4600, 4600, 4600, 4600,
+                         7800, 11500, 11500, 14200, 14200, 18000, 18000];
+      const ref = REF_POWER[Math.min(Math.max(0, realmIndex), REF_POWER.length - 1)] || 12;
+      return 0.55 + Math.min(1.2, (weaponPower || 10) / ref) * 0.45;
+    }
+
+    /**
+     * 灵宝对灵术威能的加成系数（与 getWeaponScale 同理，但参照灵宝的 maxMp 品阶）。
+     * 灵宝数值区间为 40 ~ 7000，与兵刃威能不同量级，故独立设置参照表。
+     */
+    function getTalismanScale(talismanMp, realmIndex) {
+      const REF_MP = [40, 40, 40, 80, 80, 80, 80, 80, 80, 80, 80,
+                      250, 250, 250, 250, 600, 600, 600, 600,
+                      1000, 1000, 1000, 1000, 1500, 1500, 1500, 1500,
+                      2500, 4000, 4000, 5200, 5200, 7000, 7000];
+      const ref = REF_MP[Math.min(Math.max(0, realmIndex), REF_MP.length - 1)] || 40;
+      return 0.55 + Math.min(1.2, (talismanMp || 20) / ref) * 0.45;
+    }
+
     function startCombat(enemyData) {
       combatAutoRunning = false;
       pauseTime(`遭遇强敌 ${enemyData.name}，生死搏杀！`);
@@ -7729,7 +8093,8 @@
       sfx.slash();
       const rPower = (REALMS[G.realmIndex] && REALMS[G.realmIndex].power) ? REALMS[G.realmIndex].power : 10;
       const wDmg = G.equipped && G.equipped.weapon ? G.equipped.weapon.power : 10;
-      let dmg = Math.floor(wDmg + (G.stats.phy * 0.35) + Math.floor(rPower * 0.08) + (Math.random() * 8));
+      const wScale = getWeaponScale(wDmg, G.realmIndex);
+      let dmg = Math.floor(wDmg + ((G.stats.phy * 0.35) + Math.floor(rPower * 0.08) + 4) * wScale + (Math.random() * 8));
 
       // 境界灵压压制判定
       if (curEnemy.realm) {
@@ -7758,7 +8123,12 @@
       G.mp -= 15;
       const rPower = (REALMS[G.realmIndex] && REALMS[G.realmIndex].power) ? REALMS[G.realmIndex].power : 10;
       const tBonus = G.technique.combatBonus || 0;
-      let dmg = Math.floor(30 + tBonus + (G.stats.soul * 0.45) + Math.floor(rPower * 0.12) + (Math.random() * 12));
+      // 灵术威能由随身灵宝品阶缩放，令法器与功法同样贯穿全程有效
+      const tScale = getTalismanScale(
+        (G.equipped && G.equipped.talisman) ? (G.equipped.talisman.maxMp || 0) : 0,
+        G.realmIndex
+      );
+      let dmg = Math.floor(30 + tBonus + ((G.stats.soul * 0.45) + Math.floor(rPower * 0.12) + 4) * tScale + (Math.random() * 12));
 
       // 境界灵压压制判定
       if (curEnemy.realm) {
@@ -8569,11 +8939,16 @@
           reputation: 0
         },
         technique: {
+          id: "tech_basic",
           name: "《引气吐纳残卷》",
           grade: "黄级下品",
+          gradeKey: "huang_low",
           desc: "散修引灵入门吐纳法。每月吐纳灵气稳健提升。",
-          bonusExp: bonusExp
+          bonusExp: bonusExp,
+          combatBonus: 0,
+          alchBonus: 0
         },
+        knownTechniques: ["tech_basic"],
         dao: daoVal,
         sect: { id: null, name: "散修", salary: 0, minRealm: 0 },
         sectGiftClaimed: {},
