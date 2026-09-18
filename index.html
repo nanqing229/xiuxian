@@ -49,6 +49,10 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      /* 窄屏下允许换行，否则品牌+状态+按钮挤在一行会横向溢出，
+         被 body 的 overflow-x:hidden 裁切，且撑高 header 挤走主内容 */
+      flex-wrap: wrap;
+      gap: 0.5rem 0.75rem;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -71,10 +75,11 @@
       font-family: var(--font-serif);
     }
 
-    .header-quick-stats { display: flex; align-items: center; gap: 1.1rem; font-size: 0.82rem; }
-    .quick-stat { display: flex; align-items: center; gap: 0.35rem; }
+    .header-quick-stats { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 1.1rem; font-size: 0.82rem; }
+    /* 单项状态整体换行，不在「寿元：」与数值之间断开 */
+    .quick-stat { display: flex; align-items: center; gap: 0.35rem; white-space: nowrap; }
     .quick-stat .val { font-weight: 600; color: var(--gold-light); }
-    .header-actions { display: flex; gap: 0.45rem; }
+    .header-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; }
 
     /* 通用按钮 */
     .btn {
@@ -159,8 +164,32 @@
       .game-container { grid-template-columns: 290px minmax(0, 1fr); }
       .right-panel { grid-column: 1 / -1; }
     }
-    @media (max-width: 800px) {
-      .game-container { display: flex; flex-direction: column; padding: 0.5rem; }
+    /* 900px 以下三栏彻底改为纵向堆叠。
+       注意断点取 900 而非 800：视口正好 800px 时 max-width:800 与
+       max-width:1200 会同时命中，grid 与 flex 规则相互覆盖导致布局错乱。 */
+    @media (max-width: 900px) {
+      .game-container {
+        display: flex;
+        flex-direction: column;
+        padding: 0.5rem;
+        max-width: 100%;
+      }
+      /* flex 纵向下 panel 不再由 grid 拉伸，需按内容高度自适应，
+         并解除宽屏那套「各栏内部独立滚动」的高度锁定 */
+      .game-container > .panel,
+      .game-container > .center-panel {
+        width: 100%;
+        min-height: 0;
+        max-height: none;
+        overflow: visible;
+      }
+      .center-panel { overflow-x: hidden; }
+      /* 移动端 header 不吸顶，避免换行后占据过多首屏高度 */
+      header { position: static; }
+      /* 窄屏纵向堆叠后整页本就要滚动，日志区不必再苛省高度：
+         下限从 190px 提到 260px，比例从 30vh 放宽到 40vh，
+         600px 高视口下由 190px 增至 260px，可视条目约翻倍。 */
+      .story-log-box { height: clamp(260px, 40vh, 420px); }
     }
 
     /* 边栏卡片 */
@@ -905,6 +934,7 @@
       <button class="btn" id="btnSaveGame" title="备份天机码">💾 备份存档</button>
       <button class="btn" id="btnLoadGame" title="导入天机码">📂 导入存档</button>
       <button class="btn btn-purple" id="btnOpenReincarnation" title="天命神殿与轮回继承">☯️ 轮回殿</button>
+      <button class="btn btn-purple" id="btnOpenDestiny" title="天命殿：功德兑换轮回加成与难度倒券">🏯 天命殿</button>
       <button class="btn btn-cinnabar" id="btnResetAll" title="清空所有数据">🗑️ 抹除此世</button>
     </div>
   </header>
@@ -1323,6 +1353,7 @@
       <div class="modal-body">
         <div id="metaLastLifeNotice" style="display:none; background:rgba(168,85,247,0.18); border:1px solid var(--purple-rare); border-radius:6px; padding:0.6rem; margin-bottom:0.75rem; font-size:0.8rem; color:#f3e8ff;">
           🌟 <b>上一世已圆满落幕！</b>此生道途化作天命功德 <b id="metaLastLifeKarma" style="color:var(--gold-light);">0</b> 点！可在神殿参悟神级天赋后再入轮回！
+          <div id="metaTrialBreakdown" style="display:none; margin-top:0.35rem; font-size:0.75rem; color:var(--jade-green);"></div>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem;">
           <span style="font-size:0.85rem; color:var(--text-muted);">
@@ -1342,6 +1373,44 @@
       <div class="modal-footer">
         <button class="btn btn-cinnabar" id="btnReincarnateAction" onclick="reincarnateNow()">🔄 斩断前尘 · 立即转世开新局</button>
         <button class="btn" id="btnReincarnateClose" onclick="closeModal('modalReincarnation')">返回现世</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模态框：天命殿 · 功德兑换轮回加成与难度倒券 -->
+  <div class="modal-overlay" id="modalDestiny">
+    <div class="modal-content" style="max-width:640px;">
+      <div class="modal-header">
+        <div class="modal-title">🏯 天命殿 · 功德铸道</div>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem;">
+          <span style="font-size:0.85rem; color:var(--text-muted);">
+            当世难度：<b style="color:var(--gold-light);" id="destinyTrialName">太平顺世</b>
+          </span>
+          <span style="font-size:0.85rem; color:var(--purple-rare);">
+            可用天命功德：<b id="destinyKarmaPoints">0</b> 点
+          </span>
+        </div>
+        <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.85rem; line-height:1.45;">
+          功德非只可换一次性宿慧。于此殿中可反复投入功德淬炼<b style="color:var(--purple-rare);">轮回加成</b>（逐级叠加，永久生效于此后每一世），亦可请下<b style="color:var(--cinnabar);">难度倒券</b>——自封天资、自缚寿元以逆境求道，换取远超常例的功德结算倍率。
+        </p>
+
+        <div style="font-size:0.8rem; color:var(--gold-light); font-weight:bold; margin:0.9rem 0 0.5rem;">🌟 轮回加成 · 逐级叠加</div>
+        <div class="inv-list" id="destinyBoonList">
+          <!-- 动态加成列表 -->
+        </div>
+
+        <div style="font-size:0.8rem; color:var(--cinnabar); font-weight:bold; margin:1.1rem 0 0.5rem;">⚔️ 难度倒券 · 逆境换功德</div>
+        <p style="font-size:0.73rem; color:var(--text-muted); margin-bottom:0.5rem; line-height:1.4;">
+          倒券为<b>永久解锁</b>，解锁后每世皆可自由改选。所选难度于<b style="color:var(--gold-light);">下一次转世</b>时生效。
+        </p>
+        <div class="inv-list" id="destinyTrialList">
+          <!-- 动态难度券列表 -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModal('modalDestiny')">返回现世</button>
       </div>
     </div>
   </div>
@@ -3239,14 +3308,64 @@
     ];
 
     /* ==========================================================================
+       天命殿 · 可叠加轮回加成 (Stackable Destiny Boons)
+       每级成本递增，功德永远有去处；等级存于 META.boons
+       ========================================================================== */
+    const DESTINY_BOONS = [
+      { id: "boon_qi",     name: "宿慧吐纳", icon: "🌀", max: 20, base: 12, step: 8,  unit: "月均吐纳 +8%",             desc: "宿世吐纳法门烙于神魂，每级令闭关月均进境永久提升 8%。" },
+      { id: "boon_life",   name: "龟龄玄息", icon: "🐢", max: 10, base: 18, step: 12, unit: "基础寿元 +15 岁",          desc: "玄龟蛰息之法，每级令各境界基础理论寿元永久增加 15 岁。" },
+      { id: "boon_break",  name: "破境道韵", icon: "⚡", max: 10, base: 25, step: 15, unit: "突破成功率 +2%",           desc: "关隘道韵先行铺路，每级令所有境界冲关把握永久提升 2%。" },
+      { id: "boon_wealth", name: "财帛天授", icon: "💰", max: 10, base: 10, step: 6,  unit: "开局灵石 +200 · 凡银 +150", desc: "宿世财帛因果随身，每级令转世出生时多带 200 灵石与 150 两凡银。" },
+      { id: "boon_body",   name: "淬体宿根", icon: "🩸", max: 10, base: 15, step: 10, unit: "开局体魄/神魂 +15",        desc: "前世淬炼之肉身根骨延续，每级令转世出生时体魄与神魂各增 15。" },
+      { id: "boon_luck",   name: "紫微气运", icon: "🍀", max: 8,  base: 30, step: 20, unit: "机缘触发率 +6%",           desc: "紫微星力垂照，每级令闭关吐纳时偶遇仙缘机会的概率相对提升 6%。" }
+    ];
+
+    /* ==========================================================================
+       天命殿 · 轮回难度倒券 (Destiny Trials)
+       反向消耗：花功德提高难度，换取功德结算倍率
+       ========================================================================== */
+    const DESTINY_TRIALS = [
+      { id: "trial_none",      name: "太平顺世", icon: "☁️", cost: 0,   mult: 1.0, cost_desc: "无额外代价", desc: "循常理转世，无灾无劫，功德按常例结算。" },
+      { id: "trial_mortal",    name: "凡胎逆仙", icon: "🪨", cost: 40,  mult: 1.6, cost_desc: "锁定四灵根杂品 · 寿元 -20 岁", desc: "自封天资，以凡胎浊体逆冲仙途。出生强制四灵根杂品，基础寿元减 20 岁。" },
+      { id: "trial_demon",     name: "魔劫加身", icon: "😈", cost: 80,  mult: 2.2, cost_desc: "心魔每月自增 · 突破率 -8%", desc: "引魔煞入道，心魔业障每月自行滋长，且冲关把握永久降低 8%。" },
+      { id: "trial_shortlife", name: "朝露之命", icon: "⏳", cost: 150, mult: 3.0, cost_desc: "寿元上限直接砍半", desc: "朝生暮死之命格，寿元上限腰斩。以最短之岁月争最长之大道。" }
+    ];
+
+    /* ==========================================================================
        天命功德元数据 (Meta-Data in LocalStorage)
        ========================================================================== */
     const META_STORAGE_KEY = "XIUXIAN_META_V2";
     let META = {
       reincarnations: 0,
       karmaPoints: 0,
-      unlockedPerks: []
+      unlockedPerks: [],
+      boons: {},
+      trial: "trial_none",
+      unlockedTrials: ["trial_none"]
     };
+
+    /* --- 天命殿辅助函数 --- */
+    function boonLevel(id) {
+      return ((META.boons || {})[id]) || 0;
+    }
+
+    // 下一级成本：base + 当前等级 * step（递增）
+    function boonCost(id) {
+      const b = DESTINY_BOONS.find(x => x.id === id);
+      if (!b) return Infinity;
+      const lv = boonLevel(id);
+      if (lv >= b.max) return Infinity;
+      return b.base + lv * b.step;
+    }
+
+    function currentTrial() {
+      return DESTINY_TRIALS.find(t => t.id === (META.trial || "trial_none")) || DESTINY_TRIALS[0];
+    }
+
+    // 当世难度券对应的功德结算倍率
+    function trialMult() {
+      return currentTrial().mult || 1.0;
+    }
 
     function loadMeta() {
       try {
@@ -3364,7 +3483,11 @@
       if (!G) return;
       G.lastActiveTime = Date.now();
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(G));
+        // activeEvent 为瞬态 UI 状态，其 choices[].act 是函数，
+        // JSON.stringify 会静默丢弃函数，导致读档后奇遇卡片仍渲染
+        // 但点击选项报 "act is not a function"。故存档时一律剔除。
+        const { activeEvent, ...persisted } = G;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
       } catch (e) {}
     }
 
@@ -3374,6 +3497,11 @@
     function migrateSaveData(raw) {
       if (!raw || typeof raw !== "object") return null;
       let data = { ...raw };
+
+      // 0. 清除历史坏档中残留的瞬态奇遇卡片。
+      // 旧版存档整体 JSON.stringify(G)，choices[].act 函数被丢弃，
+      // 读档后卡片可渲染但点击必然抛 "act is not a function"。
+      if (data.activeEvent) delete data.activeEvent;
 
       // 1. 基础生灵标识
       if (!data.name || typeof data.name !== "string") data.name = "无名散修";
@@ -3834,7 +3962,7 @@
           pauseTime("心魔暗生，夜梦惊扰！");
           triggerNovelEncounter("inner_demon");
           return;
-        } else if (Math.random() < 0.05) {
+        } else if (Math.random() < 0.05 * (1 + boonLevel("boon_luck") * 0.06)) {
           pauseTime("闭关吐纳，偶遇仙缘机会！");
           triggerNovelEncounter("cultivate");
           return;
@@ -3846,7 +3974,9 @@
         }
 
         let baseGain = (G.technique.bonusExp || 6) + Math.floor((G.stats.com || 40) * 0.15) + Math.floor(G.realmIndex * 1.8);
-        let gain = Math.max(1, Math.floor(baseGain * mapMult));
+        // 天命殿【宿慧吐纳】每级 +8% 月均进境
+        const qiBoonMult = 1 + boonLevel("boon_qi") * 0.08;
+        let gain = Math.max(1, Math.floor(baseGain * mapMult * qiBoonMult));
         if (G.exp < curRealm.maxExp) {
           G.exp = Math.min(curRealm.maxExp, G.exp + gain);
         } else {
@@ -5726,7 +5856,7 @@
       openModal('modalReincarnation');
     };
 
-    function renderReincarnationModal(earnedKarma = null) {
+    function renderReincarnationModal(earnedKarma = null, baseKarma = null, tMult = 1.0) {
       loadMeta();
       document.getElementById('metaReincarnationCount').textContent = META.reincarnations;
       document.getElementById('metaKarmaPoints').textContent = META.karmaPoints;
@@ -5736,6 +5866,15 @@
         if (earnedKarma !== null) {
           notice.style.display = 'block';
           document.getElementById('metaLastLifeKarma').textContent = earnedKarma;
+          const bd = document.getElementById('metaTrialBreakdown');
+          if (bd) {
+            if (tMult && tMult > 1.0 && baseKarma !== null) {
+              bd.style.display = 'block';
+              bd.innerHTML = `⚔️ 奉行【${currentTrial().name}】逆境求道：基础 ${baseKarma} 点 × ${tMult.toFixed(1)} 倍率 = <b style="color:var(--gold-light);">${earnedKarma}</b> 点！`;
+            } else {
+              bd.style.display = 'none';
+            }
+          }
         } else {
           notice.style.display = 'none';
         }
@@ -5787,17 +5926,33 @@
       const pBox = document.getElementById('creationPerksNotice');
       if (!pBox) return;
       const unlocked = (META.unlockedPerks || []);
+      let html = "";
       if (unlocked.length > 0) {
         const perkNames = unlocked.map(pid => {
           const p = META_PERKS.find(mp => mp.id === pid);
           return p ? `【${p.name}】` : pid;
         }).join(" ");
-        pBox.style.display = 'block';
-        pBox.innerHTML = `🌟 <b>宿世福泽护体：</b> 已觉醒 ${perkNames}，起步自带天赐机缘！`;
+        html = `🌟 <b>宿世福泽护体：</b> 已觉醒 ${perkNames}，起步自带天赐机缘！`;
       } else {
-        pBox.style.display = 'block';
-        pBox.innerHTML = `🌱 <b>初入仙途：</b> 此生为初代凡胎，积累天命功德后可在轮回神殿觉醒至尊宿慧！`;
+        html = `🌱 <b>初入仙途：</b> 此生为初代凡胎，积累天命功德后可在轮回神殿觉醒至尊宿慧！`;
       }
+
+      // 天命殿轮回加成汇总
+      const boonTexts = DESTINY_BOONS
+        .filter(b => boonLevel(b.id) > 0)
+        .map(b => `${b.icon}${b.name} ${boonLevel(b.id)}级`);
+      if (boonTexts.length > 0) {
+        html += `<div style="margin-top:0.35rem; color:var(--jade-green);">🏯 <b>天命加成随身：</b> ${boonTexts.join("　")}</div>`;
+      }
+
+      // 当世难度倒券警示
+      const t = currentTrial();
+      if (t.id !== "trial_none") {
+        html += `<div style="margin-top:0.35rem; color:var(--cinnabar);">⚔️ <b>奉行难度倒券【${t.name}】：</b> ${t.cost_desc}　→　功德结算 ×${t.mult.toFixed(1)}</div>`;
+      }
+
+      pBox.style.display = 'block';
+      pBox.innerHTML = html;
     }
 
     function buyMetaPerk(id, cost) {
@@ -5808,6 +5963,137 @@
       META.unlockedPerks.push(id);
       saveMeta();
       renderReincarnationModal();
+    }
+
+    /* ==========================================================================
+       天命殿 · 渲染与兑换
+       ========================================================================== */
+    document.getElementById('btnOpenDestiny').onclick = () => {
+      sfx.click();
+      renderDestinyModal();
+      openModal('modalDestiny');
+    };
+
+    function renderDestinyModal() {
+      loadMeta();
+      document.getElementById('destinyKarmaPoints').textContent = META.karmaPoints;
+      document.getElementById('destinyTrialName').textContent = currentTrial().name;
+
+      // --- 轮回加成 ---
+      const bList = document.getElementById('destinyBoonList');
+      bList.innerHTML = '';
+      DESTINY_BOONS.forEach(b => {
+        const lv = boonLevel(b.id);
+        const isMax = lv >= b.max;
+        const cost = boonCost(b.id);
+        const canAfford = !isMax && META.karmaPoints >= cost;
+        const div = document.createElement('div');
+        div.className = 'inv-item';
+        div.innerHTML = `
+          <div class="inv-info">
+            <span class="inv-name" style="color:${lv > 0 ? 'var(--jade-green)' : 'var(--purple-rare)'};">
+              ${b.icon} ${b.name}
+              <span style="color:var(--gold-light);">[${lv} / ${b.max} 级]</span>
+              ${isMax ? '（已臻圆满）' : `(下一级: ${cost}功德)`}
+            </span>
+            <span class="inv-desc">${b.desc}</span>
+            <span class="inv-desc" style="color:var(--jade-green);">
+              每级：${b.unit}${lv > 0 ? `　当前累计：${boonSummary(b, lv)}` : ''}
+            </span>
+          </div>
+          <div>
+            <button class="btn inv-btn ${isMax ? '' : 'btn-purple'}" ${isMax || !canAfford ? 'disabled' : ''} onclick="buyBoon('${b.id}')">
+              ${isMax ? '圆满' : '淬炼'}
+            </button>
+          </div>
+        `;
+        bList.appendChild(div);
+      });
+
+      // --- 难度倒券 ---
+      const tList = document.getElementById('destinyTrialList');
+      tList.innerHTML = '';
+      DESTINY_TRIALS.forEach(t => {
+        const unlocked = (META.unlockedTrials || ["trial_none"]).includes(t.id);
+        const isActive = (META.trial || "trial_none") === t.id;
+        const canAfford = META.karmaPoints >= t.cost;
+        let btnHtml;
+        if (isActive) {
+          btnHtml = `<button class="btn inv-btn" disabled>已选定</button>`;
+        } else if (unlocked) {
+          btnHtml = `<button class="btn inv-btn btn-gold" onclick="selectTrial('${t.id}')">选定</button>`;
+        } else {
+          btnHtml = `<button class="btn inv-btn btn-cinnabar" ${canAfford ? '' : 'disabled'} onclick="unlockTrial('${t.id}')">请券 (${t.cost})</button>`;
+        }
+        const div = document.createElement('div');
+        div.className = 'inv-item';
+        div.innerHTML = `
+          <div class="inv-info">
+            <span class="inv-name" style="color:${isActive ? 'var(--gold-light)' : (unlocked ? 'var(--jade-green)' : 'var(--cinnabar)')};">
+              ${t.icon} ${t.name} ${isActive ? '（当世奉行）' : (unlocked ? '（已请下）' : `(解锁: ${t.cost}功德)`)}
+              <span style="color:var(--purple-rare);">功德 ×${t.mult.toFixed(1)}</span>
+            </span>
+            <span class="inv-desc">${t.desc}</span>
+            <span class="inv-desc" style="color:var(--cinnabar);">代价：${t.cost_desc}</span>
+          </div>
+          <div>${btnHtml}</div>
+        `;
+        tList.appendChild(div);
+      });
+    }
+
+    // 展示某加成当前累计效果的文字
+    function boonSummary(b, lv) {
+      switch (b.id) {
+        case "boon_qi":     return `月均吐纳 +${lv * 8}%`;
+        case "boon_life":   return `寿元 +${lv * 15} 岁`;
+        case "boon_break":  return `突破率 +${lv * 2}%`;
+        case "boon_wealth": return `灵石 +${lv * 200} · 凡银 +${lv * 150}`;
+        case "boon_body":   return `体魄/神魂 +${lv * 15}`;
+        case "boon_luck":   return `机缘率 +${lv * 6}%`;
+        default: return "";
+      }
+    }
+
+    function buyBoon(id) {
+      loadMeta();
+      const cost = boonCost(id);
+      if (!isFinite(cost) || META.karmaPoints < cost) return;
+      const b = DESTINY_BOONS.find(x => x.id === id);
+      if (!b) return;
+      sfx.breakthrough();
+      META.karmaPoints -= cost;
+      if (!META.boons) META.boons = {};
+      META.boons[id] = boonLevel(id) + 1;
+      saveMeta();
+      if (G) addLog(`【天命淬炼】于天命殿投入 ${cost} 点功德，宿慧【${b.name}】精进至 ${META.boons[id]} 级（${boonSummary(b, META.boons[id])}），此后转世永久生效！`, "breakthrough");
+      renderDestinyModal();
+      renderUI();
+    }
+
+    function unlockTrial(id) {
+      loadMeta();
+      const t = DESTINY_TRIALS.find(x => x.id === id);
+      if (!t || META.karmaPoints < t.cost) return;
+      if (!confirm(`确定请下难度倒券【${t.name}】吗？\n\n代价：${t.cost_desc}\n回报：功德结算 ×${t.mult.toFixed(1)}\n\n消耗 ${t.cost} 点功德，永久解锁并立即选定。`)) return;
+      sfx.breakthrough();
+      META.karmaPoints -= t.cost;
+      if (!META.unlockedTrials) META.unlockedTrials = ["trial_none"];
+      if (!META.unlockedTrials.includes(id)) META.unlockedTrials.push(id);
+      META.trial = id;
+      saveMeta();
+      renderDestinyModal();
+      renderUI();
+    }
+
+    function selectTrial(id) {
+      loadMeta();
+      if (!(META.unlockedTrials || ["trial_none"]).includes(id)) return;
+      sfx.click();
+      META.trial = id;
+      saveMeta();
+      renderDestinyModal();
+      renderUI();
     }
 
     function reincarnateNow() {
@@ -5825,7 +6111,10 @@
 
     function settleKarmaAndReset() {
       loadMeta();
-      let earnedKarma = 10 + (G ? Math.floor((G.exp + (G.realmIndex * 150)) / 40) : 0);
+      const baseKarma = 10 + (G ? Math.floor((G.exp + (G.realmIndex * 150)) / 40) : 0);
+      // 难度倒券倍率加成
+      const tMult = trialMult();
+      const earnedKarma = Math.floor(baseKarma * tMult);
       META.karmaPoints += earnedKarma;
       META.reincarnations += 1;
       saveMeta();
@@ -5834,7 +6123,7 @@
       G = null;
       setTimeSpeed('paused');
       closeModal('modalCombat');
-      renderReincarnationModal(earnedKarma);
+      renderReincarnationModal(earnedKarma, baseKarma, tMult);
       openModal('modalReincarnation');
     }
 
@@ -5946,6 +6235,10 @@
       let perkBonus = 0;
       if ((META.unlockedPerks || []).includes("perk_dao_heart")) perkBonus += 10;
       if ((META.unlockedPerks || []).includes("perk_reincarnation_god")) perkBonus += 10;
+      // 天命殿【破境道韵】每级 +2%
+      perkBonus += boonLevel("boon_break") * 2;
+      // 难度倒券【魔劫加身】冲关把握 -8%
+      if ((META.trial || "trial_none") === "trial_demon") perkBonus -= 8;
 
       let pillBonus = 0;
       const req = BREAKTHROUGH_REQUISITES[g.realmIndex];
@@ -7249,6 +7542,15 @@
         }
       }
 
+      // 难度倒券【魔劫加身】：心魔业障每月自行滋长
+      if ((META.trial || "trial_none") === "trial_demon") {
+        const before = G.innerDemon || 0;
+        G.innerDemon = Math.min(100, before + 1);
+        if (G.innerDemon > before && G.innerDemon % 20 === 0) {
+          addLog(`【魔劫侵蚀】所奉【魔劫加身】倒券引魔煞入体，心魔业障无声滋长至 ${G.innerDemon}%，灵台渐染尘垢！`, "danger");
+        }
+      }
+
       // 推进宗门活跃令谕
       advanceSectDecrees();
 
@@ -7368,9 +7670,18 @@
     }
 
     function resolveEventChoice(idx) {
-      if (G && G.activeEvent && G.activeEvent.choices[idx]) {
-        G.activeEvent.choices[idx].act();
+      if (!G || !G.activeEvent) return;
+      const choice = G.activeEvent.choices && G.activeEvent.choices[idx];
+      if (choice && typeof choice.act === "function") {
+        choice.act();
+        return;
       }
+      // 兜底：若因存档往返导致 act 丢失，不让异常抛给用户，
+      // 直接消解这张失效卡片并放行时间流转。
+      G.activeEvent = null;
+      addLog("此段机缘已随天机流散，无从追溯，就此揭过。", "normal");
+      renderUI();
+      resumeAutoTimeIfEligible("机缘消散");
     }
 
     /* ==========================================================================
@@ -8816,6 +9127,11 @@
       if ((META.unlockedPerks || []).includes("perk_heaven_root")) {
         rootVal = "single";
       }
+      // 难度倒券【凡胎逆仙】自封天资，强制锁定四灵根杂品（优先于宿慧覆盖）
+      const activeTrial = currentTrial();
+      if (activeTrial.id === "trial_mortal") {
+        rootVal = "four";
+      }
 
       let rootDesc = "木水土三灵根";
       let basePhy = 40, baseSoul = 40, baseCom = 40;
@@ -8857,6 +9173,22 @@
         lifeBonus += 100;
       }
 
+      // 天命殿轮回加成：财帛天授 / 淬体宿根 / 龟龄玄息
+      const lvWealth = boonLevel("boon_wealth");
+      if (lvWealth > 0) {
+        startStones += lvWealth * 200;
+        startSilver += lvWealth * 150;
+      }
+      const lvBody = boonLevel("boon_body");
+      if (lvBody > 0) {
+        basePhy += lvBody * 15;
+        baseSoul += lvBody * 15;
+      }
+      lifeBonus += boonLevel("boon_life") * 15;
+
+      // 难度倒券【凡胎逆仙】基础寿元 -20
+      if (activeTrial.id === "trial_mortal") lifeBonus -= 20;
+
       if (origin === "scavenger") {
         startIdentity = "山野采药散修";
         inv.push({ ...ITEMS_DB.powder_beast, count: 2 }, { ...ITEMS_DB.herb_red, count: 2 });
@@ -8896,12 +9228,18 @@
       const maxHp = realm.baseHp + basePhy;
       const maxMp = realm.baseMp;
 
+      // 寿元上限结算（难度倒券【朝露之命】腰斩，但至少保留出生年龄 +5 年缓冲）
+      let finalMaxAge = lifeBonus + realm.lifeBonus + Math.floor(basePhy * 0.2);
+      if (activeTrial.id === "trial_shortlife") {
+        finalMaxAge = Math.max(age + 5, Math.floor(finalMaxAge / 2));
+      }
+
       G = {
         name: name,
         gender: gender,
         ageYears: age,
         ageMonths: 1,
-        maxAge: lifeBonus + realm.lifeBonus + Math.floor(basePhy * 0.2),
+        maxAge: finalMaxAge,
         realmIndex: startRealmIdx,
         exp: 0,
         foundation: 0,
