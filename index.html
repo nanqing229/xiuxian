@@ -255,6 +255,27 @@
     .fill-mp { background: linear-gradient(90deg, #0284c7, #38bdf8); }
     .fill-life { background: linear-gradient(90deg, #059669, #34d399); }
     .fill-foundation { background: linear-gradient(90deg, #6d28d9, #a855f7, #fbbf24); }
+    .fill-demon { background: linear-gradient(90deg, #7e22ce, #ec4899); }
+    .title-badge {
+      font-size: 0.68rem;
+      padding: 0.08rem 0.4rem;
+      border-radius: 4px;
+      font-weight: bold;
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(168, 85, 247, 0.25));
+      border: 1px solid var(--gold-dim);
+      color: var(--gold-light);
+      display: inline-block;
+      box-shadow: 0 0 6px rgba(212, 175, 55, 0.25);
+    }
+    .low-life-pulse {
+      animation: pulseRed 1.2s infinite;
+      color: #f87171 !important;
+      font-weight: bold;
+    }
+    @keyframes pulseRed {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.75; transform: scale(1.02); }
+    }
 
     /* 属性六维 */
     .attr-grid {
@@ -881,6 +902,7 @@
             <span class="badge badge-root" id="badgeRoot">灵根未辨</span>
             <span class="badge badge-sect" id="badgeSect">散修</span>
           </div>
+          <div class="char-titles-row" id="charTitlesRow" style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;"></div>
         </div>
 
         <!-- 装备四格 -->
@@ -919,6 +941,14 @@
               <span id="foundationBonusText" style="color:var(--purple-rare); font-size:0.72rem;">突破率+10%</span>
             </div>
             <div class="progress-track"><div class="progress-fill fill-foundation" id="barFoundation" style="width: 0%;"></div></div>
+          </div>
+
+          <div class="bar-row" id="rowInnerDemon">
+            <div class="bar-label-val">
+              <span>心魔业障 (<span id="demonVal">0</span>% · <span id="demonState" style="color:var(--jade-green);">道心通澈</span>)</span>
+              <span id="demonHint" style="color:var(--text-muted); font-size:0.72rem;">灵台无垢</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill fill-demon" id="barInnerDemon" style="width: 0%;"></div></div>
           </div>
 
           <div class="bar-row">
@@ -1727,6 +1757,11 @@
       talisman_dacheng: { id: "talisman_dacheng", name: "诸天须弥镇世印", type: "talisman", tier: "dacheng", quality: "red", desc: "纳诸天星海入一印之中，神魂+420，灵力+4000。", soul: 420, maxMp: 4000, price: 15000 },
       talisman_dujie: { id: "talisman_dujie", name: "九天雷祖御敕符", type: "talisman", tier: "dujie", quality: "red", desc: "敕令三十三天神雷护持，神魂+520，灵力+5200。", soul: 520, maxMp: 5200, price: 22000 },
       talisman_dongtian: { id: "talisman_dongtian", name: "鸿蒙洞天紫金葫", type: "talisman", tier: "xian", quality: "gold", desc: "自成一方天地的小洞天仙葫，神魂+680，灵力+7000！", soul: 680, maxMp: 7000, price: 30000 },
+      talisman_substitute: { id: "talisman_substitute", name: "替死替劫木傀儡", type: "talisman", tier: "jindan", quality: "purple", desc: "通灵古木雕琢之替死神傀，当遭遇致命灭顶死劫时，自动替死碎裂化灰，助道友金蝉脱壳遁逃生天！", def: 35, soul: 20, maxHp: 100, price: 280 },
+      flame_spirit: { id: "flame_spirit", name: "地心青莲真火", type: "talisman", tier: "yuanying", quality: "orange", desc: "诞生于地脉熔岩之通灵异火，温养紫府，灵术威能暴增30%，万邪辟易！", soul: 60, def: 80, maxMp: 500, price: 950 },
+      beast_companion: { id: "beast_companion", name: "通灵幼兽契约符", type: "talisman", tier: "zhuji", quality: "blue", desc: "与深山幼年通灵灵兽缔结的灵魂血契，遇险时灵兽舍身护主，战斗防御大幅提升！", def: 45, maxHp: 120, price: 90 },
+      token_taishang: { id: "token_taishang", name: "太上九天仙令", type: "usable", tier: "huashen", quality: "gold", desc: "太上仙宫真传圣女相赠之随身信物，蕴含大能护体罡气，生死关头免死护主，亦是未来因果重证之契！", price: 2000 },
+      scroll_ancient: { id: "scroll_ancient", name: "上古无量残经", type: "usable", tier: "jindan", quality: "purple", desc: "仙古遗落之残破金箔古经，研读参悟可洗涤神魂道念，悟性永久+10，心魔顿消！", price: 350 },
 
       // 丹炉神鼎
       pot_clay: { id: "pot_clay", name: "粗陶药罐", type: "furnace", tier: "fan", quality: "white", desc: "凡俗熬药罐，勉强温火，成丹率+0%。", alchRate: 0, price: 0 },
@@ -2684,6 +2719,8 @@
         ITEMS_DB.herb_jiangchen,
         ITEMS_DB.herb_longevity,
         ITEMS_DB.branch_spirit,
+        ITEMS_DB.talisman_substitute,
+        ITEMS_DB.scroll_ancient,
         ITEMS_DB.sword_fire,
         ITEMS_DB.sword_seven,
         ITEMS_DB.armor_gold,
@@ -2702,6 +2739,8 @@
         ITEMS_DB.herb_ying,
         ITEMS_DB.herb_wanshou,
         ITEMS_DB.branch_spirit,
+        ITEMS_DB.talisman_substitute,
+        ITEMS_DB.scroll_ancient,
         ITEMS_DB.sword_seven,
         ITEMS_DB.sword_lingbao,
         ITEMS_DB.armor_tianyu,
@@ -2718,6 +2757,7 @@
         ITEMS_DB.herb_ying,
         ITEMS_DB.herb_soul_wood,
         ITEMS_DB.herb_tianhua,
+        ITEMS_DB.talisman_substitute,
         ITEMS_DB.sword_lingbao,
         ITEMS_DB.sword_yuanying,
         ITEMS_DB.sword_huashen,
@@ -2739,6 +2779,7 @@
         ITEMS_DB.herb_soul_wood,
         ITEMS_DB.herb_tianhua,
         ITEMS_DB.herb_xiancao,
+        ITEMS_DB.talisman_substitute,
         ITEMS_DB.sword_huashen,
         ITEMS_DB.sword_tongtian,
         ITEMS_DB.sword_heti,
@@ -3389,6 +3430,10 @@
       if (!Array.isArray(data.worldLogs)) data.worldLogs = [];
       if (!Array.isArray(data.worldNews)) data.worldNews = [];
       if (!Array.isArray(data.npcs)) data.npcs = [];
+      if (typeof data.innerDemon !== "number" || isNaN(data.innerDemon)) data.innerDemon = 0;
+      data.innerDemon = Math.max(0, Math.min(100, Math.floor(data.innerDemon)));
+      if (!Array.isArray(data.titles)) data.titles = [];
+      if (!Array.isArray(data.bonds)) data.bonds = [];
       syncNpcsForCurrentState(data, false);
 
       // 9. 气血与法力同步计算
@@ -3638,6 +3683,22 @@
       const mapMult = curMap.expMult || 1.0;
 
       if (routine === 'cultivate') {
+        // 心魔惊扰或偶得机缘
+        if ((G.innerDemon || 0) >= 35 && Math.random() < 0.12) {
+          pauseTime("心魔暗生，夜梦惊扰！");
+          triggerNovelEncounter("inner_demon");
+          return;
+        } else if (Math.random() < 0.05) {
+          pauseTime("闭关吐纳，偶遇仙缘机会！");
+          triggerNovelEncounter("cultivate");
+          return;
+        }
+
+        // 持有上古无量残经闭关可静心涤邪
+        if ((G.inventory || []).some(i => i.id === "scroll_ancient" && i.count > 0)) {
+          G.innerDemon = Math.max(0, (G.innerDemon || 0) - 2);
+        }
+
         let baseGain = (G.technique.bonusExp || 6) + Math.floor((G.stats.com || 40) * 0.15) + Math.floor(G.realmIndex * 1.8);
         let gain = Math.max(1, Math.floor(baseGain * mapMult));
         if (G.exp < curRealm.maxExp) {
@@ -3663,7 +3724,7 @@
         }
       } else if (routine === 'herb') {
         const r = Math.random();
-        if (r < 0.5) {
+        if (r < 0.45) {
           // 搜山采药
           const herbKey = pickRandomByWeight(curMap.herbChance);
           const item = ITEMS_DB[herbKey] || ITEMS_DB.herb_red;
@@ -3676,16 +3737,27 @@
             G.silver += 2;
             addLog(`于【${curMap.name}】密林石缝中采获【${item.name}】×1。`, "fortune");
           }
-        } else if (r < 0.75) {
+        } else if (r < 0.58) {
+          pauseTime(`搜寻灵药途中偶遇奇遇造化！`);
+          triggerNovelEncounter("herb");
+          return;
+        } else if (r < 0.82) {
           pauseTime(`在【${curMap.name}】搜寻到灵宝，与守宝凶物对峙！`);
           triggerHerbEncounterEvent();
+          return;
         } else if (r > 0.92) {
           // 遇敌
           const enemy = curMap.enemyPool[Math.floor(Math.random() * curMap.enemyPool.length)];
           pauseTime(`遭遇【${enemy.name}】拦截！`);
           startCombat(enemy);
+          return;
         }
       } else if (routine === 'bounty') {
+        if (Math.random() < 0.12) {
+          pauseTime(`游历仙城差事，偶遇机缘因果！`);
+          triggerNovelEncounter("city");
+          return;
+        }
         if (G.realmIndex >= 11) { // 筑基及以上，大域仙门榜文发放灵石与丰厚经验
           const gainStones = Math.floor((2 + (G.realmIndex * 1.2)) * Math.sqrt(mapMult));
           G.stones += gainStones;
@@ -3699,11 +3771,15 @@
         }
       } else if (routine === 'explore') {
         const r = Math.random();
-        if (r < 0.35) {
+        if (r < 0.22) {
+          pauseTime(`大荒秘境探幽，触发奇遇机缘！`);
+          triggerNovelEncounter("explore");
+          return;
+        } else if (r < 0.45) {
           const dmg = Math.max(15, Math.floor(G.maxHp * 0.12));
           G.hp = Math.max(10, G.hp - dmg);
           addLog(`涉险探秘触动古修残阵禁制，气血受损 ${dmg} 点。`, "danger");
-        } else if (r < 0.72) {
+        } else if (r < 0.85) {
           sfx.success();
           const gotStones = Math.floor((3 + G.realmIndex * 2) * (1 + Math.random() * 0.5) * Math.sqrt(mapMult));
           const herbKey = pickRandomByWeight(curMap.herbChance);
@@ -3713,12 +3789,15 @@
           const gainExp = Math.floor((20 + G.realmIndex * 8) * mapMult);
           addExp(gainExp, "古洞探幽");
           addLog(`【古洞探幽】在【${curMap.name}】隐秘废墟瓦砾间发掘出灵石 ${gotStones} 块与【${lootItem.name}】！修为+${gainExp}。`, "fortune");
-        } else if (r > 0.86) {
+        } else {
           const enemy = curMap.enemyPool[Math.floor(Math.random() * curMap.enemyPool.length)];
           pauseTime(`惊动洞中妖王【${enemy.name}】！`);
           startCombat(enemy);
+          return;
         }
       } else if (routine === 'heal') {
+        // 温养调元涤净经脉心魔
+        G.innerDemon = Math.max(0, (G.innerDemon || 0) - 3);
         if (G.breakthroughInjuryMonths > 0) {
           G.breakthroughInjuryMonths = Math.max(0, G.breakthroughInjuryMonths - 1);
         }
@@ -3730,10 +3809,10 @@
             cleanZeroInv();
             heal = Math.floor(heal * 1.25) + 50;
             G.hp = Math.min(G.maxHp, G.hp + heal);
-            addLog(`吞服一品凝血散并引灵温养，气血快速愈合回升 ${heal} 点。`, "fortune");
+            addLog(`吞服一品凝血散并引灵温养，气血快速愈合回升 ${heal} 点，心魔消退。`, "fortune");
           } else {
             G.hp = Math.min(G.maxHp, G.hp + heal);
-            addLog(`盘坐吐纳周天生机温养经脉，气血平复回升 ${heal} 点。`, "normal");
+            addLog(`盘坐吐纳周天生机温养经脉，气血平复回升 ${heal} 点，心神安宁。`, "normal");
           }
         } else {
           addExp(G.technique.bonusExp || 6, "温养吐纳");
@@ -5723,8 +5802,15 @@
         else if ((g.inventory || []).some(i => i.id === "pill_break" && i.count > 0)) pillBonus += 15;
       }
 
-      let total = baseChance + foundationBonus + comBonus + perkBonus + pillBonus;
-      total = Math.max(10, Math.min(98, total));
+      // 心魔侵蚀惩罚 (心魔越大，冲关时心魔反扑越剧烈，最高扣除25%几率)
+      const demonPenalty = Math.floor((g.innerDemon || 0) * 0.25);
+
+      // 气血衰退与寿元大限惩罚 (寿元消耗超75%后气血枯竭，老迈冲关难度增加15%)
+      const ageRatio = g.maxAge > 0 ? (g.ageYears / g.maxAge) : 0;
+      const agePenalty = ageRatio >= 0.75 ? 15 : 0;
+
+      let total = baseChance + foundationBonus + comBonus + perkBonus + pillBonus - demonPenalty - agePenalty;
+      total = Math.max(5, Math.min(95, total));
 
       return {
         chance: total,
@@ -5734,6 +5820,8 @@
         pillBonus,
         comBonus,
         perkBonus,
+        demonPenalty,
+        agePenalty,
         tier,
         lacksReqPill,
         req
@@ -5830,6 +5918,17 @@
       document.getElementById('badgeRoot').textContent = G.root;
       document.getElementById('badgeSect').textContent = G.sect ? G.sect.name : "散修";
 
+      const titlesContainer = document.getElementById('charTitlesRow');
+      if (titlesContainer) {
+        titlesContainer.innerHTML = '';
+        (G.titles || []).forEach(t => {
+          const span = document.createElement('span');
+          span.className = 'title-badge';
+          span.textContent = t;
+          titlesContainer.appendChild(span);
+        });
+      }
+
       // 装备槽位渲染
       renderEquipSlots();
 
@@ -5849,6 +5948,31 @@
         document.getElementById('barFoundation').style.width = Math.min(100, G.foundation || 0) + '%';
       }
 
+      // 心魔状态渲染
+      const demonVal = Math.max(0, Math.min(100, Math.floor(G.innerDemon || 0)));
+      if (document.getElementById('demonVal')) {
+        document.getElementById('demonVal').textContent = demonVal;
+        const demonStateEl = document.getElementById('demonState');
+        const demonHintEl = document.getElementById('demonHint');
+        document.getElementById('barInnerDemon').style.width = demonVal + '%';
+        if (demonVal >= 70) {
+          demonStateEl.textContent = "走火入魔危兆";
+          demonStateEl.style.color = "var(--cinnabar)";
+          demonHintEl.textContent = "雷劫心魔狂暴！";
+          demonHintEl.style.color = "var(--cinnabar-light)";
+        } else if (demonVal >= 35) {
+          demonStateEl.textContent = "心魔暗生";
+          demonStateEl.style.color = "#f59e0b";
+          demonHintEl.textContent = "突破几率受损";
+          demonHintEl.style.color = "#f59e0b";
+        } else {
+          demonStateEl.textContent = "道心通澈";
+          demonStateEl.style.color = "var(--jade-green)";
+          demonHintEl.textContent = "灵台清明无垢";
+          demonHintEl.style.color = "var(--text-muted)";
+        }
+      }
+
       const probEl = document.getElementById('breakthroughProb');
       if (G.realmIndex >= REALMS.length - 1) {
         probEl.textContent = "万古真仙 · 极境圆满";
@@ -5861,8 +5985,10 @@
         probEl.style.color = "var(--text-muted)";
       } else {
         const pillHint = calc.lacksReqPill ? " · 缺护道丹" : (calc.pillBonus > 0 ? " · 丹药护持" : "");
-        probEl.textContent = `突破把握: ${calc.chance}% (${calc.tier.name}${pillHint})`;
-        probEl.style.color = calc.chance >= 80 ? "var(--gold-primary)" : (calc.chance >= 50 ? "var(--purple-rare)" : "var(--cinnabar-light)");
+        const demonWarn = calc.demonPenalty > 0 ? ` · 心魔-${calc.demonPenalty}%` : "";
+        const ageWarn = calc.agePenalty > 0 ? " · 气血衰老-15%" : "";
+        probEl.textContent = `突破把握: ${calc.chance}% (${calc.tier.name}${pillHint}${demonWarn}${ageWarn})`;
+        probEl.style.color = calc.chance >= 75 ? "var(--gold-primary)" : (calc.chance >= 45 ? "var(--purple-rare)" : "var(--cinnabar-light)");
       }
 
       const hpPercent = Math.min(100, Math.round((G.hp / G.maxHp) * 100));
@@ -5881,7 +6007,18 @@
       document.getElementById('ageVal').textContent = G.ageYears;
       document.getElementById('maxAgeVal').textContent = G.maxAge;
       document.getElementById('barLife').style.width = lifePercent + '%';
-      document.getElementById('lifePercent').textContent = lifePercent > 80 ? "大限将至" : (lifePercent > 50 ? "中年自省" : "青壮韶华");
+      
+      const remainingYears = Math.max(0, G.maxAge - G.ageYears);
+      const lifePercentEl = document.getElementById('lifePercent');
+      if (remainingYears <= 5) {
+        lifePercentEl.innerHTML = `<span class="low-life-pulse">⏳ 大限将至 (仅剩${remainingYears}年)</span>`;
+      } else if (remainingYears <= 15 || lifePercent > 80) {
+        lifePercentEl.innerHTML = `<span style="color:#f59e0b;">⏳ 迟暮之年 (剩${remainingYears}年)</span>`;
+      } else if (lifePercent > 50) {
+        lifePercentEl.textContent = `道途中年 (剩${remainingYears}年)`;
+      } else {
+        lifePercentEl.textContent = `青壮韶华 (剩${remainingYears}年)`;
+      }
 
       // 属性六维
       document.getElementById('attrPhy').textContent = `${G.stats.phy}`;
@@ -6776,6 +6913,12 @@
           G.sect.disciples.total += naturalRecruits;
           G.sect.disciples.idle += naturalRecruits;
         }
+
+        // 年度偶遇修仙界天象大事件（如天墟秘境甲子重开、仙翁游历等）
+        if (G.realmIndex >= 6 && Math.random() < 0.18 && !G.activeEvent) {
+          pauseTime("天地异象，修仙界大事件降临！");
+          setTimeout(() => triggerNovelEncounter("world"), 100);
+        }
       }
 
       if (G.ageYears >= G.maxAge) {
@@ -6917,6 +7060,542 @@
     }
 
     /* ==========================================================================
+       修仙小说经典奇遇因果系统（十大奇遇与多分支抉择）
+       ========================================================================== */
+    function triggerNovelEncounter(category = "explore") {
+      if (!G || G.activeEvent) return;
+      const curMap = MAPS_DB.find(m => m.id === (G.currentMap || "town")) || MAPS_DB[0];
+
+      let encounterKeys = [];
+      if (category === "inner_demon") {
+        encounterKeys = ["inner_demon_night"];
+      } else if (category === "cultivate") {
+        encounterKeys = ((G.innerDemon || 0) >= 35) ? ["inner_demon_night", "fairy_chess"] : ["fairy_chess", "ancient_cave"];
+      } else if (category === "city") {
+        encounterKeys = ["black_market", "auction_feud", "rescued_saintess"];
+      } else if (category === "herb") {
+        encounterKeys = ["beast_egg", "dying_evil_cultivator", "fire_pit"];
+      } else if (category === "world") {
+        encounterKeys = ["secret_realm", "fairy_chess", "rescued_saintess"];
+      } else { // explore
+        encounterKeys = ["ancient_cave", "fire_pit", "beast_egg", "dying_evil_cultivator", "secret_realm"];
+      }
+
+      const pickedKey = encounterKeys[Math.floor(Math.random() * encounterKeys.length)];
+
+      if (pickedKey === "ancient_cave") {
+        G.activeEvent = {
+          title: `🏛️ 【古修遗府 · 枯骨遗泽】`,
+          desc: `在【${curMap.name}】隐秘断崖裂隙间，你发掘出一处封尘万载的古修坐化石室。中央枯骨如玉，身前留有一卷玄奥禁制残卷与一枚黯淡储物戒。`,
+          choices: [
+            {
+              text: "三跪九叩，恭敬以待先贤",
+              hint: "道心纯良，若心魔不高可得古修残魂传法认可",
+              act: () => {
+                G.activeEvent = null;
+                if ((G.innerDemon || 0) >= 50) {
+                  addLog(`古修残魂浮现，见你识海心魔涌动，摇头喟叹：“杀伐业障缠身，难承衣钵。”留下半式残篇后消散，悟性+1。`, "normal");
+                  G.stats.com += 1;
+                } else {
+                  sfx.success();
+                  G.stats.com += 4;
+                  G.innerDemon = Math.max(0, (G.innerDemon || 0) - 20);
+                  addExp(180, "先贤传法");
+                  addItemToInv(ITEMS_DB.talisman_substitute, 1);
+                  addLog(`【先贤衣钵】古修残魂欣然显化：“心性淳厚，善根未泯！”挥手解开禁制，传授太古法门！悟性+4，修为暴涨，心魔消退20%，并获赠保命神物【替死替劫木傀儡】！`, "breakthrough");
+                }
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("古洞得法");
+              }
+            },
+            {
+              text: "强力破阵，夺取遗府珍藏",
+              hint: "强轰阵法！或遭残雷重创，心魔+20，但可大肆搜刮灵资",
+              act: () => {
+                G.activeEvent = null;
+                sfx.slash();
+                const dmg = Math.floor(G.maxHp * 0.3);
+                G.hp = Math.max(1, G.hp - dmg);
+                G.innerDemon = Math.min(100, (G.innerDemon || 0) + 20);
+                const stones = 150 + Math.floor(Math.random() * 150);
+                G.stones += stones;
+                addItemToInv(ITEMS_DB.pill_break, 2);
+                addLog(`【蛮横破阵】你祭出法器轰碎石台！上古残雷反震受创 ${dmg} 点，心魔+20%，但强行卷走灵石 ${stones} 块与【二品破障散】×2！`, "danger");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("强夺宝物");
+              }
+            },
+            {
+              text: "谨慎拓印石壁残篇退走",
+              hint: "不触机关，稳健得法，悟性+2",
+              act: () => {
+                G.activeEvent = null;
+                sfx.click();
+                G.stats.com += 2;
+                addLog(`你谨守本心不碰触遗物机关，仅就着石壁拓印古修残篇，悟性+2，从容退走。`, "normal");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("拓印退走");
+              }
+            }
+          ]
+        };
+      } else if (pickedKey === "black_market") {
+        G.activeEvent = {
+          title: `🏮 【仙城黑市 · 盲盒捡漏】`,
+          desc: `仙城暗巷深处，一位邋遢老道用破布裹着几件沾染泥垢的生锈古器，贼兮兮唤你：“小道友，老夫刚从天渊古墟掘出的无上神物，只要50灵石，全凭机缘眼力！”`,
+          choices: [
+            {
+              text: "豪掷 50 灵石果断捡漏",
+              hint: "悟性>=45或气运极佳可鉴出绝世奇物，否则可能当冤大头",
+              act: () => {
+                if (G.stones < 50) { alert("行囊中灵石不足 50 块，囊中羞涩！"); return; }
+                G.activeEvent = null;
+                G.stones -= 50;
+                const isSuccess = ((G.stats.com || 30) >= 45 || Math.random() < 0.45);
+                if (isSuccess) {
+                  sfx.breakthrough();
+                  const hasFlame = (G.inventory || []).some(i => i.id === "flame_spirit");
+                  if (!hasFlame) {
+                    addItemToInv(ITEMS_DB.flame_spirit, 1);
+                    addLog(`【慧眼识珠 · 惊天捡漏】你擦拭古铜残片，灵火封印剥落，竟是一朵【地心青莲真火】！老道目瞪口呆懊悔捶胸！`, "breakthrough");
+                  } else {
+                    addItemToInv(ITEMS_DB.talisman_substitute, 1);
+                    addLog(`【慧眼识珠】你辨识出泥垢下的古老神符，竟是一尊完好的【替死替劫木傀儡】！捡得大漏！`, "breakthrough");
+                  }
+                } else {
+                  sfx.fail();
+                  G.stats.phy += 1;
+                  addLog(`【黑市打眼】擦拭干净后只是一块普通的生铁矿，老道奸笑遁走。你当场交了学费，但修心磨砺使得体魄+1。`, "normal");
+                }
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("黑市捡漏归来");
+              }
+            },
+            {
+              text: "砍价至 15 灵石换购残简",
+              hint: "小额灵石换购残破丹方心得",
+              act: () => {
+                if (G.stones < 15) { alert("灵石不足 15 块！"); return; }
+                G.activeEvent = null;
+                G.stones -= 15;
+                sfx.success();
+                G.stats.com += 1;
+                addItemToInv(ITEMS_DB.herb_red, 2);
+                addLog(`老道骂骂咧咧把一卷残缺古方塞给你，你从中领悟到几手火候要诀，悟性+1，并附赠赤血灵草两株。`, "fortune");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("黑市低买");
+              }
+            },
+            {
+              text: "冷笑识破骗局，拂袖而去",
+              hint: "修仙路骗局繁多，道心如止水",
+              act: () => {
+                G.activeEvent = null;
+                sfx.click();
+                addLog(`你冷眼扫过破烂古器，拂袖径直离去，道心无波无澜。`, "normal");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("不沾因果");
+              }
+            }
+          ]
+        };
+      } else if (pickedKey === "dying_evil_cultivator") {
+        G.activeEvent = {
+          title: `🩸 【重伤邪修 · 濒死夺舍】`,
+          desc: `荒野幽谷之中，一位浑身魔气溃散、大口咳血的金丹邪修老魔倚石倒卧。见你靠近，老魔眼中闪烁着怨毒与狡黠的绿芒！`,
+          choices: [
+            {
+              text: "趁其病要其命，一剑封喉搜魂！",
+              hint: `神魂检定（当前神魂：${G.stats.soul}），神魂高可反炼魔魂夺宝`,
+              act: () => {
+                G.activeEvent = null;
+                sfx.slash();
+                if ((G.stats.soul || 30) >= 45) {
+                  sfx.success();
+                  G.stats.soul += 3;
+                  G.innerDemon = Math.min(100, (G.innerDemon || 0) + 5);
+                  const stones = 160 + Math.floor(Math.random() * 80);
+                  G.stones += stones;
+                  addItemToInv(ITEMS_DB.powder_beast, 3);
+                  addLog(`【神魂镇杀】魔头元神尖啸冲入识海企图夺舍，反被你雄浑神魂一掌震碎炼化！缴获灵石 ${stones} 块，神魂+3！`, "breakthrough");
+                } else {
+                  sfx.fail();
+                  const dmg = Math.floor(G.maxHp * 0.35);
+                  G.hp = Math.max(1, G.hp - dmg);
+                  G.innerDemon = Math.min(100, (G.innerDemon || 0) + 25);
+                  addLog(`【遭魂反扑】虽一剑斩下老魔头颅，但其元神垂死反扑震伤你识海！气血受损 ${dmg} 点，心魔暴增 25%！`, "danger");
+                }
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("斩除老魔");
+              }
+            },
+            {
+              text: "假意救治套取魔宗杀伐秘术",
+              hint: "套取杀戮秘诀！攻击大涨，但心魔狂飙+30%",
+              act: () => {
+                G.activeEvent = null;
+                sfx.spell();
+                G.stats.phy += 4;
+                G.stats.soul += 2;
+                G.innerDemon = Math.min(100, (G.innerDemon || 0) + 30);
+                addLog(`【修罗杀伐】你诈取老魔怀中《九幽戮魂诀》后将其轰杀！杀伐战力激增，但受魔道血腥侵染，心魔暴涨 30%！`, "danger");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("魔功噬体");
+              }
+            },
+            {
+              text: "警觉异样，果断御风远遁",
+              hint: "防备老魔元神自爆，稳妥避险",
+              act: () => {
+                G.activeEvent = null;
+                sfx.click();
+                addLog(`你察觉老魔丹田真元逆流，毫不犹豫疾速遁出百丈！身后巨石轰然爆碎，老魔元神自爆化作火海，你毫发无损！`, "normal");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("避开自爆");
+              }
+            }
+          ]
+        };
+      } else if (pickedKey === "rescued_saintess") {
+        G.activeEvent = {
+          title: `🌸 【太上仙宫 · 落难圣女】`,
+          desc: `大荒瘴雾边缘，一名白衣胜雪、风华绝代的清丽女子身中奇毒昏迷倒在血泊中，四周横七竖八躺着魔道追兵的尸体。女子腰间佩着【太上九天仙宫】的传人金令！`,
+          choices: [
+            {
+              text: "运功逼毒，拔剑为其护法",
+              hint: "消耗 20 点法力与部分真元，结下太上仙宫无上善缘",
+              act: () => {
+                G.activeEvent = null;
+                sfx.spell();
+                G.mp = Math.max(0, (G.mp || 20) - 20);
+                G.stats.reputation += 50;
+                G.stones += 200;
+                addItemToInv(ITEMS_DB.token_taishang, 1);
+                addLog(`【太上仙缘】圣女姬清雪幽幽转醒，美目盈盈：“多谢道兄舍命相护，此恩清雪永世难忘！”赠予护身金令【太上九天仙令】及灵石 200 块，声望+50！`, "breakthrough");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("救助圣女");
+              }
+            },
+            {
+              text: "趁火打劫索要买命资粮",
+              hint: "夺取 300 灵石，但结下恶缘，声望-30，心魔+15",
+              act: () => {
+                G.activeEvent = null;
+                sfx.slash();
+                G.stones += 300;
+                G.stats.reputation = Math.max(0, G.stats.reputation - 30);
+                G.innerDemon = Math.min(100, (G.innerDemon || 0) + 15);
+                addLog(`你冷漠搜走圣女储物袋中 300 灵石。圣女苏醒后美目冰冷：“今日之耻，来日必报！”御剑负伤遁去，你心魔+15。`, "danger");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("搜刮离去");
+              }
+            },
+            {
+              text: "仙宗倾轧水太深，悄然离去",
+              hint: "不过问各大圣地恩怨，明哲保身",
+              act: () => {
+                G.activeEvent = null;
+                sfx.click();
+                addLog(`你收敛气息从容退走，不过问太上仙宫与魔宗的血海深仇，大道求稳。`, "normal");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("悄然避开");
+              }
+            }
+          ]
+        };
+      } else if (pickedKey === "fire_pit") {
+        G.activeEvent = {
+          title: `🔥 【地心裂隙 · 青莲真火】`,
+          desc: `地脉轰然破裂，滚滚地底岩浆中徐徐盛开出一朵晶莹剔透的青莲焰火——天地至珍【地心青莲真火】！烈焰滔天，整座山林化为焦土！`,
+          choices: [
+            {
+              text: "运转周天灵力强行炼化灵火",
+              hint: `体魄检定（当前体魄：${G.stats.phy}），成功获得神物【地心青莲真火】！`,
+              act: () => {
+                G.activeEvent = null;
+                if ((G.stats.phy || 30) >= 45 || (G.inventory || []).some(i => i.id === "pill_blood")) {
+                  sfx.breakthrough();
+                  addItemToInv(ITEMS_DB.flame_spirit, 1);
+                  addLog(`【天地灵火 · 青莲归心】你以如铁体魄硬抗焚体之痛，终将青莲真火降伏化为紫府本命灵火！获得神物【地心青莲真火】！往后斗法法术暴涨且附带真火灼烧！`, "breakthrough");
+                } else {
+                  sfx.fail();
+                  const dmg = Math.floor(G.maxHp * 0.45);
+                  G.hp = Math.max(1, G.hp - dmg);
+                  G.innerDemon = Math.min(100, (G.innerDemon || 0) + 15);
+                  addLog(`【火毒噬体】体魄不足以承载真火，烈焰反噬灼伤经脉，气血大损 ${dmg} 点，心魔+15%！需速速疗伤！`, "danger");
+                }
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("炼火归来");
+              }
+            },
+            {
+              text: "以玄冰玉匣隔空采收封存",
+              hint: "稳妥收取火种换取大笔灵石资粮",
+              act: () => {
+                G.activeEvent = null;
+                sfx.success();
+                G.stones += 220;
+                addLog(`你以玄冰匣巧妙隔空封存火种，送往仙城大殿兑得 220 块灵石！`, "fortune");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("封存真火");
+              }
+            },
+            {
+              text: "火势过于暴烈，果断退避",
+              hint: "不贪奇物，保全身躯",
+              act: () => {
+                G.activeEvent = null;
+                sfx.click();
+                addLog(`真火狂暴无序，你深谙量力而行之理，从容撤退。`, "normal");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("退避真火");
+              }
+            }
+          ]
+        };
+      } else if (pickedKey === "beast_egg") {
+        G.activeEvent = {
+          title: `🥚 【万丈绝壁 · 通灵神兽】`,
+          desc: `在万仞绝壁的古青鸾巢穴中，一枚萦绕五彩祥云的神兽蛋正在咔嚓裂开，一只通体雪白、额生通灵紫角的神兽幼崽破壳而出，懵懂地凝望着你！`,
+          choices: [
+            {
+              text: "割破指尖以心头精血缔结血契",
+              hint: "损耗 25% 气血精元，收服【通灵幼兽契约符】（战斗护主减伤30%）",
+              act: () => {
+                G.activeEvent = null;
+                sfx.spell();
+                const loss = Math.floor(G.maxHp * 0.25);
+                G.hp = Math.max(10, G.hp - loss);
+                addItemToInv(ITEMS_DB.beast_companion, 1);
+                addLog(`【神兽血契】你以心头精血为引，与幼兽结下生死共鸣的本命血契！获得【通灵幼兽契约符】！往后斗法将有灵兽咆哮护主！`, "breakthrough");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("血契神兽");
+              }
+            },
+            {
+              text: "取神兽蛋壳与先天精气炼药",
+              hint: "暴殄天物！体魄+5，寿元上限延长 5 载，心魔+15",
+              act: () => {
+                G.activeEvent = null;
+                sfx.success();
+                G.stats.phy += 5;
+                G.maxAge += 5;
+                G.innerDemon = Math.min(100, (G.innerDemon || 0) + 15);
+                addLog(`【先天药力】你取下蕴含洪荒精气的蛋壳吞服炼化，体魄暴增 5 点，寿元凭空增益 5 载！但杀幼取卵心魔+15%。`, "fortune");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("炼化蛋壳");
+              }
+            },
+            {
+              text: "留下数枚灵草，善待生灵",
+              hint: "顺应天道因果，得神兽天目指引高阶药王",
+              act: () => {
+                G.activeEvent = null;
+                sfx.success();
+                addItemToInv(ITEMS_DB.herb_fire, 2);
+                addLog(`幼兽欢喜咀嚼灵草，通灵天目为你破除林海障雾，指引你采得高阶【赤焰火莲】×2！`, "fortune");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("善缘指引");
+              }
+            }
+          ]
+        };
+      } else if (pickedKey === "secret_realm") {
+        G.activeEvent = {
+          title: `🌌 【天墟秘境 · 甲子争锋】`,
+          desc: `沉寂一甲子的【天墟古秘境】轰然显世，九彩霞光横贯长空！整片大域宗门世家天骄蜂拥而入，争夺天道灵泉与太古造化！`,
+          choices: [
+            {
+              text: "杀入秘境擂台夺取天道灵泉",
+              hint: "筑基及以上强者可与天骄一决高下！胜者道基直接圆满100%极境！",
+              act: () => {
+                G.activeEvent = null;
+                if (G.realmIndex >= 11) {
+                  sfx.breakthrough();
+                  G.foundation = 100;
+                  G.stats.reputation += 80;
+                  addLog(`【名动天墟 · 傲视群雄】你连挫三大顶级宗门道子，独霸天道灵泉洗礼！道基瞬间淬炼至【100% 天道极境】！声望暴涨 80 点！`, "breakthrough");
+                } else {
+                  sfx.fail();
+                  const dmg = Math.floor(G.maxHp * 0.3);
+                  G.hp = Math.max(1, G.hp - dmg);
+                  addItemToInv(ITEMS_DB.pill_break, 1);
+                  addLog(`修为稍弱被各派天骄剑阵震退负伤，但你身手敏捷顺手夺下一颗【二品破障散】！`, "danger");
+                }
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("秘境归来");
+              }
+            },
+            {
+              text: "在偏僻药谷稳妥搜寻灵药",
+              hint: "避开正面厮杀，搜刮 3 株高阶灵药与灵石",
+              act: () => {
+                G.activeEvent = null;
+                sfx.success();
+                addItemToInv(ITEMS_DB.vine_gold, 2);
+                addItemToInv(ITEMS_DB.spirit_dew, 1);
+                G.stones += 80;
+                addLog(`你审时度势潜入隐秘偏殿，采得【金髓灵藤】×2与【千年灵乳】×1，附带灵石 80 块！`, "fortune");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("偏殿搜寻");
+              }
+            },
+            {
+              text: "守在秘境出口伏击夺宝修士",
+              hint: "杀人越货黑吃黑！掠得大批灵石，心魔暴增 25%",
+              act: () => {
+                G.activeEvent = null;
+                sfx.slash();
+                G.stones += 220;
+                G.innerDemon = Math.min(100, (G.innerDemon || 0) + 25);
+                addLog(`【秘境截杀】你于出口处截杀两名负伤散修，缴获灵石 220 块！但杀戮过甚，心魔暴增 25%！`, "danger");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("截杀归来");
+              }
+            }
+          ]
+        };
+      } else if (pickedKey === "fairy_chess") {
+        G.activeEvent = {
+          title: `♟️ 【万仞绝巅 · 仙翁弈棋】`,
+          desc: `云海绝巅古松之下，遇一须发皆白、仙风道骨之老仙翁。仙翁挥袖摆开星罗棋盘，抚须含笑：“浮生如寄，小道友可愿与老夫对弈一局？”`,
+          choices: [
+            {
+              text: "执黑落子，以浩然道心破局",
+              hint: `悟性检定（当前悟性：${G.stats.com}），悟道天地阴阳，心魔大减，悟性+6！`,
+              act: () => {
+                G.activeEvent = null;
+                if ((G.stats.com || 30) >= 45) {
+                  sfx.breakthrough();
+                  G.stats.com += 6;
+                  G.innerDemon = Math.max(0, (G.innerDemon || 0) - 30);
+                  addExp(200, "棋通天道");
+                  addLog(`【棋道通天 · 顿悟玄机】黑白纵横宛若星宿列阵！你堪破虚妄顿悟天道，悟性+6，修为暴涨，心魔消退 30%！`, "breakthrough");
+                } else {
+                  sfx.click();
+                  G.stats.com += 2;
+                  addLog(`棋力不敌仙翁，但老翁拂须指点数句，如醍醐灌顶，悟性+2。`, "normal");
+                }
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("弈棋顿悟");
+              }
+            },
+            {
+              text: "执白落子，行险招杀伐凌厉",
+              hint: "剑意杀伐决断，体魄+3，神魂+2",
+              act: () => {
+                G.activeEvent = null;
+                sfx.slash();
+                G.stats.phy += 3;
+                G.stats.soul += 2;
+                addLog(`棋盘之上杀气纵横如万剑归宗！仙翁大赞：“好一股刚猛杀伐剑魄！”体魄+3，神魂+2。`, "fortune");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("行险弈棋");
+              }
+            },
+            {
+              text: "恭谨侍立，为仙翁奉茶观棋",
+              hint: "知敬畏明进退，获赠延寿仙果，寿元+8年",
+              act: () => {
+                G.activeEvent = null;
+                sfx.success();
+                G.maxAge += 8;
+                addLog(`【长生仙缘】仙翁大喜：“知敬畏明分寸，乃长生胚子。”赐下一枚九天延寿仙朱果，寿元凭空增益 8 载！`, "breakthrough");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("仙翁赐寿");
+              }
+            }
+          ]
+        };
+      } else if (pickedKey === "inner_demon_night") {
+        G.activeEvent = {
+          title: `😈 【九幽心魔 · 幻境叩道】`,
+          desc: `夜半吐纳神游之时，识海中业障汹涌翻腾！前世红尘执念与昔日陨落道友的血淋淋虚影自虚空中走出，凄声厉啸：“大道无情，何苦修仙？不如与我等同归幽冥！”`,
+          choices: [
+            {
+              text: "拔出道心法剑，斩断万千虚妄！",
+              hint: `神魂检定（当前神魂：${G.stats.soul}），破除心魔得【明心见性】道号，心魔清零！`,
+              act: () => {
+                G.activeEvent = null;
+                if ((G.stats.soul || 30) >= 42) {
+                  sfx.breakthrough();
+                  G.innerDemon = 0;
+                  G.stats.soul += 5;
+                  G.titles = G.titles || [];
+                  if (!G.titles.includes("明心见性")) G.titles.push("明心见性");
+                  addLog(`【道心唯我 · 剑斩心魔】“吾心所向，万劫不悔！”你一剑破开无边业障，心魔灰飞烟灭！心魔清零，神魂+5，获赐封号【明心见性】！`, "breakthrough");
+                } else {
+                  sfx.fail();
+                  const dmg = Math.floor(G.maxHp * 0.35);
+                  G.hp = Math.max(1, G.hp - dmg);
+                  G.innerDemon = Math.min(100, (G.innerDemon || 0) + 15);
+                  addLog(`【心神受损】神魂动荡被幻境迷乱，强行破出幻阵受到反噬，气血受损 ${dmg} 点，心魔加剧 15%！`, "danger");
+                }
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("破除心魔");
+              }
+            },
+            {
+              text: "诵念行囊中的【上古残经】净化",
+              hint: "若有上古无量残经可化心魔为道韵，否则耗费30灵石布清心阵",
+              act: () => {
+                G.activeEvent = null;
+                const hasScroll = (G.inventory || []).some(i => i.id === "scroll_ancient" && i.count > 0);
+                if (hasScroll) {
+                  sfx.spell();
+                  G.innerDemon = Math.max(0, (G.innerDemon || 0) - 45);
+                  G.foundation = Math.min(100, (G.foundation || 0) + 15);
+                  addLog(`【无量梵音 · 涤荡业障】怀中【上古无量残经】金光大作，无量梵音回荡识海，心魔化作甘露滋养道基！心魔狂降 45%，道基打磨+15%！`, "breakthrough");
+                } else {
+                  if (G.stones >= 30) {
+                    G.stones -= 30;
+                    G.innerDemon = Math.max(0, (G.innerDemon || 0) - 15);
+                    addLog(`你燃烧 30 灵石布下清心安神阵，勉强驱散心魔幻雾，心魔-15%。`, "normal");
+                  } else {
+                    addLog(`行囊无残经亦无灵石布阵，只能硬生生苦熬一夜，心力交瘁。`, "normal");
+                  }
+                }
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("清心度夜");
+              }
+            },
+            {
+              text: "运转玄功接纳并封印魔念为煞气",
+              hint: "险象环生！神魂+4，法术威能增强，但心魔并未根除",
+              act: () => {
+                G.activeEvent = null;
+                sfx.slash();
+                G.stats.soul += 4;
+                addLog(`【封魔为煞】你强行将心魔封印于丹田化作护体煞气，神魂+4，法威骤升！但心魔隐患仍未彻底断绝。`, "normal");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("封魔为煞");
+              }
+            }
+          ]
+        };
+      } else { // auction_feud
+        G.activeEvent = {
+          title: `🏛️ 【仙城盛会 · 拍卖竞逐】`,
+          desc: `仙城拍卖会压轴出现了一卷珍世秘典【上古无量残经】！邻座的大宗门纨绔天骄面露骄横，盛气凌人狂妄加价阻击所有竞拍散修！`,
+          choices: [
+            {
+              text: "豪掷 150 灵石点天灯强拍！",
+              hint: "需要 150 灵石！霸气拍下【上古无量残经】，声望+40！",
+              act: () => {
+                if (G.stones < 150) { alert("灵石不足 150 块，无法点天灯！"); return; }
+                G.activeEvent = null;
+                G.stones -= 150;
+                sfx.breakthrough();
+                addItemToInv(ITEMS_DB.scroll_ancient, 1);
+                G.stats.reputation += 40;
+                addLog(`【点天灯 · 震动全城】你豪掷千金点亮天灯！全场修士起立惊呼，纨绔天骄面如死灰愤然离场！你夺下【上古无量残经】，声望暴涨 40 点！`, "breakthrough");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("拍卖夺魁");
+              }
+            },
+            {
+              text: "放弃竞拍，暗中尾随杀人夺经",
+              hint: "修仙界黑吃黑！伏击纨绔修士，夺得残经与灵石，心魔+20%",
+              act: () => {
+                G.activeEvent = null;
+                sfx.slash();
+                addItemToInv(ITEMS_DB.scroll_ancient, 1);
+                G.stones += 120;
+                G.innerDemon = Math.min(100, (G.innerDemon || 0) + 20);
+                addLog(`【黑夜夺经】你于仙城郊外雷霆截杀纨绔修士！一番激战夺下【上古无量残经】与灵石 120 块！心魔暴涨 20%！`, "danger");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("伏击夺宝");
+              }
+            },
+            {
+              text: "拱手相让，不惹世家纨绔",
+              hint: "韬光养晦，不争一时闲气",
+              act: () => {
+                G.activeEvent = null;
+                sfx.click();
+                addLog(`你淡然笑看纨绔狂妄争风，不沾是非因果，从容退场。`, "normal");
+                saveToLocal(); renderUI(); resumeAutoTimeIfEligible("退场归来");
+              }
+            }
+          ]
+        };
+      }
+
+      renderUI();
+    }
+
+    /* ==========================================================================
        战斗与时空自动恢复中枢
        ========================================================================== */
     function resumeAutoTimeIfEligible(actionDesc = "历练平患") {
@@ -7050,9 +7729,26 @@
       sfx.slash();
       const rPower = (REALMS[G.realmIndex] && REALMS[G.realmIndex].power) ? REALMS[G.realmIndex].power : 10;
       const wDmg = G.equipped && G.equipped.weapon ? G.equipped.weapon.power : 10;
-      const dmg = Math.floor(wDmg + (G.stats.phy * 0.35) + Math.floor(rPower * 0.08) + (Math.random() * 8));
+      let dmg = Math.floor(wDmg + (G.stats.phy * 0.35) + Math.floor(rPower * 0.08) + (Math.random() * 8));
+
+      // 境界灵压压制判定
+      if (curEnemy.realm) {
+        const eRealm = REALMS.find(r => r.name === curEnemy.realm);
+        if (eRealm && rPower > eRealm.power) dmg = Math.floor(dmg * 1.25);
+        else if (eRealm && rPower < eRealm.power) dmg = Math.max(1, Math.floor(dmg * 0.8));
+      }
+
+      // 地心青莲真火附魔
+      const hasFlame = (G.inventory || []).some(i => i.id === "flame_spirit" && i.count > 0);
+      let flameText = "";
+      if (hasFlame) {
+        const fDmg = Math.floor(dmg * 0.35) + 12;
+        dmg += fDmg;
+        flameText = ` <span style="color:var(--cinnabar-light); font-size:0.85rem;">[🔥青莲真火+${fDmg}]</span>`;
+      }
+
       curEnemy.hp = Math.max(0, curEnemy.hp - dmg);
-      appendCombatLog(`你踏步劈斩，刀光剑气纵横，对敌人造成 <b>${dmg}</b> 点伤害！`);
+      appendCombatLog(`你踏步劈斩，刀光剑气纵横，对敌人造成 <b>${dmg}</b> 点伤害！${flameText}`);
       checkCombatTurn();
     };
 
@@ -7062,9 +7758,26 @@
       G.mp -= 15;
       const rPower = (REALMS[G.realmIndex] && REALMS[G.realmIndex].power) ? REALMS[G.realmIndex].power : 10;
       const tBonus = G.technique.combatBonus || 0;
-      const dmg = Math.floor(30 + tBonus + (G.stats.soul * 0.45) + Math.floor(rPower * 0.12) + (Math.random() * 12));
+      let dmg = Math.floor(30 + tBonus + (G.stats.soul * 0.45) + Math.floor(rPower * 0.12) + (Math.random() * 12));
+
+      // 境界灵压压制判定
+      if (curEnemy.realm) {
+        const eRealm = REALMS.find(r => r.name === curEnemy.realm);
+        if (eRealm && rPower > eRealm.power) dmg = Math.floor(dmg * 1.25);
+        else if (eRealm && rPower < eRealm.power) dmg = Math.max(1, Math.floor(dmg * 0.8));
+      }
+
+      // 地心青莲真火法术质变
+      const hasFlame = (G.inventory || []).some(i => i.id === "flame_spirit" && i.count > 0);
+      let flameText = "";
+      if (hasFlame) {
+        const fDmg = Math.floor(dmg * 0.4) + 18;
+        dmg += fDmg;
+        flameText = ` <span style="color:var(--cinnabar-light); font-size:0.85rem;">[🔥焚天真火+${fDmg}]</span>`;
+      }
+
       curEnemy.hp = Math.max(0, curEnemy.hp - dmg);
-      appendCombatLog(`你引气施法，一道灵芒锐啸而出，洞穿敌方防线造成 <b>${dmg}</b> 点重创！`);
+      appendCombatLog(`你引气施法，一道灵芒锐啸而出，洞穿敌方防线造成 <b>${dmg}</b> 点重创！${flameText}`);
       checkCombatTurn();
     };
 
@@ -7187,6 +7900,15 @@
             setTimeout(finishCombatAndResume, 450);
           }
         } else {
+          // 斩敌获胜：杀戮累积微量心魔；持有无量残经则梵音清心
+          const hasScroll = (G.inventory || []).some(i => i.id === "scroll_ancient" && i.count > 0);
+          if (hasScroll) {
+            G.innerDemon = Math.max(0, (G.innerDemon || 0) - 2);
+            appendCombatLog(`<div style="color:var(--ethereal-blue); font-size:0.85rem;">📿【无量残经】无量梵音清心，抚平杀戮戾气，心魔微退。</div>`);
+          } else {
+            G.innerDemon = Math.min(100, (G.innerDemon || 0) + 1);
+          }
+
           const stonesGot = curEnemy.loot ? (curEnemy.loot.stones || 0) : 0;
           const silverGot = curEnemy.loot ? (curEnemy.loot.silver || 0) : 0;
           if (curEnemy.loot) {
@@ -7213,6 +7935,15 @@
         let eDmg = Math.floor(curEnemy.atk + (Math.random() * 6));
         const armorDef = G.equipped && G.equipped.armor ? G.equipped.armor.def : 0;
         eDmg = Math.max(3, eDmg - Math.floor(armorDef * 0.4));
+
+        // 通灵幼兽护主
+        const hasBeast = (G.inventory || []).some(i => i.id === "beast_companion" && i.count > 0);
+        if (hasBeast) {
+          const block = Math.max(2, Math.floor(eDmg * 0.3));
+          eDmg = Math.max(2, eDmg - block);
+          appendCombatLog(`<span style="color:var(--ethereal-blue);">🐾【通灵兽护主】灵兽通灵咆哮，为你抵御了 <b>${block}</b> 点凶煞重创！</span>`);
+        }
+
         if (isDodging) {
           eDmg = Math.floor(eDmg * 0.4);
           appendCombatLog(`你身法灵动卸去大部分力道，只受擦伤 <b>${eDmg}</b> 点！`);
@@ -7221,6 +7952,14 @@
           appendCombatLog(`${curEnemy.name} 狠厉反扑，造成 <b>${eDmg}</b> 点创伤！`);
         }
         G.hp = Math.max(0, G.hp - eDmg);
+
+        // 心魔扰乱（心魔 >= 60% 时偶发业障噬心）
+        if ((G.innerDemon || 0) >= 60 && Math.random() < 0.25) {
+          const demonDmg = Math.max(3, Math.floor(G.maxHp * 0.04));
+          G.hp = Math.max(1, G.hp - demonDmg);
+          appendCombatLog(`<span style="color:var(--purple-rare);">😈【心魔扰乱】神魂动荡，识海业障突生，气血逆流额外受损 <b>${demonDmg}</b> 点！</span>`);
+        }
+
         updateCombatUI();
 
         if (G.hp <= 0 || (curEnemy.isSpar && G.hp <= G.maxHp * 0.15)) {
@@ -7241,6 +7980,46 @@
             }
             return;
           } else {
+            // 命悬一线：检测小说经典保命至宝
+            // 1. 替死替劫木傀儡
+            const subItem = (G.inventory || []).find(i => i.id === "talisman_substitute" && i.count > 0);
+            if (subItem) {
+              subItem.count--;
+              cleanZeroInv();
+              G.hp = Math.max(20, Math.floor(G.maxHp * 0.35));
+              combatAutoRunning = false;
+              sfx.spell();
+              addLog(`【替死替劫 · 逆天保命】万劫临头之际，行囊中的【替死替劫木傀儡】替你承受致命杀劫，四分五裂化作飞灰！你借血遁之术脱险！`, 'fortune');
+              appendCombatLog(`<div style="color:var(--gold-primary); font-weight:bold; font-size:0.95rem; margin-top:0.4rem;">💥【替死替劫】怀中【替死木傀儡】金光爆闪，替你承受致命杀伐，四分五裂化作飞灰！你借遁法脱身！</div>`);
+              if (!lastActiveSpeedMode) {
+                alert(`【性命危急 · 替死保命】\n\n千钧一发之际，你怀中的【替死替劫木傀儡】金光大作，替你承受了致命一击，四分五裂化为飞灰！\n你借替身傀儡引爆的漫天灵光施展血遁脱险，保全了道基性命！\n（气血已稳固回升至 35%）`);
+                finishCombatAndResume();
+              } else {
+                setTimeout(finishCombatAndResume, 450);
+              }
+              return;
+            }
+
+            // 2. 太上九天仙令（圣女化身）
+            const taishangToken = (G.inventory || []).find(i => i.id === "token_taishang" && i.count > 0);
+            if (taishangToken) {
+              taishangToken.count--;
+              cleanZeroInv();
+              G.hp = Math.max(30, Math.floor(G.maxHp * 0.5));
+              combatAutoRunning = false;
+              sfx.spell();
+              addLog(`【仙宫因果 · 圣女显圣】濒死之际，【太上九天仙令】激荡出九天神华，太上圣女的一道神念化身显化，一指逼退强敌！`, 'fortune');
+              appendCombatLog(`<div style="color:var(--gold-light); font-weight:bold; font-size:0.95rem; margin-top:0.4rem;">✨【圣女化身】太上九天仙令光芒万丈！太上圣女法相踏空而至，一指镇压强敌，护你周全！</div>`);
+              if (!lastActiveSpeedMode) {
+                alert(`【太上仙令显圣 · 圣女化身】\n\n危急存亡之际，你怀中的【太上九天仙令】冲天而起，太上圣女的一缕无上神念虚影在九天凝聚！\n“何方宵小，胆敢伤我仙缘恩公！”\n一指点出，天地震颤，强敌咳血暴退远遁！你得救生还！\n（气血已平复至 50%）`);
+                finishCombatAndResume();
+              } else {
+                setTimeout(finishCombatAndResume, 450);
+              }
+              return;
+            }
+
+            // 无保命底牌，身死道消
             sfx.fail();
             lastActiveSpeedMode = null;
             alert(`气血耗尽……你倒在血泊之中，此生道途就此陨落！`);
@@ -7320,6 +8099,201 @@
     /* ==========================================================================
        手动操作与突破
        ========================================================================== */
+    function executeBreakthroughSuccess(extraStats = {}, titleName = "") {
+      sfx.breakthrough();
+      const curRealm = REALMS[G.realmIndex] || REALMS[0];
+
+      // 极境破境额外天道赏赐
+      if ((G.foundation || 0) >= 100) {
+        G.stats.phy += 4;
+        G.stats.soul += 4;
+        G.stats.com += 3;
+        G.maxAge += 5;
+        addLog("【天道极境 · 极境道韵】你以【天道极境】无瑕道基勘破桎梏！天地垂落极境道韵：体魄+4，神魂+4，悟性+3，更添寿元 5 载！", "breakthrough");
+      }
+
+      // 渡劫额外属性与天地道号
+      if (extraStats.phy) G.stats.phy += extraStats.phy;
+      if (extraStats.soul) G.stats.soul += extraStats.soul;
+      if (extraStats.com) G.stats.com += extraStats.com;
+      if (titleName) {
+        G.titles = G.titles || [];
+        if (!G.titles.includes(titleName)) {
+          G.titles.push(titleName);
+          addLog(`【天地封号】大道共鸣，天道赐下尊荣封号【${titleName}】！`, "breakthrough");
+        }
+      }
+
+      G.realmIndex++;
+      const newRealm = REALMS[G.realmIndex];
+      recalcPlayerStats();
+      G.hp = G.maxHp;
+      G.mp = G.maxMp;
+      G.maxAge += newRealm.lifeBonus;
+      G.exp = 0;
+      G.foundation = 0;
+      G.breakthroughInjuryMonths = 0;
+      G._missingPillWarned = false;
+      G._bottleneckNotified = false;
+      G.stats.reputation += 25;
+      addLog(`【突破功成】引灵锻体！你成功突破桎梏晋升【${newRealm.name}】！寿元威能激增！`, 'breakthrough');
+      syncNpcsForCurrentState(G, true);
+
+      const highestMap = MAPS_DB.slice().reverse().find(m => G.realmIndex >= m.minRealm);
+      if (highestMap && highestMap.id !== G.currentMap) {
+        const oldMapName = G.location || "初阶大域";
+        G.currentMap = highestMap.id;
+        G.location = highestMap.name;
+        G._mapManuallySelected = false; // 重置手动锁定，开启新大域征程
+        syncNpcsForCurrentState(G, true);
+        addLog(`【大域感召】道友成功晋升【${newRealm.name}】！修为通神，顺应天道御风由【${oldMapName}】迁往更高大域【${highestMap.name}】（灵气浓郁度：${highestMap.densityText}，吐纳效率×${highestMap.expMult}）！`, "breakthrough");
+      }
+
+      if (G.realmIndex === REALMS.length - 1) { // 飞升真仙
+        META.karmaPoints += 3000;
+        saveMeta();
+        addLog("【九天共鸣 · 白日飞升】万丈仙光普照天地！道友终脱轮回樊笼，证得【飞升真仙】万古不灭大道！天命功德+3000！", "breakthrough");
+        alert("【🎉 白日飞升 · 功德圆满】\n恭喜道友历经凡人入道、结丹化婴、九死一生渡过九霄天劫，终登真仙果位！\n天地长存，与日月同寿！天命功德暴增 3000 点！");
+      }
+
+      saveToLocal();
+      renderUI();
+      resumeAutoTimeIfEligible("渡劫成功");
+    }
+
+    function executeBreakthroughFailure(lacksReqPill = false, customDmgMult = 0.35, customInjury = 6, extraDemon = 0) {
+      sfx.fail();
+      const curRealm = REALMS[G.realmIndex] || REALMS[0];
+      const req = BREAKTHROUGH_REQUISITES[G.realmIndex];
+
+      G.breakthroughInjuryMonths = customInjury + Math.floor(Math.random() * 4);
+      G.exp = Math.floor(curRealm.maxExp * 0.70);
+      G.foundation = Math.max(0, Math.floor((G.foundation || 0) * 0.5) - 10);
+      if (extraDemon > 0) {
+        G.innerDemon = Math.min(100, (G.innerDemon || 0) + extraDemon);
+      }
+
+      if (lacksReqPill) {
+        const dmg = Math.floor(G.maxHp * Math.max(0.4, customDmgMult));
+        G.hp = Math.max(1, G.hp - dmg);
+        G.maxAge = Math.max(G.ageYears + 1, G.maxAge - 2);
+        addLog(`【九天玄雷反噬】未持专属护道神丹【${req ? req.name : '神丹'}】强冲大关！九天玄雷倾泻重创气血 ${dmg} 点，道基裂痕蔓生，寿元遭天道削减 2 载！需静养 ${G.breakthroughInjuryMonths} 个月！`, "danger");
+      } else {
+        const dmg = Math.floor(G.maxHp * customDmgMult);
+        if (!(META.unlockedPerks || []).includes("perk_dao_heart")) {
+          G.hp = Math.max(10, G.hp - dmg);
+        }
+        addLog(`【冲关受挫】行气至【${curRealm.name}】壁障时周天气血翻腾逆流，受到 ${dmg} 点暗伤！道基动荡，需调理温养 ${G.breakthroughInjuryMonths} 个月方可再次凝聚气海！`, "danger");
+      }
+
+      pauseTime("冲关受挫，气机紊乱！需温养调理！");
+      saveToLocal();
+      renderUI();
+    }
+
+    function triggerTribulationEvent(req, nextRealm, curRealm) {
+      pauseTime(`九天雷劫汇聚，逆天渡劫冲击【${nextRealm.name}】！`);
+      const pillItem = (G.inventory || []).find(i => i.id === req.id && i.count > 0);
+      const hasSubTalisman = (G.inventory || []).some(i => i.id === "talisman_substitute" && i.count > 0);
+      const calc = calcBreakthroughChance(G);
+
+      G.activeEvent = {
+        title: `⚡ 【九天雷劫降临 · 逆天渡劫】冲击【${nextRealm.name}】`,
+        desc: `苍穹之上千里紫霄雷云翻涌，万丈天雷如巨蟒撕裂虚空！大境界灵压与心魔业障同时呼啸而下！生则踏破桎梏寿元暴涨，败则玄雷噬体！道友，你将以何法迎击九霄天劫？`,
+        choices: [
+          {
+            text: "⚡ 肉身硬撼天劫（淬炼万劫宝体）",
+            hint: `以无双体魄硬抗九天玄雷！功成体魄+8、神魂+5，赐予【万劫不灭身】道号！当前体魄：${G.stats.phy}`,
+            act: () => {
+              G.activeEvent = null;
+              const phyBonus = Math.floor((G.stats.phy || 30) * 0.35);
+              const totalChance = Math.max(5, Math.min(95, calc.chance + phyBonus - (calc.lacksReqPill ? 10 : 0)));
+              const roll = Math.random() * 100;
+              if (roll < totalChance) {
+                addLog(`【万劫淬体 · 渡劫功成】你长啸冲天，以肉身硬撼九道天雷！玄雷淬体，筋骨如精金琉璃！晋升【${nextRealm.name}】！`, "breakthrough");
+                executeBreakthroughSuccess({ phy: 8, soul: 5 }, "万劫不灭身");
+              } else {
+                addLog(`【肉身受创】天雷天威浩荡，肉身未能完全化解雷霆之力，周天气血重创焦黑！`, "danger");
+                executeBreakthroughFailure(calc.lacksReqPill, 0.55, 8, 10);
+              }
+            }
+          },
+          {
+            text: "🛡️ 祭出法宝御雷（稳健抵消雷威）",
+            hint: hasSubTalisman ? "行囊持有【替死傀儡】，可代抵重劫！稳妥保命" : "以防具法器分流天劫神威，降低受挫反噬",
+            act: () => {
+              G.activeEvent = null;
+              const bonus = hasSubTalisman ? 25 : 15;
+              const totalChance = Math.max(10, Math.min(95, calc.chance + bonus));
+              const roll = Math.random() * 100;
+              if (roll < totalChance) {
+                addLog(`【御雷功成】法宝灵光激荡，九重玄雷被稳妥导入周天灵脉！成功破关晋升【${nextRealm.name}】！`, "breakthrough");
+                executeBreakthroughSuccess({ soul: 4 }, "玄天御雷尊者");
+              } else {
+                if (hasSubTalisman) {
+                  const sub = G.inventory.find(i => i.id === "talisman_substitute" && i.count > 0);
+                  if (sub) { sub.count--; cleanZeroInv(); }
+                  addLog(`【替死替劫】天雷轰顶之际，行囊中的【替死替劫木傀儡】爆碎化灰抵消雷劫杀伐，仅受轻微震荡！`, "fortune");
+                  executeBreakthroughFailure(false, 0.15, 3, 0);
+                } else {
+                  addLog(`【法宝受损】护体法宝被天雷劈碎，雷霆余波震荡经络！`, "danger");
+                  executeBreakthroughFailure(calc.lacksReqPill, 0.35, 6, 5);
+                }
+              }
+            }
+          },
+          {
+            text: pillItem ? `💊 引化护道神丹【${req.name}】` : `💊 无护道神丹强冲天劫`,
+            hint: pillItem ? "九品丹韵化作混元琉璃气罩，成功率暴涨+40%！" : "缺乏神丹，雷威暴增45%！极易遭玄雷反噬！",
+            act: () => {
+              G.activeEvent = null;
+              if (pillItem) {
+                pillItem.count--;
+                cleanZeroInv();
+                const totalChance = Math.max(15, Math.min(98, calc.chance + 35));
+                const roll = Math.random() * 100;
+                if (roll < totalChance) {
+                  addLog(`【神丹护道 · 功行圆满】引化【${req.name}】，纯阳药力化开形成混元护罩，九霄神雷尽化周天造化灵露！`, "breakthrough");
+                  executeBreakthroughSuccess({ com: 4, soul: 4 }, `一品纯阳${nextRealm.name.slice(0, 2)}`);
+                } else {
+                  addLog(`【药力不济】神丹虽化去大半雷威，但心魔与雷煞交织，未能彻底勘破壁障！`, "danger");
+                  executeBreakthroughFailure(false, 0.25, 5, 5);
+                }
+              } else {
+                const roll = Math.random() * 100;
+                if (roll < calc.chance) {
+                  addLog(`【逆天改命】你于九死一生中无丹强行渡过九天玄雷！震惊修仙界！`, "breakthrough");
+                  executeBreakthroughSuccess({ phy: 5, com: 5 }, "逆天道尊");
+                } else {
+                  addLog(`【玄雷反噬】未持专属护道神丹【${req.name}】，玄雷贯体，气血与寿元遭天道削减！`, "danger");
+                  executeBreakthroughFailure(true, 0.55, 9, 15);
+                }
+              }
+            }
+          },
+          {
+            text: "🗡️ 浩然道心 / 剑斩心魔",
+            hint: `直面心魔幻境！神魂检定（当前神魂：${G.stats.soul}），功成心魔清零并赐予【大道无瑕】封号！`,
+            act: () => {
+              G.activeEvent = null;
+              const soulBonus = Math.floor((G.stats.soul || 30) * 0.35);
+              const totalChance = Math.max(5, Math.min(95, calc.chance + soulBonus));
+              const roll = Math.random() * 100;
+              if (roll < totalChance) {
+                G.innerDemon = 0;
+                addLog(`【道心澄澈 · 剑斩心魔】“吾心即道，万古长青！”你一剑斩灭识海幻相，天雷化道韵！成功晋升【${nextRealm.name}】！心魔业障彻底消退！`, "breakthrough");
+                executeBreakthroughSuccess({ soul: 6, com: 5 }, "大道无瑕");
+              } else {
+                addLog(`【心魔反扑】心魔趁雷劫入侵识海，道心失守，真元逆流吐血受挫！`, "danger");
+                executeBreakthroughFailure(calc.lacksReqPill, 0.4, 7, 25);
+              }
+            }
+          }
+        ]
+      };
+      renderUI();
+    }
+
     function doBreakthrough(isAuto = false) {
       if (!G) return false;
       const curRealm = REALMS[G.realmIndex] || REALMS[0];
@@ -7343,127 +8317,65 @@
       const nextRealm = REALMS[G.realmIndex + 1];
       const req = BREAKTHROUGH_REQUISITES[G.realmIndex];
 
-      // 3. 自动引化或服用备用破境丹药
+      // 3. 大境界雷劫天堑机制
       if (req) {
-        if (!G[req.buffKey]) {
-          const pill = G.inventory.find(i => i.id === req.id && i.count > 0);
-          if (pill) {
+        if (!isAuto) {
+          triggerTribulationEvent(req, nextRealm, curRealm);
+          return "event";
+        } else {
+          // 自动模式渡劫：根据当前底蕴自动最优抉择
+          const pill = (G.inventory || []).find(i => i.id === req.id && i.count > 0);
+          const hasPillBuff = Boolean(G[req.buffKey]);
+          if (pill && !hasPillBuff) {
             pill.count--;
             cleanZeroInv();
             G[req.buffKey] = req.bonus;
-            addLog(`【护道神丹】引动储物袋中【${req.name}】化开，九品药力护持紫府道基！`, "breakthrough");
           }
-        }
-      } else {
-        if (!G.breakthroughBuff) {
-          const pBreak = G.inventory.find(i => i.id === "pill_break" && i.count > 0);
-          if (pBreak) {
-            pBreak.count--;
-            cleanZeroInv();
-            G.breakthroughBuff = 25;
-            addLog("【药力助阵】化开【二品破障散】药力，经络窒碍消散！", "breakthrough");
+          const calc = calcBreakthroughChance(G);
+          const roll = Math.random() * 100;
+          addLog(`【⚡ 雷劫降临 · 自动渡劫】九天雷劫浩瀚压顶！道友引化真元与专属护道神丹，混元琉璃气罩护体迎战九天玄雷……`, "breakthrough");
+          if (roll < calc.chance) {
+            executeBreakthroughSuccess({ com: 3, soul: 3 }, `一品纯阳${nextRealm.name.slice(0, 2)}`);
+            return true;
+          } else {
+            executeBreakthroughFailure(calc.lacksReqPill, 0.45, 7, 10);
+            return false;
           }
         }
       }
 
-      // 4. 计算破境概率
+      // 4. 小境界突破
+      if (!G.breakthroughBuff) {
+        const pBreak = (G.inventory || []).find(i => i.id === "pill_break" && i.count > 0);
+        if (pBreak) {
+          pBreak.count--;
+          cleanZeroInv();
+          G.breakthroughBuff = 25;
+          addLog("【药力助阵】化开【二品破障散】药力，经络窒碍消散！", "breakthrough");
+        }
+      }
+
       const calc = calcBreakthroughChance(G);
       const chance = calc.chance;
 
-      // 5. 手动突破时的风险告诫
       if (!isAuto) {
-        if (calc.lacksReqPill) {
-          if (!confirm(`【九天玄雷天堑警告】\n冲击【${nextRealm.name}】缺乏专属护道神丹【${req.name}】！\n若强行引劫破境，把握仅有 ${chance}%，一旦失败将遭九天玄雷重创，损耗寿元与道基！\n\n是否仍要执意强冲？`)) {
-            return false;
-          }
-        } else if ((G.foundation || 0) < 40) {
+        if ((G.foundation || 0) < 40) {
           if (!confirm(`【道基虚浮警告】\n当前道基仅为【${calc.tier.name}】（打磨度 ${G.foundation || 0}%），尚未扎实稳固！\n当前冲关把握为 ${chance}%，失败将导致修为回退与受创。\n\n建议先点击【✨ 凝练打磨道基】。是否仍要冒险冲关？`)) {
             return false;
           }
         }
       }
 
-      // 6. 天道运数掷骰
       const roll = Math.random() * 100;
       const isSuccess = roll < chance;
 
-      // 清除单次冲关丹药 Buff
       G.breakthroughBuff = 0;
-      if (req) G[req.buffKey] = 0;
-      G.zhujiBuff = 0; G.jindanBuff = 0; G.yuanyingBuff = 0; G.huashenBuff = 0;
-      G.lianxuBuff = 0; G.hetiBuff = 0; G.dachengBuff = 0; G.dujieBuff = 0; G.feishengBuff = 0;
 
       if (isSuccess) {
-        sfx.breakthrough();
-
-        // 极境破境额外天道赏赐
-        if ((G.foundation || 0) >= 100) {
-          G.stats.phy += 4;
-          G.stats.soul += 4;
-          G.stats.com += 3;
-          G.maxAge += 5;
-          addLog("【天道极境 · 极境道韵】你以【天道极境】无瑕道基勘破桎梏！天地垂落极境道韵：体魄+4，神魂+4，悟性+3，更添寿元 5 载！", "breakthrough");
-        }
-
-        G.realmIndex++;
-        const newRealm = REALMS[G.realmIndex];
-        recalcPlayerStats();
-        G.hp = G.maxHp;
-        G.mp = G.maxMp;
-        G.maxAge += newRealm.lifeBonus;
-        G.exp = 0;
-        G.foundation = 0;
-        G.breakthroughInjuryMonths = 0;
-        G._missingPillWarned = false;
-        G._bottleneckNotified = false;
-        G.stats.reputation += 20;
-        addLog(`【突破功成】引灵锻体！你成功突破桎梏晋升【${newRealm.name}】！寿元威能激增！`, 'breakthrough');
-        syncNpcsForCurrentState(G, true);
-
-        const highestMap = MAPS_DB.slice().reverse().find(m => G.realmIndex >= m.minRealm);
-        if (highestMap && highestMap.id !== G.currentMap) {
-          const oldMapName = G.location || "初阶大域";
-          G.currentMap = highestMap.id;
-          G.location = highestMap.name;
-          G._mapManuallySelected = false; // 重置手动锁定，开启新大域征程
-          syncNpcsForCurrentState(G, true);
-          addLog(`【大域感召】道友成功晋升【${newRealm.name}】！修为通神，顺应天道御风由【${oldMapName}】迁往更高大域【${highestMap.name}】（灵气浓郁度：${highestMap.densityText}，吐纳效率×${highestMap.expMult}）！`, "breakthrough");
-        }
-
-        if (G.realmIndex === REALMS.length - 1) { // 飞升真仙
-          META.karmaPoints += 3000;
-          saveMeta();
-          addLog("【九天共鸣 · 白日飞升】万丈仙光普照天地！道友终脱轮回樊笼，证得【飞升真仙】万古不灭大道！天命功德+3000！", "breakthrough");
-          if (!isAuto) alert("【🎉 白日飞升 · 功德圆满】\n恭喜道友历经凡人入道、结丹化婴、九死一生渡过九霄天劫，终登真仙果位！\n天地长存，与日月同寿！天命功德暴增 3000 点！");
-        }
-
-        saveToLocal();
-        renderUI();
+        executeBreakthroughSuccess();
         return true;
       } else {
-        sfx.fail();
-
-        // 纪律失败机制：反噬冷却、修为回退、道基受挫
-        G.breakthroughInjuryMonths = 6 + Math.floor(Math.random() * 5); // 6~10个月气机紊乱冷却
-        G.exp = Math.floor(curRealm.maxExp * 0.70); // 回退至70%，需重新闭关
-        G.foundation = Math.max(0, Math.floor((G.foundation || 0) * 0.5) - 10); // 道基受震荡
-
-        if (calc.lacksReqPill) {
-          const dmg = Math.floor(G.maxHp * 0.55);
-          G.hp = Math.max(1, G.hp - dmg);
-          G.maxAge = Math.max(G.ageYears + 1, G.maxAge - 2);
-          addLog(`【九天玄雷反噬】未持专属护道神丹【${req ? req.name : '神丹'}】强冲大关！九天玄雷倾泻重创气血 ${dmg} 点，道基裂痕蔓生，寿元遭天道削减 2 载！需静养 ${G.breakthroughInjuryMonths} 个月！`, "danger");
-        } else {
-          const dmg = Math.floor(G.maxHp * 0.35);
-          if (!(META.unlockedPerks || []).includes("perk_dao_heart")) {
-            G.hp = Math.max(10, G.hp - dmg);
-          }
-          addLog(`【冲关受挫】行气至【${curRealm.name}】壁障时周天气血翻腾逆流，受到 ${dmg} 点暗伤！道基动荡，需调理温养 ${G.breakthroughInjuryMonths} 个月方可再次凝聚气海！`, "danger");
-        }
-
-        pauseTime("冲关受挫，气机紊乱！需温养调理！");
-        saveToLocal();
-        renderUI();
+        executeBreakthroughFailure(false, 0.35, 6, 5);
         return false;
       }
     }
@@ -7471,7 +8383,7 @@
     document.getElementById('btnManualBreakthrough').onclick = () => {
       sfx.click();
       const res = doBreakthrough(false);
-      if (res) {
+      if (res && res !== "event") {
         advanceMonth();
       }
     };
@@ -7623,6 +8535,9 @@
         realmIndex: startRealmIdx,
         exp: 0,
         foundation: 0,
+        innerDemon: 0,
+        titles: [],
+        bonds: [],
         breakthroughInjuryMonths: 0,
         hp: maxHp,
         maxHp: maxHp,
